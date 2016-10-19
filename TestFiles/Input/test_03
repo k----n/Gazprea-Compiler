@@ -1,0 +1,6 @@
+procedure main() returns integer {
+    integer x;
+    x <- std_input();
+    x -> std_output();
+    return 0;
+}
