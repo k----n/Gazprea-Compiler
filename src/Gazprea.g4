@@ -21,26 +21,23 @@ NE: '!=';
 EQ: '==';
 
 float
-    :
-    | UFLOAT 'e' US? ('+'|'-')? UFLOAT
-    | UINTEGER 'e' US? ('+'|'-')? UINTEGER
-    | UINTEGER 'e' US? ('+'|'-')? UFLOAT
-    | UFLOAT 'e' US? ('+'|'-')? UINTEGER
-    | UFLOAT
+    : subfloat 'e' ('_')*? ('+'|'-')? subfloat
+    | INTEGER 'e' ('_')*? ('+'|'-')? INTEGER
+    | INTEGER 'e' ('_')*? ('+'|'-')? subfloat
+    | subfloat 'e' ('_')*? ('+'|'-')? INTEGER
+    | subfloat
     ;
 
-SC: ';';
-
-UFLOAT
-    : US? '.' UINTEGER
+subfloat
+    : ('_')*? '.' UINTEGER
     | UINTEGER '.' US?
     | UINTEGER '.' UINTEGER
     ;
-US: [_]*;
 
-UINTEGER: [_]*[0-9][0-9_]*;
 INTEGER: [0-9]+;
 ID: [_a-zA-Z][_a-zA-Z0-9]*;
+
+SC: ';';
 
 BLOCKCOMMENT: '/*' .*? '*/' -> skip;
 LINECOMMENT: '//' ~[\r\n]* -> skip;
