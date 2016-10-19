@@ -59,3 +59,6 @@ fabric.properties
 
 tmp.ll
 gen
+*.s
+*.ll
+*.xcodeproj
