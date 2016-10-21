@@ -49,8 +49,12 @@ translationalUnit
 statement
  : returnStatement
  | streamStatement
+ | assignment
  | declaration
+ | procedureCall
  ;
+
+assignment: Identifier Assign expression;
 
 declaration: type Identifier sizeData? (Assign expression)?;
 
@@ -149,8 +153,6 @@ Returns: 'returns';
 // | procedure
 // | block
 // ;
-//assignment: Identifier Assign expression;
-//
 //typedef: Typedef type Identifier;
 //
 //generator: '[' Identifier In expression (',' Identifier In expression)? '|' expression ']';
@@ -167,7 +169,7 @@ Returns: 'returns';
 //
 //function: Function Identifier typeData Returns type ((block | Assign expression ';') | ';');
 //procedure: Procedure Identifier typeData (block | ';');
-//procedureCall: Call functionCall;
+procedureCall: Call functionCall;
 functionCall: functionName '(' (expression (',' expression)*)? ')';
 //
 //type: typeName (typeData | sizeData)?;
@@ -177,11 +179,7 @@ functionCall: functionName '(' (expression (',' expression)*)? ')';
 // ;
 //typeData: '(' (type sizeData? Identifier? (',' type sizeData? Identifier?)*)? ')';
 
-sizeData: '[' sizeDataValue (',' sizeDataValue)? ']';
-sizeDataValue
- : Multiplication
- | IntegerLiteral
- ;
+sizeData: '[' IntegerLiteral (',' IntegerLiteral)? ']';
 
 functionName
  : Identifier
@@ -223,7 +221,7 @@ LeftArrow: '<-';
 //And: 'and';
 //Or: 'or';
 //Xor: 'xor';
-//Call: 'call';
+Call: 'call';
 
 TypeSpecifier
  : 'var'

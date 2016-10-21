@@ -3,9 +3,7 @@ import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
@@ -17,7 +15,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, String> functionNameMappings = new HashMap<>();
 
-    private Scope<String> scope = new Scope<>(); // Name mangler
+    private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
 
     GazpreaCompiler() {
@@ -71,14 +69,38 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
 
-        List<String> argumentList = this.visitArgumentList(ctx.argumentList());
+        this.scope.pushScope();
+
+        List<Argument> argumentList = this.visitArgumentList(ctx.argumentList());
         String returnType = this.visitReturnType(ctx.returnType());
 
         this.currentFunction = new Function(functionName, argumentList, returnType);
 
+        argumentList.forEach(argument -> {
+            Variable var = new Variable(argument.getName(), this.mangleVariableName(argument.getName()), argument.getType());
+            this.scope.initVariable(argument.getName(), var);
+
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+            this.currentFunction.addLine(varLine.render());
+
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
+            this.currentFunction.addLine(initLine.render());
+
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+            this.currentFunction.addLine(initAssign.render());
+
+            ST varAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            varAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+            this.currentFunction.addLine(varAssign.render());
+        });
+
         if (ctx.functionBlock() != null) {
             this.visitFunctionBlock(ctx.functionBlock());
         }
+
+        this.scope.popScope();
 
         this.functions.put(functionName, this.currentFunction);
         this.currentFunction = null;
@@ -90,6 +112,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitProcedure(GazpreaParser.ProcedureContext ctx) {
         // TODO: FUNC + PROCEDURES COULD BE MISSING OR HAVE EXPTRA RETURNS
+        // TODO: FUNC + PROCEDURES HAVE MUTABLE ARGUMETNS BUT ONLY VARS GET PASSED OUT
         String functionName = ctx.Identifier().getText();
 
         if (this.functions.get(functionName) != null) {
@@ -99,15 +122,39 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
 
-        List<String> argumentList = this.visitArgumentList(ctx.argumentList());
+        this.scope.pushScope();
+
+        List<Argument> argumentList = this.visitArgumentList(ctx.argumentList());
         String returnType = this.visitReturnType(ctx.returnType());
 
         this.currentFunction = new Function(functionName, argumentList, returnType);
         this.currentFunction.setProcedure();
 
+        argumentList.forEach(argument -> {
+            Variable var = new Variable(argument.getName(), this.mangleVariableName(argument.getName()), argument.getType());
+            this.scope.initVariable(argument.getName(), var);
+
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+            this.currentFunction.addLine(varLine.render());
+
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
+            this.currentFunction.addLine(initLine.render());
+
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+            this.currentFunction.addLine(initAssign.render());
+
+            ST varAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            varAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+            this.currentFunction.addLine(varAssign.render());
+        });
+
         if (ctx.functionBlock() != null) {
             this.visitFunctionBlock(ctx.functionBlock());
         }
+
+        this.scope.popScope();
 
         this.functions.put(functionName, this.currentFunction);
         this.currentFunction = null;
@@ -117,7 +164,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public List<String> visitArgumentList(GazpreaParser.ArgumentListContext ctx) {
+    public List<Argument> visitArgumentList(GazpreaParser.ArgumentListContext ctx) {
         return ctx.argument()
                 .stream()
                 .map(this::visitArgument)
@@ -125,17 +172,21 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public String visitArgument(GazpreaParser.ArgumentContext ctx) {
-        return ctx.getText(); // for now, just return this text
+    public Argument visitArgument(GazpreaParser.ArgumentContext ctx) {
+        return new Argument(this.visitType(ctx.type()), ctx.Identifier().getText());
     }
 
     @Override
     public String visitReturnType(GazpreaParser.ReturnTypeContext ctx) {
-        return ctx.type().getText(); // for now, just return this text
+        if (ctx != null && ctx.type() != null) {
+            return ctx.type().getText(); // for now, just return this text
+        }
+        return "";
     }
 
     @Override
     public Object visitFunctionBlock(GazpreaParser.FunctionBlockContext ctx) {
+        this.currentFunction.define();
         if (ctx.block() != null) {
             this.visitBlock(ctx.block());
         }
@@ -171,7 +222,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitExpression(GazpreaParser.ExpressionContext ctx) {
         if (ctx.Identifier() != null) {
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            line.add("name", this.scope.getVariable(ctx.Identifier().getText()));
+            line.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
             this.currentFunction.addLine(line.render());
         }
         if (ctx.literal() != null) {
@@ -183,6 +234,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.functionCall() != null) {
             this.visitFunctionCall(ctx.functionCall());
         }
+//        if (ctx.expression() != null && ctx.expression().size() == 2) {
+//            String operator = "";
+//            if (ctx.Multiplication() != null) {
+//                operator = ctx.Multiplication().getText();
+//            }
+//
+//            ST operatorCall = null;
+//            switch (operator) {
+//                case "*": operatorCall = this.llvmGroup.getInstanceOf("multiplicationOperator");
+//            }
+//            if (operatorCall != null) {
+//                this.currentFunction.addLine(operatorCall.render());
+//            }
+//        }
         return null;
     }
 
@@ -207,6 +272,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitReturnStatement(GazpreaParser.ReturnStatementContext ctx) {
+        this.currentFunction.getArguments().forEach(argument -> {
+            if (argument.getType().getSpecifier().equals("var")) {
+                ST push = this.llvmGroup.getInstanceOf("pushVariable");
+                push.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+                this.currentFunction.addLine(push.render());
+            }
+        });
+
         if (ctx.expression() != null) {
             this.visitExpression(ctx.expression());
         }
@@ -218,17 +291,66 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitAssignment(GazpreaParser.AssignmentContext ctx) {
+        this.visitExpression(ctx.expression());
+        ST assign = this.llvmGroup.getInstanceOf("assignVariable");
+        assign.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
+        this.currentFunction.addLine(assign.render());
+        return null;
+    }
+
+    @Override
     public Object visitFunctionCall(GazpreaParser.FunctionCallContext ctx) {
+        List<GazpreaParser.ExpressionContext> arguments = ctx.expression();
+        Collections.reverse(arguments);
+        arguments.forEach(this::visitExpression);
+
         String functionName = this.visitFunctionName(ctx.functionName());
         ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
         String mangledFunctionName = this.functionNameMappings.get(functionName);
         functionCall.add("name", mangledFunctionName);
-        // TODO: Process arguments
         this.currentFunction.addLine(functionCall.render());
         return null;
     }
 
     @Override
+    public Object visitProcedureCall(GazpreaParser.ProcedureCallContext ctx) {
+        this.visitFunctionCall(ctx.functionCall());
+
+        String functionName = this.visitFunctionName(ctx.functionCall().functionName());
+        Function function = this.functions.get(functionName);
+        List<Argument> arguments = function.getArguments();
+        List<String> varNames = ctx
+                .functionCall()
+                .expression()
+                .stream()
+                .map(this::getVariableFromExpression)
+                .collect(Collectors.toList());
+        Collections.reverse(arguments);
+        Collections.reverse(varNames);
+
+        zip.zip(arguments, varNames, null, null).forEach(pair -> {
+            if (pair.left().getType().getSpecifier().equals("var")) {
+                ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
+                postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
+                this.currentFunction.addLine(postCallAssign.render());
+            }
+        });
+
+        return null;
+    }
+
+    private String getVariableFromExpression(GazpreaParser.ExpressionContext ctx) {
+        if (ctx.expression() != null /*&& ctx.expression().size() == 1*/) {
+            return getVariableFromExpression(ctx.expression()/*.get(0)*/);
+        }
+        if (ctx.Identifier() != null) {
+            return ctx.Identifier().getText();
+        }
+        return "";
+    }
+
+                                             @Override
     public String visitFunctionName(GazpreaParser.FunctionNameContext ctx) {
         return ctx.getText();
     }
@@ -245,19 +367,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.currentFunction.addLine(nullLine.render());
         }
 
-        String mangledName = "GazVar_" + variableName + "_" + this.scope.count();
-        if (currentFunction != null) {
-            mangledName = "%" + mangledName;
-        } else {
-            mangledName = "@" + mangledName;
-        }
-        this.scope.initVariable(variableName, mangledName);
-
-        Variable variable = new Variable(variableName, type);
-        this.variables.put(mangledName, variable);
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), type);
+        this.scope.initVariable(variableName, variable);
 
         ST varLine = this.llvmGroup.getInstanceOf("localVariable");
-        varLine.add("name", this.scope.getVariable(variableName));
+        varLine.add("name", this.scope.getVariable(variableName).getMangledName());
         this.currentFunction.addLine(varLine.render());
 
         if (variable.getType().getName().length() > 0) {
@@ -265,12 +379,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.currentFunction.addLine(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
-            initAssign.add("name", this.scope.getVariable(variableName));
+            initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
             this.currentFunction.addLine(initAssign.render());
         }
 
         ST line = this.llvmGroup.getInstanceOf("assignVariable");
-        line.add("name", this.scope.getVariable(variableName));
+        line.add("name", this.scope.getVariable(variableName).getMangledName());
         this.currentFunction.addLine(line.render());
 
         return null;
@@ -298,6 +412,16 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public String visitSizeData(GazpreaParser.SizeDataContext ctx) {
         return ctx.getText(); // for now, just return this text
+    }
+
+    private String mangleVariableName(String name) {
+        String mangledName = "GazVar_" + name + "_" + this.scope.count();
+        if (currentFunction != null) {
+            mangledName = "%" + mangledName;
+        } else {
+            mangledName = "@" + mangledName;
+        }
+        return mangledName;
     }
 }
 

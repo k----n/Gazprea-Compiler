@@ -1,0 +1,10 @@
+procedure print(integer x) {
+    x -> std_output();
+    return;
+}
+
+procedure main() returns integer {
+    integer x = 7;
+    call print(x);
+    return 0;
+}
