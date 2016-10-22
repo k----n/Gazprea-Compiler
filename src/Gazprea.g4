@@ -51,6 +51,7 @@ statement
  | streamStatement
  | assignment
  | declaration
+ | procedureCall
  ;
 
 declaration: type Identifier sizeData? (Assign expression)?;
@@ -122,6 +123,7 @@ typedef: Typedef type Identifier;
 //
 generator: '[' Identifier In expression (',' Identifier In expression)? '|' expression ']';
 filter: '[' Identifier In expression '&' expression ']';
+
 //
 //iterator: Loop Identifier In expression block;
 //infiniteLoop: Loop block;
@@ -134,7 +136,7 @@ filter: '[' Identifier In expression '&' expression ']';
 //
 //function: Function Identifier typeData Returns type ((block | Assign expression ';') | ';');
 //procedure: Procedure Identifier typeData (block | ';');
-//procedureCall: Call functionCall;
+procedureCall: Call functionCall;
 functionCall: functionName '(' (expression (',' expression)*)? ')';
 //
 //type: typeName (typeData | sizeData)?;
@@ -144,11 +146,7 @@ functionCall: functionName '(' (expression (',' expression)*)? ')';
 // ;
 //typeData: '(' (type sizeData? Identifier? (',' type sizeData? Identifier?)*)? ')';
 
-sizeData: '[' sizeDataValue (',' sizeDataValue)? ']';
-sizeDataValue
- : Multiplication
- | IntegerLiteral
- ;
+sizeData: '[' IntegerLiteral (',' IntegerLiteral)? ']';
 
 functionName
  : Identifier
@@ -186,6 +184,7 @@ Not: 'not';
 And: 'and';
 Or: 'or';
 Xor: 'xor';
+
 Call: 'call';
 
 TypeSpecifier

@@ -3,14 +3,14 @@ import java.util.List;
 
 class Function {
     private String name;
-    private List<String> arguments = new ArrayList<>();
+    private List<Argument> arguments = new ArrayList<>();
     private String returnType;
     private boolean defined = false;
     private boolean procedure = false;
 
     private List<String> lines = new ArrayList<>();
 
-    Function(String name, List<String> arguments, String returnType) {
+    Function(String name, List<Argument> arguments, String returnType) {
         this.name = name;
         this.arguments = arguments;
         this.returnType = returnType;
@@ -25,6 +25,7 @@ class Function {
     }
     boolean isProcedure() { return this.procedure; }
 
+    List<Argument> getArguments() { return this.arguments; }
     void addLine(String line) {
         this.lines.add(line);
     }

@@ -7,8 +7,10 @@ store i8* null, i8** <name>, align 8
 functionCall(name) ::= "call void @<name>()"
 function(name, code) ::= <<
 define void @GazFunc_<name>() #3 {
-<code :{ line | <line><\n>}>
+  <code :{ line | <line><\n>}>
 }
+
+
 >>
 functionReturn() ::= "ret void"
 
@@ -20,6 +22,8 @@ varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
 pushInteger(value) ::= "call void @_Z11pushIntegeri(i32 <value>)"
+
+multiplicationOperator() ::= "call void @_Z22multiplicationOperatorv()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

@@ -24,18 +24,6 @@ class Scope<T> {
         return true;
     }
 
-    boolean setVariable(String variableName, T value) {
-        List<Map<String, T>> scopesCopy = new ArrayList<>(this.scopes);
-        Collections.reverse(scopesCopy);
-        for (Map<String, T> scope : scopesCopy) {
-            if (scope.get(variableName) != null) {
-                scope.put(variableName, value);
-                return true;
-            }
-        }
-        return false;
-    }
-
     T getVariable(String variableName) {
         List<Map<String, T>> scopesCopy = new ArrayList<>(this.scopes);
         Collections.reverse(scopesCopy);
