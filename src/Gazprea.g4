@@ -58,7 +58,7 @@ declaration: type Identifier sizeData? (Assign expression)?;
 
 returnStatement: Return expression?;
 
-streamStatement: expression (LeftArrow | RightArrow) expression;
+streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
 
 // Expressions
 expression
@@ -69,26 +69,18 @@ expression
  | generator
  | filter
  | functionCall
- | expression Concatenation expression
- | expression Or expression
- | expression Xor expression
- | expression And expression
- | expression Equals expression
- | expression NotEqual expression
- | expression LessThan expression
- | expression LessThanOrEqual expression
- | expression GreaterThan expression
- | expression GreaterThanOrEqual expression
- | expression By expression
- | expression Sign expression
- | expression DotProduct expression
- | expression Multiplication expression
- | expression Division expression
- | expression Modulus expression
- | expression Exponentiation expression
- | Sign expression
- | Not expression
- | expression Interval expression
+ | <assoc=right> expression op=Concatenation expression
+ | expression op=(Or|Xor) expression
+ | expression op=And expression
+ | expression op=(Equals|NotEqual) expression
+ | expression op=(LessThan|LessThanOrEqual|GreaterThan|GreaterThanOrEqual) expression
+ | expression op=By expression
+ | expression op=Sign expression
+ | expression op=DotProduct expression
+ | expression op=(Multiplication|Division|Modulus) expression
+ | <assoc=right> expression op=Exponentiation expression
+ | <assoc=right> op=(Sign|Not) expression
+ | expression op=Interval expression
  | expression '[' expression ']'
  ;
 
