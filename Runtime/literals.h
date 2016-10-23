@@ -1,18 +1,22 @@
 #pragma once
 
-void pushNull() {
-	CalculatorValue nullValue = CalculatorValue(new Type(NullType), nullptr);
-	stack->push(&nullValue);
+#include "BuiltinType.h"
+
+void pushEmptyValue(BuiltinType builtinType) {
+	ValueType* type = new ValueType(builtinType);
+	Value* value = new Value(type, nullptr);
+	stack->push(value);
+	type->release();
+	value->release();
 }
 
-void pushIdentity() {
-	CalculatorValue identityValue = CalculatorValue(new Type(IdentityType), nullptr);
-	stack->push(&identityValue);
-}
+void pushNull()		{ pushEmptyValue(NullType);		}
+void pushIdentity()	{ pushEmptyValue(IdentityType);	}
 
 void pushInteger(int value) {
-	CalculatorValue integerValue = CalculatorValue(value);
-	stack->push(&integerValue);
+	Value* integerValue = new Value(value);
+	stack->push(integerValue);
+	integerValue->release();
 }
 
 void varInitPushNullInteger() {

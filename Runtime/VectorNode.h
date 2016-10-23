@@ -1,6 +1,6 @@
 #pragma once
 
-//struct VectorNode {
-//	VectorNode* next;
-//	void* value;
-//};
+struct VectorNode {
+	VectorNode* next;
+	Object* value;
+};
