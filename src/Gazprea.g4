@@ -54,64 +54,52 @@ statement
  | procedureCall
  ;
 
-assignment: Identifier Assign expression;
-
 declaration: type Identifier sizeData? (Assign expression)?;
 
 returnStatement: Return expression?;
 
-streamStatement: expression (LeftArrow | RightArrow) expression;
+streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
 
 // Expressions
 expression
  : Identifier
  | literal
  | '(' expression ')'
-// | As '<' type '>' '(' expression ')'
-// | generator
-// | filter
+ | As '<' type '>' '(' expression ')'
+ | generator
+ | filter
  | functionCall
-// | logicalOrExpression Concatenation primaryExpression
-// | bitwiseOrExpression Or logicalOrExpression
-// | bitwiseOrExpression Xor logicalOrExpression
-// | bitwiseAndExpression And bitwiseOrExpression
-// | equalityExpression Equals bitwiseAndExpression
-// | equalityExpression NotEqual bitwiseAndExpression
-// | comparisonExpression LessThan equalityExpression
-// | comparisonExpression LessThanOrEqual equalityExpression
-// | comparisonExpression GreaterThan equalityExpression
-// | comparisonExpression GreaterThanOrEqual equalityExpression
-// | byExpression By comparisonExpression
-// | addExpression Sign byExpression
-// | dotProductExpression DotProduct addExpression
-// | multExpression Multiplication dotProductExpression
-// | multExpression Division dotProductExpression
-// | multExpression Modulus dotProductExpression
-// | exponentiationExpression Exponentiation multExpression
-// | Sign unaryExpression
-// | Not unaryExpression
-// | unaryExpression Interval unaryExpression
-// | indexingExpression '[' expression ']'
+ | <assoc=right> expression op=Concatenation expression
+ | expression op=(Or|Xor) expression
+ | expression op=And expression
+ | expression op=(Equals|NotEqual) expression
+ | expression op=(LessThan|LessThanOrEqual|GreaterThan|GreaterThanOrEqual) expression
+ | expression op=By expression
+ | expression op=Sign expression
+ | expression op=DotProduct expression
+ | expression op=(Multiplication|Division|Modulus) expression
+ | <assoc=right> expression op=Exponentiation expression
+ | <assoc=right> op=(Sign|Not) expression
+ | expression op=Interval expression
+ | expression '[' expression ']'
  ;
 
 // Literals
 literal
  : NullLiteral
  | IdentityLiteral
-// | BooleanLiteral
+ | BooleanLiteral
  | Sign? IntegerLiteral
-// | RealLiteral
-// | CharacterLiteral
-// | vectorLiteral
-// | StringLiteral
-// | tupleLiteral
+ | RealLiteral
+ | CharacterLiteral
+ | vectorLiteral
+ | StringLiteral
+ | tupleLiteral
  ;
 
-//vectorLiteral: '[' (expression (',' expression)*)? ']';
+vectorLiteral: '[' (expression (',' expression)*)? ']';
 //
-//tupleLiteral: '(' expression (',' expression)* ')';
-
-
+tupleLiteral: '(' expression (',' expression)* ')';
 
 
 // Keywords
@@ -121,42 +109,13 @@ Procedure: 'procedure';
 Return: 'return';
 Returns: 'returns';
 
+assignment: Identifier Assign expression;
 
-//compilationUnit: translationUnit? EOF;
+typedef: Typedef type Identifier;
 //
-//translationUnit
-// : statement_
-// | translationUnit statement_
-// ;
-//
-//statement_
-// : statement ';'
-// | notStatement
-// ;
-//
-//statement
-// : declaration
-// | assignment
-// | typedef
-// | iterator
-// | infiniteLoop
-// | loop
-// | conditional
-// | Break
-// | Continue
-// | streamStatement
-// | procedureCall
-// ;
-//
-//notStatement
-// : function
-// | procedure
-// | block
-// ;
-//typedef: Typedef type Identifier;
-//
-//generator: '[' Identifier In expression (',' Identifier In expression)? '|' expression ']';
-//filter: '[' Identifier In expression '&' expression ']';
+generator: '[' Identifier In expression (',' Identifier In expression)? '|' expression ']';
+filter: '[' Identifier In expression '&' expression ']';
+
 //
 //iterator: Loop Identifier In expression block;
 //infiniteLoop: Loop block;
@@ -187,40 +146,37 @@ functionName
  ;
 
 Assign: '=';
-//Interval: '..';
-//Concatenation: '||';
-//DotProduct: '**';
-//Equals: '==';
-//NotEqual: '!=';
-//LessThan: '<';
-//GreaterThan: '>';
-//LessThanOrEqual: '<=';
-//GreaterThanOrEqual: '>=';
+Interval: '..';
+Concatenation: '||';
+DotProduct: '**';
+Equals: '==';
+NotEqual: '!=';
+LessThan: '<';
+GreaterThan: '>';
+LessThanOrEqual: '<=';
+GreaterThanOrEqual: '>=';
 Multiplication: '*';
-//Division: '/';
-//Modulus: '%';
-//Exponentiation: '^';
+Division: '/';
+Modulus: '%';
+Exponentiation: '^';
 RightArrow: '->';
 LeftArrow: '<-';
 
-//In: 'in';
-//By: 'by';
-//As: 'as';
-//Procedure: 'procedure';
-//Function: 'function';
-//Returns: 'returns';
-//Return: 'return';
-//Typedef: 'typedef';
-//If: 'if';
-//Else: 'else';
-//Loop: 'loop';
-//While: 'while';
-//Break: 'break';
-//Continue: 'continue';
-//Not: 'not';
-//And: 'and';
-//Or: 'or';
-//Xor: 'xor';
+In: 'in';
+By: 'by';
+As: 'as';
+Typedef: 'typedef';
+If: 'if';
+Else: 'else';
+Loop: 'loop';
+While: 'while';
+Break: 'break';
+Continue: 'continue';
+Not: 'not';
+And: 'and';
+Or: 'or';
+Xor: 'xor';
+
 Call: 'call';
 
 TypeSpecifier
@@ -250,14 +206,14 @@ BuiltinFunction
 // Literals
 NullLiteral: 'null';
 IdentityLiteral: 'identity';
-//BooleanLiteral: True | False;
+BooleanLiteral: True | False;
 IntegerLiteral: (Digit '_'*)+;
-//RealLiteral
-// : FractionalConstant ExponentPart?
-// | DigitSequence ExponentPart
-// ;
-//CharacterLiteral: '\'' Character '\'';
-//StringLiteral: '"' CharacterSequence '"';
+RealLiteral
+ : FractionalConstant ExponentPart?
+ | DigitSequence ExponentPart
+ ;
+CharacterLiteral: '\'' Character '\'';
+StringLiteral: '"' CharacterSequence '"';
 
 Sign: '+' | '-';
 
@@ -267,27 +223,27 @@ Identifier
  | '_' IdentifierCharacter+
  ;
 
-//fragment True: 'true';
-//fragment False: 'false';
-//fragment FractionalConstant
-// : DigitSequence? '.' DigitSequence
-// | DigitSequence '.'?
-// ;
-//fragment DigitSequence: Digit+;
-//fragment ExponentPart: [eE] Sign? DigitSequence;
-//fragment Character
-// : ~['\\\r\n]
-// | EscapeSequence
-// ;
-//fragment CharacterSequence: StringCharacter+;
-//fragment StringCharacter
-// : ~["\\\r\n]
-// | EscapeSequence
-// | '\\\n'
-// | '\\\r\n'
-// ;
-//fragment EscapeSequence: SimpleEscapeSequence;
-//fragment SimpleEscapeSequence: '\\' [abnrt\\'"0];
+fragment True: 'true';
+fragment False: 'false';
+fragment FractionalConstant
+ : DigitSequence? '.' DigitSequence
+ | DigitSequence '.'?
+ ;
+fragment DigitSequence: Digit+;
+fragment ExponentPart: [eE] Sign? DigitSequence;
+fragment Character
+ : ~['\\\r\n]
+ | EscapeSequence
+ ;
+fragment CharacterSequence: StringCharacter+;
+fragment StringCharacter
+ : ~["\\\r\n]
+ | EscapeSequence
+ | '\\\n'
+ | '\\\r\n'
+ ;
+fragment EscapeSequence: SimpleEscapeSequence;
+fragment SimpleEscapeSequence: '\\' [abnrt\\'"0];
 fragment NonDigit: [a-zA-Z];
 fragment Digit: [0-9];
 fragment IdentifierCharacter
