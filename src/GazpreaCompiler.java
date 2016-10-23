@@ -403,7 +403,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             name = this.visitTypeName(ctx.typeName());
         }
         boolean isVector = ctx.TypeType() != null;
-        return new Type(specifier, name, isVector);
+        return null; //new Type(specifier, name, isVector);
     }
 
     @Override

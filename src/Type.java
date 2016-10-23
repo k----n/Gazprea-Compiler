@@ -1,23 +1,40 @@
 public class Type {
+    public enum COLLECTION_TYPES {
+        MATRIX, VECTOR, TUPLE, INTERVAL
+    }
+    public enum TYPES {
+        BOOLEAN, INTEGER, REAL, CHARACTER, STRING
+    }
+
     private String specifier;
-    private String name;
-    private boolean vectorKeyword;
+    private COLLECTION_TYPES collection_type;
+    private TYPES type;
 
-    Type(String specifier, String name, boolean vectorKeyword) {
+    // collection type variables
+    Type(String specifier, TYPES type, COLLECTION_TYPES collection_type) {
         this.specifier = specifier;
-        this.name = name;
-        this.vectorKeyword = vectorKeyword;
+        this.type = type;
+        this.collection_type = collection_type;
     }
 
-    String getSpecifier() {
-        return this.specifier;
+    // non collection type variables
+    Type(String specifier, TYPES type) {
+        this.specifier = specifier;
+        this.type = type;
+        this.collection_type = null;
     }
 
-    String getName() {
-        return this.name;
+    public String getSpecifier() {
+        return specifier;
     }
 
-    boolean isVectorKeyword() {
-        return this.vectorKeyword;
+    public COLLECTION_TYPES getCollection_type() {
+        return collection_type;
     }
+
+    public TYPES getType() {
+        return type;
+    }
+
+
 }
