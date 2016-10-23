@@ -10,8 +10,10 @@ bool shouldPrintNewLine = true;
 //	}
 //}
 
-void printInteger(CalculatorValue* value) {
-	printf("%d", *value->integerValue());
+void printInteger(Value* value) {
+	int* intValue_ptr = value->integerValue();
+	printf("%d", *intValue_ptr);
+	delete intValue_ptr;
 }
 
 //void printReal(CalculatorValue* value) {
@@ -50,18 +52,27 @@ void printInteger(CalculatorValue* value) {
 //}
 
 void printValue() {
-	CalculatorValue* value = stack->pop();
-	switch (value->getType()->getType()) {
-		case NullType:
-		case IdentityType:
-			printf("INVALID PRINT CALL\n");
-			exit(1);
+	Value* value = stack->pop();
+	ValueType* valueType = value->getType();
+	switch (valueType->getType()) {
+		case NullType:		printf("Cannot print NullType\n");		exit(1);
+		case IdentityType:	printf("Cannot print IdentityType\n");	exit(1);
+		case IntegerType:	printInteger(value);					break;
+		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
+		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
+		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);
+	}
+//	switch (value->getType()->getType()) {
+//		case NullType:
+//		case IdentityType:
+//			printf("INVALID PRINT CALL\n");
+//			exit(1);
 //		case BooleanType:
 //			printBoolean(value);
 //			break;
-		case IntegerType:
-			printInteger(value);
-			break;
+//		case IntegerType:
+//			printInteger(value);
+//			break;
 //		case RealType:
 //			printReal(value);
 //			break;
@@ -84,14 +95,15 @@ void printValue() {
 //		case TupleType:
 //			printf("Cannot print Tuple\n");
 //			exit(1);
-		case StandardOut:
-		case StandardIn:
+//		case StandardOut:
+//		case StandardIn:
 //		case VectorStart:
-		case Lvalue:
-			printf("INVALID PRINT CALL\n");
-			exit(1);
-	}
-	delete value;
+//		case Lvalue:
+//			printf("INVALID PRINT CALL\n");
+//			exit(1);
+//	}
+	valueType->release();
+	value->release();
 	if (shouldPrintNewLine) {
 		printf("\n");
 	}

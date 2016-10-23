@@ -274,7 +274,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitReturnStatement(GazpreaParser.ReturnStatementContext ctx) {
         this.currentFunction.getArguments().forEach(argument -> {
             if (argument.getType().getSpecifier().equals("var")) {
-                ST push = this.llvmGroup.getInstanceOf("pushVariable");
+                ST push = this.llvmGroup.getInstanceOf("pushVariableValue");
                 push.add("name", this.scope.getVariable(argument.getName()).getMangledName());
                 this.currentFunction.addLine(push.render());
             }

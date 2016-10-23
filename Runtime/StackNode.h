@@ -2,5 +2,5 @@
 
 struct StackNode {
 	StackNode* next;
-	void* value;
+	Object* value;
 };

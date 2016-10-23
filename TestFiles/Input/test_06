@@ -1,0 +1,11 @@
+procedure setTo5(var integer x) {
+    x = 5;
+    return;
+}
+
+procedure main() returns integer {
+    integer x = 7;
+    call setTo5(x);
+    x -> std_output();
+    return 0;
+}

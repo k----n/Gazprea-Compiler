@@ -15,6 +15,7 @@ define void @GazFunc_<name>() #3 {
 functionReturn() ::= "ret void"
 
 pushVariable(name) ::= "call void @_Z4pushPPv(i8** <name>)"
+pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
 assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"
 
 varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"

@@ -1,17 +1,27 @@
 #pragma once
 
 void push(void** variable) {
-	CalculatorValue value = CalculatorValue(new Type(Lvalue), variable);
-	stack->push(&value);
+	ValueType* type = new ValueType(Lvalue);
+	Value* value = new Value(type, variable);
+	stack->push(value);
+	type->release();
+	value->release();
+}
+
+void pushVariableValue(void** variable) {
+	Value* value = *(Value**)variable;
+	stack->push(value);
+	value->release();
 }
 
 void assign(void** variable) {
-	CalculatorValue** var = (CalculatorValue**)variable;
-	CalculatorValue* rvalue = stack->pop();
+	Value** var = (Value**)variable;
+	Value* rvalue = stack->pop();
 	
 	// Transform the rvalue to the default value when using `null`
 	if (rvalue->isNull()) {
-		delete rvalue;
+		rvalue->release();
+		ValueType* rType = nullptr;
 		switch ((*var)->getType()->getType()) {
 			case NullType:
 			case IdentityType:
@@ -19,13 +29,17 @@ void assign(void** variable) {
 				exit(1);
 				break;
 			case IntegerType:
-				rvalue = new CalculatorValue(0);
+				rvalue = new Value(0);
 				break;
 			case StandardOut:
-				rvalue = new CalculatorValue(new Type(StandardOut), nullptr);
+				rType = new ValueType(StandardOut);
+				rvalue = new Value(rType, nullptr);
+				rType->release();
 				break;
 			case StandardIn:
-				rvalue = new CalculatorValue(new Type(StandardIn), nullptr);
+				rType = new ValueType(StandardIn);
+				rvalue = new Value(rType, nullptr);
+				rType->release();
 				break;
 			case Lvalue:
 				printf("Cannot lvalue");
@@ -33,8 +47,10 @@ void assign(void** variable) {
 				break;
 		}
 	}
+	// Transform the rvalue to the default value when using `identity`
 	if (rvalue->isIdentity()) {
-		delete rvalue;
+		rvalue->release();
+		ValueType* rType = nullptr;
 		switch ((*var)->getType()->getType()) {
 			case NullType:
 			case IdentityType:
@@ -42,13 +58,17 @@ void assign(void** variable) {
 				exit(1);
 				break;
 			case IntegerType:
-				rvalue = new CalculatorValue(1);
+				rvalue = new Value(1);
 				break;
 			case StandardOut:
-				rvalue = new CalculatorValue(new Type(StandardOut), nullptr);
+				rType = new ValueType(StandardOut);
+				rvalue = new Value(rType, nullptr);
+				rType->release();
 				break;
 			case StandardIn:
-				rvalue = new CalculatorValue(new Type(StandardIn), nullptr);
+				rType = new ValueType(StandardIn);
+				rvalue = new Value(rType, nullptr);
+				rType->release();
 				break;
 			case Lvalue:
 				printf("Cannot lvalue");
@@ -59,6 +79,12 @@ void assign(void** variable) {
 	
 	// TODO: PROMOTION
 	
-	if (*var != nullptr) { delete *var; }
-	*var = rvalue;
+	if (*var != nullptr) { (*var)->release(); }
+	if (rvalue->isLvalue()) {
+		Value* newValue = rvalue->lvalue();
+		newValue->retain();
+		*var = newValue;
+	} else {
+		*var = rvalue;
+	}
 }

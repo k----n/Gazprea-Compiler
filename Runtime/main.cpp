@@ -1,34 +1,42 @@
-#include "allowedImports.h"
-
-#include <stdlib.h>
-
 #include "nullptr.h"
 
-#include "StackNode.h"
-#include "Stack.h"
-
-#include "VectorNode.h"
-#include "Vector.h"
-
-#include "Type.h"
-
-#include "CalculatorValue.h"
-
-#include "globals.h"
-#include "types.h"
-#include "functions.h"
-#include "builtins.h"
-
-#include "StackImp.h"
-#include "TypeImp.h"
-#include "VectorImp.h"
-#include "CalculatorValueImp.h"
-
+#include "declarations.h"
 #include "literals.h"
-
-#pragma mark Vectors
-
+#include "builtins.h"
 #include "operators.h"
 #include "variables.h"
-#include "print.h"
-#include "main.h"
+
+#ifdef LLVM_BUILD
+asm("REPLACE_ME-GLOBAL_VARIABLES");
+asm("REPLACE_ME-FUNCTIONS");
+#endif
+
+Stack<Value>* stack;
+
+int main(int argc, const char * argv[]) {
+	stack = new Stack<Value>();
+	
+#ifdef LLVM_BUILD
+	asm("REPLACE_ME-GLOBAL_INITS");
+	asm("REPLACE_ME-CALL_DEFINED_MAIN");
+#endif
+
+#ifndef LLVM_BUILD
+	
+	
+	
+	pushInteger(0); // Push return code
+#endif
+	
+	// Pop return value from the stack
+	Value* value = stack->pop();
+	int* returnValue_ptr = value->integerValue();
+	int returnValue = *returnValue_ptr;
+	delete returnValue_ptr;
+	value->release();
+	
+	// Release Globals
+	stack->release();
+	
+	return returnValue;
+}
