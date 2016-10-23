@@ -1,4 +1,10 @@
+import java.util.ArrayList;
+
 public class Type {
+    public enum SPECIFIERS {
+        VAR, CONST
+    }
+
     public enum COLLECTION_TYPES {
         MATRIX, VECTOR, TUPLE, INTERVAL
     }
@@ -6,25 +12,45 @@ public class Type {
         BOOLEAN, INTEGER, REAL, CHARACTER, STRING
     }
 
-    private String specifier;
+    public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
+            strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const";
+
+    private SPECIFIERS specifier;
     private COLLECTION_TYPES collection_type;
     private TYPES type;
 
-    // collection type variables
-    Type(String specifier, TYPES type, COLLECTION_TYPES collection_type) {
+    // special augmentation for tuple types
+    private ArrayList<Type> tupleTypes;
+
+
+    // TODO: May need a refactor based on how structs (tuples) will be defined in C
+    // collection type tuple constructor
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, ArrayList<Type> tupleTypes) {
+        this(specifier, type, collection_type);
+        this.tupleTypes = tupleTypes;
+    }
+
+    // non collection tuple constructor
+    Type(SPECIFIERS specifier, TYPES type, ArrayList<Type> tupleTypes) {
+        this(specifier, type, null, tupleTypes);
+    }
+
+    // collection type variables constructor
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type) {
         this.specifier = specifier;
         this.type = type;
         this.collection_type = collection_type;
+        this.tupleTypes = null;
     }
 
-    // non collection type variables
-    Type(String specifier, TYPES type) {
+    // non collection type variables constructor
+    Type(SPECIFIERS specifier, TYPES type) {
         this.specifier = specifier;
         this.type = type;
         this.collection_type = null;
     }
 
-    public String getSpecifier() {
+    public SPECIFIERS getSpecifier() {
         return specifier;
     }
 
@@ -39,7 +65,7 @@ public class Type {
     public String getTypeLLVMString() {
         switch(type) {
             case BOOLEAN:
-                return "boolean";
+                return strBOOLEAN;
             case INTEGER:
                 return "integer";
             case REAL:
@@ -48,6 +74,8 @@ public class Type {
                 return "character";
             case STRING:
                 return "string";
+            default:
+                return "";
         }
     }
 }
