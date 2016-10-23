@@ -220,8 +220,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitExpression(GazpreaParser.ExpressionContext ctx) {
-        // TODO: HANDLE CASE WHERE THERE ARE MULTIPLE EXPR vs. A SINGLE ONE
-
         if (ctx.Identifier() != null) {
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
             line.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
@@ -230,7 +228,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.literal() != null) {
             this.visitLiteral(ctx.literal());
         }
-        if (ctx.expression() != null) {
+        if (ctx.expression() != null && ctx.expression().size() == 1) {
             this.visitExpression(ctx.expression(0));
         }
         if (ctx.functionCall() != null) {
@@ -343,8 +341,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     private String getVariableFromExpression(GazpreaParser.ExpressionContext ctx) {
-        if (ctx.expression() != null /*&& ctx.expression().size() == 1*/) {
-            return getVariableFromExpression(ctx.expression(0)/*.get(0)*/);
+        if (ctx.expression() != null && ctx.expression().size() == 1) {
+            return getVariableFromExpression(ctx.expression(0));
         }
         if (ctx.Identifier() != null) {
             return ctx.Identifier().getText();
