@@ -1,0 +1,10 @@
+function f(integer x) returns integer;
+
+procedure main() returns integer {
+    const out = std_output();
+    integer y = f();
+    y -> out;
+    return 0;
+}
+
+function f() returns integer = 7;
