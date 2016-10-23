@@ -36,5 +36,18 @@ public class Type {
         return type;
     }
 
-
+    public String getTypeLLVMString() {
+        switch(type) {
+            case BOOLEAN:
+                return "boolean";
+            case INTEGER:
+                return "integer";
+            case REAL:
+                return "real";
+            case CHARACTER:
+                return "character";
+            case STRING:
+                return "string";
+        }
+    }
 }

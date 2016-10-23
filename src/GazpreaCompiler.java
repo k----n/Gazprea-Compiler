@@ -84,7 +84,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.currentFunction.addLine(varLine.render());
 
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
             this.currentFunction.addLine(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
@@ -138,7 +138,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.currentFunction.addLine(varLine.render());
 
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
             this.currentFunction.addLine(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
