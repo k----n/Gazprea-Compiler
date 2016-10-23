@@ -1,0 +1,13 @@
+const integer z = 13;
+
+procedure setToZ(var integer x) {
+    x = z;
+    return;
+}
+
+procedure main() returns integer {
+    var integer x = 7;
+    call setToZ(x);
+    x -> std_output();
+    return 0;
+}

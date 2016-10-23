@@ -12,6 +12,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, Function> functions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
+    private List<String> topLevelCode = new ArrayList<>();
 
     private Map<String, String> functionNameMappings = new HashMap<>();
 
@@ -32,6 +33,16 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ctx.topLevelCode().forEach(this::visitTopLevelCode);
         this.scope.popScope();
 
+        List<String> globalVariables = this.variables
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    ST varLine = this.llvmGroup.getInstanceOf("globalVariable");
+                    varLine.add("name", entry.getValue().getMangledName());
+                    return varLine.render();
+                })
+                .collect(Collectors.toList());
+
         List<String> functionIR = this.functions
                 .entrySet()
                 .stream()
@@ -44,9 +55,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 .collect(Collectors.toList());
 
         ST program = this.runtimeGroup.getInstanceOf("runtime");
-        program.add("variables", "");
+        program.add("variables", globalVariables);
         program.add("functions", functionIR);
-        program.add("code", "");
+        program.add("code", this.topLevelCode);
         String code = program.render();
 
         System.out.println(code);
@@ -82,18 +93,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             ST varLine = this.llvmGroup.getInstanceOf("localVariable");
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-            this.currentFunction.addLine(varLine.render());
+            this.addCode(varLine.render());
 
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
-            this.currentFunction.addLine(initLine.render());
+            this.addCode(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-            this.currentFunction.addLine(initAssign.render());
+            this.addCode(initAssign.render());
 
             ST varAssign = this.llvmGroup.getInstanceOf("assignVariable");
             varAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-            this.currentFunction.addLine(varAssign.render());
+            this.addCode(varAssign.render());
         });
 
         if (ctx.functionBlock() != null) {
@@ -136,18 +147,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             ST varLine = this.llvmGroup.getInstanceOf("localVariable");
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-            this.currentFunction.addLine(varLine.render());
+            this.addCode(varLine.render());
 
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
-            this.currentFunction.addLine(initLine.render());
+            this.addCode(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-            this.currentFunction.addLine(initAssign.render());
+            this.addCode(initAssign.render());
 
             ST varAssign = this.llvmGroup.getInstanceOf("assignVariable");
             varAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-            this.currentFunction.addLine(varAssign.render());
+            this.addCode(varAssign.render());
         });
 
         if (ctx.functionBlock() != null) {
@@ -209,11 +220,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ctx.expression().forEach(this::visitExpression);
         if (ctx.LeftArrow() != null) {
             ST line = this.llvmGroup.getInstanceOf("leftArrowOperator");
-            this.currentFunction.addLine(line.render());
+            this.addCode(line.render());
         }
         if (ctx.RightArrow() != null) {
             ST line = this.llvmGroup.getInstanceOf("rightArrowOperator");
-            this.currentFunction.addLine(line.render());
+            this.addCode(line.render());
         }
         return null;
     }
@@ -223,7 +234,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.Identifier() != null) {
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
             line.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
-            this.currentFunction.addLine(line.render());
+            this.addCode(line.render());
         }
         if (ctx.literal() != null) {
             this.visitLiteral(ctx.literal());
@@ -245,7 +256,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 //                case "*": operatorCall = this.llvmGroup.getInstanceOf("multiplicationOperator");
 //            }
 //            if (operatorCall != null) {
-//                this.currentFunction.addLine(operatorCall.render());
+//                this.addCode(operatorCall.render());
 //            }
 //        }
         return null;
@@ -265,7 +276,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             line.add("value", ctx.getText());
         }
         if (line != null) {
-            this.currentFunction.addLine(line.render());
+            this.addCode(line.render());
         }
         return null;
     }
@@ -276,7 +287,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (argument.getType().getSpecifier().equals("var")) {
                 ST push = this.llvmGroup.getInstanceOf("pushVariableValue");
                 push.add("name", this.scope.getVariable(argument.getName()).getMangledName());
-                this.currentFunction.addLine(push.render());
+                this.addCode(push.render());
             }
         });
 
@@ -285,7 +296,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
 
         ST line = this.llvmGroup.getInstanceOf("functionReturn");
-        this.currentFunction.addLine(line.render());
+        this.addCode(line.render());
 
         return null;
     }
@@ -295,7 +306,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.visitExpression(ctx.expression());
         ST assign = this.llvmGroup.getInstanceOf("assignVariable");
         assign.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
-        this.currentFunction.addLine(assign.render());
+        this.addCode(assign.render());
         return null;
     }
 
@@ -309,7 +320,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
         String mangledFunctionName = this.functionNameMappings.get(functionName);
         functionCall.add("name", mangledFunctionName);
-        this.currentFunction.addLine(functionCall.render());
+        this.addCode(functionCall.render());
         return null;
     }
 
@@ -333,7 +344,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (pair.left().getType().getSpecifier().equals("var")) {
                 ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
                 postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
-                this.currentFunction.addLine(postCallAssign.render());
+                this.addCode(postCallAssign.render());
             }
         });
 
@@ -350,7 +361,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return "";
     }
 
-                                             @Override
+    @Override
     public String visitFunctionName(GazpreaParser.FunctionNameContext ctx) {
         return ctx.getText();
     }
@@ -364,28 +375,32 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.visitExpression(ctx.expression());
         } else {
             ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
-            this.currentFunction.addLine(nullLine.render());
+            this.addCode(nullLine.render());
         }
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), type);
         this.scope.initVariable(variableName, variable);
 
-        ST varLine = this.llvmGroup.getInstanceOf("localVariable");
-        varLine.add("name", this.scope.getVariable(variableName).getMangledName());
-        this.currentFunction.addLine(varLine.render());
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", this.scope.getVariable(variableName).getMangledName());
+            this.currentFunction.addLine(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
 
         if (variable.getType().getName().length() > 0) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getName());
-            this.currentFunction.addLine(initLine.render());
+            this.addCode(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
-            this.currentFunction.addLine(initAssign.render());
+            this.addCode(initAssign.render());
         }
 
         ST line = this.llvmGroup.getInstanceOf("assignVariable");
         line.add("name", this.scope.getVariable(variableName).getMangledName());
-        this.currentFunction.addLine(line.render());
+        this.addCode(line.render());
 
         return null;
     }
@@ -422,6 +437,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             mangledName = "@" + mangledName;
         }
         return mangledName;
+    }
+
+    private void addCode(String code) {
+        if (this.currentFunction != null) {
+            this.currentFunction.addLine(code);
+        } else {
+            this.topLevelCode.add(code);
+        }
     }
 }
 
