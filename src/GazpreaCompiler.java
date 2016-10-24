@@ -104,7 +104,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.scope.pushScope();
 
         List<Argument> argumentList = this.visitArgumentList(argumentListContext);
-        String returnType = this.visitReturnType(returnTypeContext);
+        Type returnType = this.visitReturnType(returnTypeContext);
 
         this.currentFunction = new Function(name, argumentList, returnType);
         if (isProcedure) { this.currentFunction.setProcedure(); }
@@ -154,11 +154,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public String visitReturnType(GazpreaParser.ReturnTypeContext ctx) {
+    public Type visitReturnType(GazpreaParser.ReturnTypeContext ctx) {
         if (ctx != null && ctx.type() != null) {
-            return ctx.type().getText(); // for now, just return this text
+            return visitType(ctx.type());
+        } else {
+            return new Type(null, Type.TYPES.VOID);
         }
-        return "";
     }
 
     @Override
@@ -200,17 +201,42 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
         if (ctx.Identifier() != null) {
+            // TODO: This should unwrap the variable and put it on the stack and return the type
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            line.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
+            Variable variable = this.scope.getVariable(ctx.Identifier().getText());
+            line.add("name", variable.getMangledName());
             this.addCode(line.render());
+
+            return this.scope.getVariable(ctx.Identifier().getText()).getType();
         }
-        if (ctx.literal() != null) {
-            this.visitLiteral(ctx.literal());
+        else if (ctx.literal() != null) {
+            return this.visitLiteral(ctx.literal());
         }
-        if (ctx.expression() != null && ctx.expression().size() == 1) {
-            this.visitExpression(ctx.expression(0));
+        else if (ctx.expression() != null && ctx.expression().size() == 1) {
+            // CASE: where there is only one expression in the expression statement
+            if (ctx.As() == null && ctx.Sign() == null) {
+                // CASE: parenthesis
+                return this.visitExpression(ctx.expression(0));
+            } else if (ctx.As() == null) {
+                // CASE: + or - expression
+                Type type = this.visitExpression(ctx.expression(0));
+
+                if (ctx.Sign().getText() == "-") {
+                    // TODO: call function that negatizes the expression
+                }
+
+                return type;
+            } else {
+                // CASE: casting case
+                Type originalType = this.visitExpression(ctx.expression(0));
+                Type newType = this.visitType(ctx.type());
+
+                // TODO: get respective casting function
+
+                return newType;
+            }
         }
-        if (ctx.functionCall() != null) {
+        else if (ctx.functionCall() != null) {
             this.visitFunctionCall(ctx.functionCall());
         }
 //        if (ctx.expression() != null && ctx.expression().size() == 2) {
@@ -231,22 +257,50 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitLiteral(GazpreaParser.LiteralContext ctx) {
+    // pushes the literal onto the stack and returns the type of the literal
+    public Type visitLiteral(GazpreaParser.LiteralContext ctx) {
         ST line = null;
+        Type.TYPES retType = null;
+        Type.COLLECTION_TYPES retCollectionType = null;
+
         if (ctx.NullLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushNull");
-        }
-        if (ctx.IdentityLiteral() != null) {
+            retType = Type.TYPES.NULL;
+        } else if (ctx.IdentityLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushIdentity");
-        }
-        if (ctx.IntegerLiteral() != null) {
+            retType = Type.TYPES.IDENTITY;
+        } else if (ctx.IntegerLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushInteger");
             line.add("value", ctx.getText());
+            retType = Type.TYPES.INTEGER;
+        } else if (ctx.BooleanLiteral() != null) {
+            retType = Type.TYPES.BOOLEAN;
+        } else if (ctx.CharacterLiteral() != null) {
+            retType = Type.TYPES.CHARACTER;
+        } else if (ctx.StringLiteral() != null) {
+            retType = Type.TYPES.STRING;
+        } else if (ctx.RealLiteral() != null) {
+            retType = Type.TYPES.REAL;
+        } else if (ctx.tupleLiteral() != null) {
+            // TODO: handle tuple types
+        } else if (ctx.vectorLiteral() != null) {
+            Type vectorType = this.visitVectorLiteral(ctx.vectorLiteral());
+            retCollectionType = Type.COLLECTION_TYPES.VECTOR;
+            retType = vectorType.getType();
         }
         if (line != null) {
             this.addCode(line.render());
         }
-        return null;
+
+        // TODO: literals are considered constant types
+        return new Type(Type.SPECIFIERS.CONST, retType, retCollectionType);
+    }
+
+    @Override
+    public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
+        // TODO: Implement this function
+        // return super.visitVectorLiteral(ctx);
+        return new Type(null, null, null, null);
     }
 
     @Override
@@ -289,6 +343,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         String mangledFunctionName = this.functionNameMappings.get(functionName);
         functionCall.add("name", mangledFunctionName);
         this.addCode(functionCall.render());
+
         return null;
     }
 
@@ -361,10 +416,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.variables.put(variableName, variable);
         }
 
-        if (variable.getType().getTypeLLVMString().length() > 0) {
+        if (variable.getType().getType() != Type.TYPES.NULL) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
-            
+
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
             this.addCode(initAssign.render());
@@ -379,7 +434,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitType(GazpreaParser.TypeContext ctx) {
-        Type.TYPES typeName = Type.TYPES.UNKNOWN;
+        Type.TYPES typeName = Type.TYPES.NULL;
 
         if (ctx.typeName() != null) {
             switch(ctx.typeName().getText()) {
@@ -404,9 +459,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.TypeSpecifier() != null) {
             switch (ctx.TypeSpecifier().getText()) {
                 case Type.strVAR:
-                    specifier = Type.SPECIFIERS.VAR; break;
+                    specifier = Type.SPECIFIERS.VAR;
+                    break;
                 case Type.strCONST:
-                    specifier= Type.SPECIFIERS.CONST; break;
+                    specifier= Type.SPECIFIERS.CONST;
+                    break;
                 default:
                     throw(new RuntimeException("Specifier does not exist"));
             }
@@ -417,13 +474,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.TypeType() != null) {
             switch(ctx.TypeType().getText()){
                 case Type.strINTERVAL:
-                    typeType = Type.COLLECTION_TYPES.INTERVAL; break;
+                    typeType = Type.COLLECTION_TYPES.INTERVAL;
+                    break;
                 case Type.strVECTOR:
-                    typeType = Type.COLLECTION_TYPES.VECTOR; break;
+                    typeType = Type.COLLECTION_TYPES.VECTOR;
+                    break;
                 case Type.strTUPLE:
-                    typeType = Type.COLLECTION_TYPES.TUPLE; break;
+                    typeType = Type.COLLECTION_TYPES.TUPLE;
+                    break;
                 case Type.strMATRIX:
-                    typeType = Type.COLLECTION_TYPES.MATRIX; break;
+                    typeType = Type.COLLECTION_TYPES.MATRIX;
+                    break;
                 default:
                     throw(new RuntimeException("Type type does not exist"));
             }

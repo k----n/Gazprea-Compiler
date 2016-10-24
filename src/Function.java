@@ -4,16 +4,20 @@ import java.util.List;
 class Function {
     private String name;
     private List<Argument> arguments = new ArrayList<>();
-    private String returnType;
+    private Type returnType;
     private boolean defined = false;
     private boolean procedure = false;
 
     private List<String> lines = new ArrayList<>();
 
-    Function(String name, List<Argument> arguments, String returnType) {
+    Function(String name, List<Argument> arguments, Type returnType) {
         this.name = name;
         this.arguments = arguments;
         this.returnType = returnType;
+    }
+
+    Type getReturnType() {
+        return this.returnType;
     }
 
     void define() {

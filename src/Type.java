@@ -9,11 +9,12 @@ public class Type {
         NONE, MATRIX, VECTOR, TUPLE, INTERVAL
     }
     public enum TYPES {
-        UNKNOWN, BOOLEAN, INTEGER, REAL, CHARACTER, STRING
+        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
-            strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const";
+            strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const",
+            strNULL="null", strIDENTITY="identity", strVOID="void";
 
     private SPECIFIERS specifier;
     private COLLECTION_TYPES collection_type;
@@ -69,7 +70,55 @@ public class Type {
             case REAL:      return strREAL;
             case CHARACTER: return strCHARACTER;
             case STRING:    return strSTRING;
+            case NULL:      return "null";
+            case IDENTITY:  return "identity";
             default:        return "";
         }
+    }
+
+    @Override
+    // compares types by 2 main components
+    // TODO: consider doing tuple types comparison as well
+    public boolean equals(Object obj) {
+        if (! (obj instanceof Type) ) {
+            return false;
+        }
+
+        Type type = (Type) obj;
+
+        if (this.type == null && type.getType() == null) {
+            // continue
+        } else if (this.type == null || type.getType() == null) {
+            return false;
+        } else if (this.type.equals(type.getType())) {
+            // continue
+        } else {
+            return false;
+        }
+
+        /*
+        if (this.specifier == null && type.getSpecifier() == null) {
+            // continue
+        } else if (this.specifier == null || type.getSpecifier() == null) {
+            return false;
+        } else if (this.specifier.equals(type.getSpecifier())) {
+            // continue
+        } else {
+            return false;
+        }
+        */
+
+
+        if (this.collection_type == null && type.getCollection_type() == null) {
+            // continue
+        } else if (this.collection_type == null || type.getCollection_type() == null) {
+            return false;
+        } else if (this.collection_type.equals(type.getCollection_type())) {
+            // continue
+        } else {
+            return false;
+        }
+
+        return true;
     }
 }
