@@ -9,11 +9,12 @@ public class Type {
         MATRIX, VECTOR, TUPLE, INTERVAL
     }
     public enum TYPES {
-        BOOLEAN, INTEGER, REAL, CHARACTER, STRING
+        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
-            strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const";
+            strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const",
+            strNULL="null", strIDENTITY="identity";
 
     private SPECIFIERS specifier;
     private COLLECTION_TYPES collection_type;
@@ -74,13 +75,17 @@ public class Type {
                 return "character";
             case STRING:
                 return "string";
+            case NULL:
+                return "null";
+            case IDENTITY:
+                return "identity";
             default:
                 return "";
         }
     }
 
     @Override
-    // compares types by 3 main components
+    // compares types by 2 main components
     // TODO: consider doing tuple types comparison as well
     public boolean equals(Object obj) {
         if (! (obj instanceof Type) ) {
@@ -99,6 +104,7 @@ public class Type {
             return false;
         }
 
+        /*
         if (this.specifier == null && type.getSpecifier() == null) {
             // continue
         } else if (this.specifier == null || type.getSpecifier() == null) {
@@ -108,6 +114,8 @@ public class Type {
         } else {
             return false;
         }
+        */
+
 
         if (this.collection_type == null && type.getCollection_type() == null) {
             // continue

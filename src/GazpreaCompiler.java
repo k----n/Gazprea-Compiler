@@ -1,3 +1,4 @@
+import com.sun.org.apache.xalan.internal.extensions.ExpressionContext;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -265,20 +266,47 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitLiteral(GazpreaParser.LiteralContext ctx) {
         ST line = null;
+        Type.TYPES type = null;
+        Type.COLLECTION_TYPES collection_type = null;
+
         if (ctx.NullLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushNull");
-        }
-        if (ctx.IdentityLiteral() != null) {
+            type = Type.TYPES.NULL;
+        } else if (ctx.IdentityLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushIdentity");
-        }
-        if (ctx.IntegerLiteral() != null) {
+            type = Type.TYPES.IDENTITY;
+        } else if (ctx.IntegerLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushInteger");
             line.add("value", ctx.getText());
+            type = Type.TYPES.INTEGER;
+        } else if (ctx.BooleanLiteral() != null) {
+            type = Type.TYPES.BOOLEAN;
+        } else if (ctx.CharacterLiteral() != null) {
+            type = Type.TYPES.CHARACTER;
+        } else if (ctx.StringLiteral() != null) {
+            type = Type.TYPES.STRING;
+        } else if (ctx.RealLiteral() != null) {
+            type = Type.TYPES.REAL;
+        } else if (ctx.tupleLiteral() != null) {
+            // TODO: handle tuple types
+        } else if (ctx.vectorLiteral() != null) {
+            Type vectorType = this.visitVectorLiteral(ctx.vectorLiteral());
+            collection_type = Type.COLLECTION_TYPES.VECTOR;
+            type = vectorType.getType();
         }
         if (line != null) {
             this.addCode(line.render());
         }
-        return null;
+
+        // TODO: literals are considered constant types
+        return new Type(Type.SPECIFIERS.CONST, type, collection_type);
+    }
+
+    @Override
+    public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
+        // TODO: Implement this function
+        // return super.visitVectorLiteral(ctx);
+        return new Type(null, null, null, null);
     }
 
     @Override
