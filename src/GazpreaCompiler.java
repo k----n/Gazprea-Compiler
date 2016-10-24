@@ -84,7 +84,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.scope.pushScope();
 
         List<Argument> argumentList = this.visitArgumentList(ctx.argumentList());
-        String returnType = this.visitReturnType(ctx.returnType());
+        Type returnType = this.visitReturnType(ctx.returnType());
 
         this.currentFunction = new Function(functionName, argumentList, returnType);
 
@@ -137,7 +137,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.scope.pushScope();
 
         List<Argument> argumentList = this.visitArgumentList(ctx.argumentList());
-        String returnType = this.visitReturnType(ctx.returnType());
+        Type returnType = this.visitReturnType(ctx.returnType());
 
         this.currentFunction = new Function(functionName, argumentList, returnType);
         this.currentFunction.setProcedure();
@@ -189,11 +189,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public String visitReturnType(GazpreaParser.ReturnTypeContext ctx) {
+    public Type visitReturnType(GazpreaParser.ReturnTypeContext ctx) {
         if (ctx != null && ctx.type() != null) {
-            return ctx.type().getText(); // for now, just return this text
+            return visitType(ctx.type());
+        } else {
+            return new Type(null, Type.TYPES.VOID);
         }
-        return "";
     }
 
     @Override
@@ -233,17 +234,42 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
         if (ctx.Identifier() != null) {
+            // TODO: This should unwrap the variable and put it on the stack and return the type
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            line.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
+            Variable variable = this.scope.getVariable(ctx.Identifier().getText());
+            line.add("name", variable.getMangledName());
             this.addCode(line.render());
+
+            return this.scope.getVariable(ctx.Identifier().getText()).getType();
         }
-        if (ctx.literal() != null) {
-            this.visitLiteral(ctx.literal());
+        else if (ctx.literal() != null) {
+            return this.visitLiteral(ctx.literal());
         }
-        if (ctx.expression() != null && ctx.expression().size() == 1) {
-            this.visitExpression(ctx.expression(0));
+        else if (ctx.expression() != null && ctx.expression().size() == 1) {
+            // CASE: where there is only one expression in the expression statement
+            if (ctx.As() == null && ctx.Sign() == null) {
+                // CASE: parenthesis
+                return this.visitExpression(ctx.expression(0));
+            } else if (ctx.As() == null) {
+                // CASE: + or - expression
+                Type type = this.visitExpression(ctx.expression(0));
+
+                if (ctx.Sign().getText() == "-") {
+                    // TODO: call function that negatizes the expression
+                }
+
+                return type;
+            } else {
+                // CASE: casting case
+                Type originalType = this.visitExpression(ctx.expression(0));
+                Type newType = this.visitType(ctx.type());
+
+                // TODO: get respective casting function
+
+                return newType;
+            }
         }
-        if (ctx.functionCall() != null) {
+        else if (ctx.functionCall() != null) {
             this.visitFunctionCall(ctx.functionCall());
         }
 //        if (ctx.expression() != null && ctx.expression().size() == 2) {
@@ -264,42 +290,43 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitLiteral(GazpreaParser.LiteralContext ctx) {
+    // pushes the literal onto the stack and returns the type of the literal
+    public Type visitLiteral(GazpreaParser.LiteralContext ctx) {
         ST line = null;
-        Type.TYPES type = null;
-        Type.COLLECTION_TYPES collection_type = null;
+        Type.TYPES retType = null;
+        Type.COLLECTION_TYPES retCollectionType = null;
 
         if (ctx.NullLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushNull");
-            type = Type.TYPES.NULL;
+            retType = Type.TYPES.NULL;
         } else if (ctx.IdentityLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushIdentity");
-            type = Type.TYPES.IDENTITY;
+            retType = Type.TYPES.IDENTITY;
         } else if (ctx.IntegerLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushInteger");
             line.add("value", ctx.getText());
-            type = Type.TYPES.INTEGER;
+            retType = Type.TYPES.INTEGER;
         } else if (ctx.BooleanLiteral() != null) {
-            type = Type.TYPES.BOOLEAN;
+            retType = Type.TYPES.BOOLEAN;
         } else if (ctx.CharacterLiteral() != null) {
-            type = Type.TYPES.CHARACTER;
+            retType = Type.TYPES.CHARACTER;
         } else if (ctx.StringLiteral() != null) {
-            type = Type.TYPES.STRING;
+            retType = Type.TYPES.STRING;
         } else if (ctx.RealLiteral() != null) {
-            type = Type.TYPES.REAL;
+            retType = Type.TYPES.REAL;
         } else if (ctx.tupleLiteral() != null) {
             // TODO: handle tuple types
         } else if (ctx.vectorLiteral() != null) {
             Type vectorType = this.visitVectorLiteral(ctx.vectorLiteral());
-            collection_type = Type.COLLECTION_TYPES.VECTOR;
-            type = vectorType.getType();
+            retCollectionType = Type.COLLECTION_TYPES.VECTOR;
+            retType = vectorType.getType();
         }
         if (line != null) {
             this.addCode(line.render());
         }
 
         // TODO: literals are considered constant types
-        return new Type(Type.SPECIFIERS.CONST, type, collection_type);
+        return new Type(Type.SPECIFIERS.CONST, retType, retCollectionType);
     }
 
     @Override
@@ -349,6 +376,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         String mangledFunctionName = this.functionNameMappings.get(functionName);
         functionCall.add("name", mangledFunctionName);
         this.addCode(functionCall.render());
+
         return null;
     }
 

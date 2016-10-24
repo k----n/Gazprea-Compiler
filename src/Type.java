@@ -9,12 +9,12 @@ public class Type {
         MATRIX, VECTOR, TUPLE, INTERVAL
     }
     public enum TYPES {
-        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY
+        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
             strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const",
-            strNULL="null", strIDENTITY="identity";
+            strNULL="null", strIDENTITY="identity", strVOID="void";
 
     private SPECIFIERS specifier;
     private COLLECTION_TYPES collection_type;
