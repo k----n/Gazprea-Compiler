@@ -284,7 +284,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitReturnStatement(GazpreaParser.ReturnStatementContext ctx) {
         this.currentFunction.getArguments().forEach(argument -> {
-            if (argument.getType().getSpecifier().equals("var")) {
+            if (argument.getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
                 ST push = this.llvmGroup.getInstanceOf("pushVariableValue");
                 push.add("name", this.scope.getVariable(argument.getName()).getMangledName());
                 this.addCode(push.render());
@@ -341,7 +341,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Collections.reverse(varNames);
 
         zip.zip(arguments, varNames, null, null).forEach(pair -> {
-            if (pair.left().getType().getSpecifier().equals("var")) {
+            if (pair.left().getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
                 ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
                 postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
                 this.addCode(postCallAssign.render());
@@ -396,7 +396,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (variable.getType().getTypeLLVMString().length() > 0) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
-            
+
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
             this.addCode(initAssign.render());
@@ -442,8 +442,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             switch (ctx.TypeSpecifier().getText()) {
                 case Type.strVAR:
                     specifier = Type.SPECIFIERS.VAR;
+                    break;
                 case Type.strCONST:
                     specifier= Type.SPECIFIERS.CONST;
+                    break;
                 default:
                     throw(new RuntimeException("Specifier does not exist"));
             }
@@ -455,12 +457,16 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             switch(ctx.TypeType().getText()){
                 case Type.strINTERVAL:
                     typeType = Type.COLLECTION_TYPES.INTERVAL;
+                    break;
                 case Type.strVECTOR:
                     typeType = Type.COLLECTION_TYPES.VECTOR;
+                    break;
                 case Type.strTUPLE:
                     typeType = Type.COLLECTION_TYPES.TUPLE;
+                    break;
                 case Type.strMATRIX:
                     typeType = Type.COLLECTION_TYPES.MATRIX;
+                    break;
                 default:
                     throw(new RuntimeException("Type type does not exist"));
             }
