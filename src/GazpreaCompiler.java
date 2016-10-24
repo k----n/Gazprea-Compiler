@@ -117,7 +117,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.addCode(varLine.render());
 
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getName());
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
             this.addCode(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
@@ -198,7 +198,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitExpression(GazpreaParser.ExpressionContext ctx) {
+    public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
         if (ctx.Identifier() != null) {
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
             line.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
@@ -252,7 +252,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitReturnStatement(GazpreaParser.ReturnStatementContext ctx) {
         this.currentFunction.getArguments().forEach(argument -> {
-            if (argument.getType().getSpecifier().equals("var")) {
+            if (argument.getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
                 ST push = this.llvmGroup.getInstanceOf("pushVariableValue");
                 push.add("name", this.scope.getVariable(argument.getName()).getMangledName());
                 this.addCode(push.render());
@@ -309,7 +309,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Collections.reverse(varNames);
 
         zip.zip(arguments, varNames, null, null).forEach(pair -> {
-            if (pair.left().getType().getSpecifier().equals("var")) {
+            if (pair.left().getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
                 ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
                 postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
                 this.addCode(postCallAssign.render());
@@ -336,17 +336,21 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitDeclaration(GazpreaParser.DeclarationContext ctx) {
-        Type type = this.visitType(ctx.type());
+        // Type does it's best to get the type of the variable
+        Type declaredType = this.visitType(ctx.type());
         String variableName = ctx.Identifier().getText();
 //        String sizeData = this.visitSizeData(ctx.sizeData());
         if (ctx.expression() != null) {
-            this.visitExpression(ctx.expression());
+            Type assignedType = this.visitExpression(ctx.expression());
         } else {
+            // TODO: We can choose which null gets pushed with type
             ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
             this.addCode(nullLine.render());
         }
 
-        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), type);
+        // TODO: differentiating between a tuple expression and a parenthesis expression
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
         this.scope.initVariable(variableName, variable);
 
         if (this.currentFunction != null) {
@@ -357,10 +361,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.variables.put(variableName, variable);
         }
 
-        if (variable.getType().getName().length() > 0) {
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getName());
+        if (variable.getType().getTypeLLVMString().length() > 0) {
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
-
+            
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
             this.addCode(initAssign.render());
@@ -375,16 +379,57 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitType(GazpreaParser.TypeContext ctx) {
-        String specifier = "";
-        if (ctx.TypeSpecifier() != null) {
-            specifier = ctx.TypeSpecifier().getText();
-        }
-        String name = "";
+        Type.TYPES typeName = Type.TYPES.UNKNOWN;
+
         if (ctx.typeName() != null) {
-            name = this.visitTypeName(ctx.typeName());
+            switch(ctx.typeName().getText()) {
+                case Type.strBOOLEAN:
+                    typeName = Type.TYPES.BOOLEAN; break;
+                case Type.strCHARACTER:
+                    typeName = Type.TYPES.CHARACTER; break;
+                case Type.strINTEGER:
+                    typeName = Type.TYPES.INTEGER; break;
+                case Type.strREAL:
+                    typeName = Type.TYPES.REAL; break;
+                case Type.strSTRING:
+                    // TODO: Consider purging string type by converting to vector char type
+                    typeName = Type.TYPES.STRING; break;
+                default:
+                    throw(new RuntimeException("Type name does not exist"));
+            }
         }
-        boolean isVector = ctx.TypeType() != null;
-        return new Type(specifier, name, isVector);
+
+        Type.SPECIFIERS specifier = Type.SPECIFIERS.UNDEFINED;
+
+        if (ctx.TypeSpecifier() != null) {
+            switch (ctx.TypeSpecifier().getText()) {
+                case Type.strVAR:
+                    specifier = Type.SPECIFIERS.VAR; break;
+                case Type.strCONST:
+                    specifier= Type.SPECIFIERS.CONST; break;
+                default:
+                    throw(new RuntimeException("Specifier does not exist"));
+            }
+        }
+
+        Type.COLLECTION_TYPES typeType = Type.COLLECTION_TYPES.NONE;
+
+        if (ctx.TypeType() != null) {
+            switch(ctx.TypeType().getText()){
+                case Type.strINTERVAL:
+                    typeType = Type.COLLECTION_TYPES.INTERVAL; break;
+                case Type.strVECTOR:
+                    typeType = Type.COLLECTION_TYPES.VECTOR; break;
+                case Type.strTUPLE:
+                    typeType = Type.COLLECTION_TYPES.TUPLE; break;
+                case Type.strMATRIX:
+                    typeType = Type.COLLECTION_TYPES.MATRIX; break;
+                default:
+                    throw(new RuntimeException("Type type does not exist"));
+            }
+        }
+
+        return new Type(specifier, typeName, typeType);
     }
 
     @Override

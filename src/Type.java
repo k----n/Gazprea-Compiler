@@ -1,23 +1,75 @@
+import java.util.ArrayList;
+
 public class Type {
-    private String specifier;
-    private String name;
-    private boolean vectorKeyword;
+    public enum SPECIFIERS {
+        UNDEFINED, VAR, CONST
+    }
 
-    Type(String specifier, String name, boolean vectorKeyword) {
+    public enum COLLECTION_TYPES {
+        NONE, MATRIX, VECTOR, TUPLE, INTERVAL
+    }
+    public enum TYPES {
+        UNKNOWN, BOOLEAN, INTEGER, REAL, CHARACTER, STRING
+    }
+
+    public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
+            strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const";
+
+    private SPECIFIERS specifier;
+    private COLLECTION_TYPES collection_type;
+    private TYPES type;
+
+    // special augmentation for tuple types
+    private ArrayList<Type> tupleTypes;
+
+
+    // TODO: May need a refactor based on how structs (tuples) will be defined in C
+    // collection type tuple constructor
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, ArrayList<Type> tupleTypes) {
+        this(specifier, type, collection_type);
+        this.tupleTypes = tupleTypes;
+    }
+
+    // non collection tuple constructor
+    Type(SPECIFIERS specifier, TYPES type, ArrayList<Type> tupleTypes) {
+        this(specifier, type, null, tupleTypes);
+    }
+
+    // collection type variables constructor
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type) {
         this.specifier = specifier;
-        this.name = name;
-        this.vectorKeyword = vectorKeyword;
+        this.type = type;
+        this.collection_type = collection_type;
+        this.tupleTypes = null;
     }
 
-    String getSpecifier() {
-        return this.specifier;
+    // non collection type variables constructor
+    Type(SPECIFIERS specifier, TYPES type) {
+        this.specifier = specifier;
+        this.type = type;
+        this.collection_type = null;
     }
 
-    String getName() {
-        return this.name;
+    public SPECIFIERS getSpecifier() {
+        return specifier;
     }
 
-    boolean isVectorKeyword() {
-        return this.vectorKeyword;
+    public COLLECTION_TYPES getCollection_type() {
+        return collection_type;
+    }
+
+    public TYPES getType() {
+        return type;
+    }
+
+    public String getTypeLLVMString() {
+        switch(this.type) {
+            case BOOLEAN:   return strBOOLEAN;
+            case INTEGER:   return strINTEGER;
+            case REAL:      return strREAL;
+            case CHARACTER: return strCHARACTER;
+            case STRING:    return strSTRING;
+            default:        return "";
+        }
     }
 }
