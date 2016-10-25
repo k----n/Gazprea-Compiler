@@ -8,9 +8,30 @@
 
 class Value : public Object {
 public:
+	Value(bool value) : super(TypeValue) {
+		this->valueType = new ValueType(BooleanType);
+		bool* newValue = new bool;
+		*newValue = value;
+		this->value = newValue;
+	}
+	
 	Value(int value) : super(TypeValue) {
 		this->valueType = new ValueType(IntegerType);
 		int* newValue = new int;
+		*newValue = value;
+		this->value = newValue;
+	}
+	
+	Value(float value) : super(TypeValue) {
+		this->valueType = new ValueType(RealType);
+		float* newValue = new float;
+		*newValue = value;
+		this->value = newValue;
+	}
+	
+	Value(char value) : super(TypeValue) {
+		this->valueType = new ValueType(CharacterType);
+		char* newValue = new char;
 		*newValue = value;
 		this->value = newValue;
 	}
@@ -30,9 +51,24 @@ public:
 		switch (this->valueType->getType()) {
 			case NullType:
 			case IdentityType:
-			case IntegerType:
 			case StandardIn:
 			case StandardOut:
+				break;
+			case BooleanType:
+				copy->value = new bool;
+				*(bool*)(copy->value) = *(bool*)this->value;
+				break;
+			case IntegerType:
+				copy->value = new int;
+				*(int*)(copy->value) = *(int*)this->value;
+				break;
+			case RealType:
+				copy->value = new float;
+				*(float*)(copy->value) = *(float*)this->value;
+				break;
+			case CharacterType:
+				copy->value = new char;
+				*(char*)(copy->value) = *(char*)this->value;
 				break;
 			case Lvalue:
 				// TODO: Retain???
@@ -48,10 +84,22 @@ public:
 	
 	bool isNull()		{ return this->valueType->getType() == NullType;	}
 	bool isIdentity()	{ return this->valueType->getType() == IdentityType;}
+	bool isBoolean()	{ return this->valueType->getType() == BooleanType;	}
 	bool isInteger()	{ return this->valueType->getType() == IntegerType;	}
+	bool isReal()		{ return this->valueType->getType() == RealType;	}
+	bool isCharacter()	{ return this->valueType->getType() == CharacterType;}
 	bool isStandardIn()	{ return this->valueType->getType() == StandardIn;	}
 	bool isStandardOut(){ return this->valueType->getType() == StandardOut;	}
 	bool isLvalue()		{ return this->valueType->getType() == Lvalue;		}
+	
+	bool* booleanValue() {
+		bool* b = new bool;
+		if (this->isNull())		{ *b = false; return b; }
+		if (this->isIdentity())	{ *b = true;  return b; }
+		if (!this->isBoolean()) { printf("Not a boolean value\n"); exit(1); }
+		*b = *(bool*)this->value;
+		return b;
+	}
 	
 	int* integerValue() {
 		int* i = new int;
@@ -60,6 +108,24 @@ public:
 		if (!this->isInteger())	{ printf("Not an integer value\n"); exit(1); }
 		*i = *(int*)this->value;
 		return i;
+	}
+	
+	float* realValue() {
+		float* r = new float;
+		if (this->isNull())		{ *r = 0.0; return r;	}
+		if (this->isIdentity())	{ *r = 1.0; return r;	}
+		if (!this->isReal())	{ printf("Not a real value\n"); exit(1); }
+		*r = *(float*)this->value;
+		return r;
+	}
+	
+	char* characterValue() {
+		char* c = new char;
+		if (this->isNull())		{ *c = 0; return c;	}
+		if (this->isIdentity())	{ *c = 1; return c;	}
+		if (!this->isCharacter()){ printf("Not a character value\n"); exit(1); }
+		*c = *(char*)this->value;
+		return c;
 	}
 	
 	Value* lvalue() {
@@ -79,18 +145,20 @@ private:
 	void* value;
 	
 	~Value() {
-		this->valueType->release();
 		switch (this->valueType->getType()) {
 			case NullType:
 			case IdentityType:
 				break;
-			case IntegerType:
-				delete this->integerValue();
+			case BooleanType:	delete (bool*)  this->value; break;
+			case IntegerType:	delete (int*)   this->value; break;
+			case RealType:		delete (float*)this->value; break;
+			case CharacterType:	delete (char*)	this->value; break;
 			case StandardIn:
 			case StandardOut:
 			case Lvalue:
 				break;
 		}
+		this->valueType->release();
 	}
 	
 	typedef Object super;

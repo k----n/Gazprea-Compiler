@@ -22,9 +22,6 @@ int main(int argc, const char * argv[]) {
 #endif
 
 #ifndef LLVM_BUILD
-	
-	
-	
 	pushInteger(0); // Push return code
 #endif
 	

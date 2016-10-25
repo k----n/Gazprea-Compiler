@@ -9,10 +9,10 @@ void rightArrowOperator() {
 	switch (lhs->getType()->getType()) {
 		case NullType:		printf("Cannot print NullType\n");		exit(1);
 		case IdentityType:	printf("Cannot print IdentityType\n");	exit(1);
-//		case BooleanType:
+		case BooleanType:
 		case IntegerType:
-//		case RealType:
-//		case CharacterType:
+		case RealType:
+		case CharacterType:
 //		case IntervalType:
 //		case VectorType:
 			stack->push(lhs);
@@ -35,14 +35,39 @@ void leftArrowOperator() {
 	Value* lhs = stack->pop();
 	if (!rhs->isStandardIn())	{ printf("RHS value is not stdin\n"); exit(1); }
 	if (!lhs->isLvalue())		{ printf("LHS not an Lvalue\n"); exit(1); }
+	char boolValue;
 	int intValue;
+	float realValue;
+	char characterValue;
 	switch (lhs->lvalue()->getType()->getType()) {
 		case NullType:		printf("Cannot input NullType\n");		exit(1);
 		case IdentityType:	printf("Cannot input IdentityType\n");	exit(1);
+		case BooleanType:
+			scanf("%c", &boolValue);
+			if (boolValue == 'T') {
+				(*(Value**)lhs->lvalue_ptr())->release();
+				*lhs->lvalue_ptr() = new Value(true);
+			} else if (boolValue == 'F') {
+				(*(Value**)lhs->lvalue_ptr())->release();
+				*lhs->lvalue_ptr() = new Value(false);
+			} else {
+				// TODO: Handle errors
+			}
+			break;
 		case IntegerType:
 			scanf("%d", &intValue);
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(intValue);
+			break;
+		case RealType:
+			scanf("%f", &realValue);
+			(*(Value**)lhs->lvalue_ptr())->release();
+			*lhs->lvalue_ptr() = new Value(realValue);
+			break;
+		case CharacterType:
+			scanf("%c", &characterValue);
+			(*(Value**)lhs->lvalue_ptr())->release();
+			*lhs->lvalue_ptr() = new Value(characterValue);
 			break;
 		case StandardOut:	printf("Cannot input StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot input StandardIn\n");	exit(1);

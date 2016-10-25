@@ -41,11 +41,16 @@ typeName
 
 // Non-Top Level Code
 translationalUnit
- : statement ';'
+ : statement_
  | block
  ;
 
 // Statements
+statement_
+ : statement ';'
+ | notstatement
+ ;
+
 statement
  : returnStatement
  | streamStatement
@@ -54,11 +59,17 @@ statement
  | procedureCall
  ;
 
+notstatement
+ : conditional
+ ;
+
 declaration: type Identifier sizeData? (Assign expression)?;
 
 returnStatement: Return expression?;
 
 streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
+
+conditional: If expression translationalUnit;
 
 // Expressions
 expression
@@ -112,7 +123,7 @@ Returns: 'returns';
 assignment: Identifier Assign expression;
 
 typedef: Typedef type Identifier;
-//
+
 generator: '[' Identifier In expression (',' Identifier In expression)? '|' expression ']';
 filter: '[' Identifier In expression '&' expression ']';
 

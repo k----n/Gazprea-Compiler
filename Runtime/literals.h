@@ -13,6 +13,16 @@ void pushEmptyValue(BuiltinType builtinType) {
 void pushNull()		{ pushEmptyValue(NullType);		}
 void pushIdentity()	{ pushEmptyValue(IdentityType);	}
 
+void pushBoolean(bool value) {
+	Value* booleanValue = new Value(value);
+	stack->push(booleanValue);
+	booleanValue->release();
+}
+
+void varInitPushNullBoolean() {
+	pushBoolean(false);
+}
+
 void pushInteger(int value) {
 	Value* integerValue = new Value(value);
 	stack->push(integerValue);

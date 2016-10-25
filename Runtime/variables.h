@@ -28,9 +28,10 @@ void assign(void** variable) {
 				printf("Cannot determine type");
 				exit(1);
 				break;
-			case IntegerType:
-				rvalue = new Value(0);
-				break;
+			case BooleanType:	rvalue = new Value(false);		break;
+			case IntegerType:	rvalue = new Value(0);			break;
+			case RealType:		rvalue = new Value(0.0f);		break;
+			case CharacterType:	rvalue = new Value((char)0);	break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);
@@ -57,9 +58,10 @@ void assign(void** variable) {
 				printf("Cannot determine type");
 				exit(1);
 				break;
-			case IntegerType:
-				rvalue = new Value(1);
-				break;
+			case BooleanType:	rvalue = new Value(true);		break;
+			case IntegerType:	rvalue = new Value(1);			break;
+			case RealType:		rvalue = new Value(1.0f);		break;
+			case CharacterType:	rvalue = new Value((char)1);	break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);

@@ -2,13 +2,13 @@
 
 bool shouldPrintNewLine = true;
 
-//void printBoolean(CalculatorValue* value) {
-//	if (*value->booleanValue()) {
-//		printf("T");
-//	} else {
-//		printf("F");
-//	}
-//}
+void printBoolean(Value* value) {
+	if (*value->booleanValue()) {
+		printf("T");
+	} else {
+		printf("F");
+	}
+}
 
 void printInteger(Value* value) {
 	int* intValue_ptr = value->integerValue();
@@ -16,14 +16,16 @@ void printInteger(Value* value) {
 	delete intValue_ptr;
 }
 
-//void printReal(CalculatorValue* value) {
-//	printf("%g", *value->realValue());
-//}
-//
-//void printCharacter(CalculatorValue* value) {
-//	printf("%c", *value->characterValue());
-//}
-//
+void printReal(Value* value) {
+	float* realValue_ptr = value->realValue();
+	printf("%lf", *realValue_ptr);
+	delete realValue_ptr;
+}
+
+void printCharacter(Value* value) {
+	printf("%c", *value->characterValue());
+}
+
 //void printVector(CalculatorValue* value) {
 //	bool oldShouldPrintNewLine = shouldPrintNewLine;
 //	shouldPrintNewLine = false;
@@ -57,51 +59,14 @@ void printValue() {
 	switch (valueType->getType()) {
 		case NullType:		printf("Cannot print NullType\n");		exit(1);
 		case IdentityType:	printf("Cannot print IdentityType\n");	exit(1);
+		case BooleanType:	printBoolean(value);					break;
 		case IntegerType:	printInteger(value);					break;
+		case RealType:		printReal(value);						break;
+		case CharacterType:	printCharacter(value);					break;
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);
 	}
-//	switch (value->getType()->getType()) {
-//		case NullType:
-//		case IdentityType:
-//			printf("INVALID PRINT CALL\n");
-//			exit(1);
-//		case BooleanType:
-//			printBoolean(value);
-//			break;
-//		case IntegerType:
-//			printInteger(value);
-//			break;
-//		case RealType:
-//			printReal(value);
-//			break;
-//		case CharacterType:
-//			printCharacter(value);
-//			break;
-//		case IntervalType:
-//		case VectorType:
-//			if (value->getType()->getSubtypes()->getCount() > 0 &&
-//				value->getType()->getSubtypes()->get(0)->getType() ==
-//				                                                CharacterType) {
-//				printString(value);
-//			} else {
-//				printVector(value);
-//			}
-//			break;
-//		case MatrixType:
-//			printf("Cannot print Matrix\n");
-//			exit(1);
-//		case TupleType:
-//			printf("Cannot print Tuple\n");
-//			exit(1);
-//		case StandardOut:
-//		case StandardIn:
-//		case VectorStart:
-//		case Lvalue:
-//			printf("INVALID PRINT CALL\n");
-//			exit(1);
-//	}
 	valueType->release();
 	value->release();
 	if (shouldPrintNewLine) {
