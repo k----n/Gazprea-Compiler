@@ -19,3 +19,5 @@
 void _unwrap();
 
 extern Stack<Value>* stack;
+
+extern int stdInputError;

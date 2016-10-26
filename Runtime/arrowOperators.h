@@ -1,5 +1,7 @@
 #pragma once
 
+#include "declarations.h"
+
 void rightArrowOperator() {
 	_unwrap();
 	Value* rhs = stack->pop();
@@ -39,11 +41,12 @@ void leftArrowOperator() {
 	int intValue;
 	float realValue;
 	char characterValue;
+	int readErrorCode;
 	switch (lhs->lvalue()->getType()->getType()) {
 		case NullType:		printf("Cannot input NullType\n");		exit(1);
 		case IdentityType:	printf("Cannot input IdentityType\n");	exit(1);
 		case BooleanType:
-			scanf("%c", &boolValue);
+			readErrorCode = scanf("%c", &boolValue);
 			if (boolValue == 'T') {
 				(*(Value**)lhs->lvalue_ptr())->release();
 				*lhs->lvalue_ptr() = new Value(true);
@@ -55,23 +58,28 @@ void leftArrowOperator() {
 			}
 			break;
 		case IntegerType:
-			scanf("%d", &intValue);
+			readErrorCode = scanf("%d", &intValue);
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(intValue);
 			break;
 		case RealType:
-			scanf("%f", &realValue);
+			readErrorCode = scanf("%f", &realValue);
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(realValue);
 			break;
 		case CharacterType:
-			scanf("%c", &characterValue);
+			readErrorCode = scanf("%c", &characterValue);
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(characterValue);
 			break;
 		case StandardOut:	printf("Cannot input StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot input StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot input Lvalue\n");		exit(1);
+	}
+	switch (readErrorCode) {
+		case 1: stdInputError = 0;
+		case 0: stdInputError = 1;
+		case EOF: stdInputError = 2;
 	}
 	lhs->release();
 	rhs->release();

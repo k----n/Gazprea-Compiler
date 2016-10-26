@@ -25,6 +25,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
+        this.functionNameMappings.put("stream_state", "_Z12stream_statev");
     }
 
     @Override
