@@ -20,6 +20,10 @@ assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"
 
 varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"
 
+swapStack() ::= "call void @_Z15swapStackTopTwov()"
+
+promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
+
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
 pushInteger(value) ::= "call void @_Z11pushIntegeri(i32 <value>)"

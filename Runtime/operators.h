@@ -1,5 +1,7 @@
 #pragma once
 
+#include "promotion.h"
+
 #include "print.h"
 #include "arrowOperators.h"
 #include "addition.h"
