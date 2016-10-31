@@ -10,6 +10,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private STGroup runtimeGroup;
     private STGroup llvmGroup;
 
+    private final String BUILT_INS[] = {"std_output", "std_input", "stream_state"};
+
     private Map<String, Function> functions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
     private List<String> topLevelCode = new ArrayList<>();
@@ -238,7 +240,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
         else if (ctx.functionCall() != null) {
-            this.visitFunctionCall(ctx.functionCall());
+            return this.visitFunctionCall(ctx.functionCall());
         }
 //        if (ctx.expression() != null && ctx.expression().size() == 2) {
 //            String operator = "";
@@ -334,18 +336,36 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitFunctionCall(GazpreaParser.FunctionCallContext ctx) {
+    public Type visitFunctionCall(GazpreaParser.FunctionCallContext ctx) {
         List<GazpreaParser.ExpressionContext> arguments = ctx.expression();
         Collections.reverse(arguments);
         arguments.forEach(this::visitExpression);
 
         String functionName = this.visitFunctionName(ctx.functionName());
+
         ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
+
         String mangledFunctionName = this.functionNameMappings.get(functionName);
         functionCall.add("name", mangledFunctionName);
         this.addCode(functionCall.render());
 
-        return null;
+        if (!Arrays.asList(BUILT_INS).contains(functionName)) {
+            // For non built in functions
+            Function function = this.functions.get(functionName);
+            return function.getReturnType();
+        } else {
+            // For built in functions
+            switch(functionName) {
+                case "std_output":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.OUTPUT_STREAM);
+                case "std_input":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INPUT_STREAM);
+                case "stream_status":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                default:
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.VOID);
+            }
+        }
     }
 
     @Override
@@ -394,12 +414,31 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitDeclaration(GazpreaParser.DeclarationContext ctx) {
         // Type does it's best to get the type of the variable
         Type declaredType = this.visitType(ctx.type());
+
         String variableName = ctx.Identifier().getText();
 //        String sizeData = this.visitSizeData(ctx.sizeData());
+
+        // expression portion type
+        Type assignedType = null;
+
         if (ctx.expression() != null) {
-            Type assignedType = this.visitExpression(ctx.expression());
+            // expression portion is included
+
+            assignedType = this.visitExpression(ctx.expression());
+
+            if (!declaredType.equals(assignedType) && declaredType.getType() != Type.TYPES.NULL) {
+                // case where variable is not implicitly declared and the declared type is different from
+                // the assigned value
+                String promotionFunction = Type.getPromoteFunction(assignedType, declaredType);
+                // TODO: promote to declared type in LLVM
+            } else {
+                declaredType = assignedType;
+            }
         } else {
+            // expression portion is excluded
+
             // TODO: We can choose which null gets pushed with type
+            String nullFunction = Type.getNullFunction(declaredType);
             ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
             this.addCode(nullLine.render());
         }

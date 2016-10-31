@@ -9,12 +9,39 @@ public class Type {
         NONE, MATRIX, VECTOR, TUPLE, INTERVAL
     }
     public enum TYPES {
-        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID
+        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
             strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const",
-            strNULL="null", strIDENTITY="identity", strVOID="void";
+            strNULL="null", strIDENTITY="identity", strVOID="void", strOUT="output", strIN="input";
+
+    // TABLE FOR IMPLICIT PROMOTION
+    private static String[/*from*/][/*to*/] PROMOTION_TABLE =
+            {/*  bool       int         char        real            NULL        IDNTY*/
+    /*bool*/    {"noop",    "void",     "void",     "void",         "void",     "void"},
+    /*int*/     {"void",    "noop",     "void",     "int_to_real",  "void",     "void"},
+    /*char*/    {"void",    "void",     "noop",     "void",         "void",     "void"},
+    /*real*/    {"void",    "void",     "void",     "noop",         "void",     "void"},
+    /*NULL*/    {"nulBool", "nulInt",   "nulChar",  "nulReal",      "noop",     "void"},
+    /*IDNTY*/   {"idBool",  "idInt",    "idChar",   "idReal",       "void",     "noop"}
+            };
+
+    private static String[/*from*/][/*to*/] CASTING_TABLE =
+            {/*  bool           int             char                 real */
+    /*bool*/    {"noop",        "bool_to_int",  "bool_to_char",      "void"},
+    /*int*/     {"int_to_bool", "noop",         "int_to_char",       "int_to_real"},
+    /*char*/    {"void",        "char_to_int",  "noop",              "char_to_real"},
+    /*real*/    {"void",        "real_to_int",  "void",              "noop"},
+            };
+
+    private static String[] NULL_TABLE =
+            /*bool          int         char            real*/
+            {"null_bool",   "null_int", "null_char",    "null_real"};
+    private static String[] ID_TABLE =
+            /*bool          int         char            real*/
+            {"id_bool",     "id_int",   "id_char",      "id_real"};
+
 
     private SPECIFIERS specifier;
     private COLLECTION_TYPES collection_type;
@@ -72,6 +99,8 @@ public class Type {
             case STRING:    return strSTRING;
             case NULL:      return "null";
             case IDENTITY:  return "identity";
+            case OUTPUT_STREAM: return strOUT;
+            case INPUT_STREAM: return strIN;
             default:        return "";
         }
     }
@@ -96,18 +125,6 @@ public class Type {
             return false;
         }
 
-        /*
-        if (this.specifier == null && type.getSpecifier() == null) {
-            // continue
-        } else if (this.specifier == null || type.getSpecifier() == null) {
-            return false;
-        } else if (this.specifier.equals(type.getSpecifier())) {
-            // continue
-        } else {
-            return false;
-        }
-        */
-
 
         if (this.collection_type == null && type.getCollection_type() == null) {
             // continue
@@ -120,5 +137,39 @@ public class Type {
         }
 
         return true;
+    }
+
+    private static Integer getTypeTableIndex(Type t) {
+        switch(t.getType()) {
+            case BOOLEAN: return 0;
+            case INTEGER: return  1;
+            case CHARACTER: return  2;
+            case REAL: return 3;
+            case NULL: return 4;
+            case IDENTITY: return 5;
+            default: throw new RuntimeException("Undefined type in table");
+        }
+    }
+
+    public static String getNullFunction(Type t) {
+        return NULL_TABLE[getTypeTableIndex(t)];
+    }
+
+    public static String getIdFunction(Type t) {
+        return ID_TABLE[getTypeTableIndex(t)];
+    }
+
+    public static String getPromoteFunction(Type from, Type to) {
+        int fromIndex = getTypeTableIndex(from);
+        int toIndex = getTypeTableIndex(to);
+
+        return PROMOTION_TABLE[fromIndex][toIndex];
+    }
+
+    public static String getCastingFunction(Type from, Type to) {
+        int fromIndex = getTypeTableIndex(from);
+        int toIndex = getTypeTableIndex(to);
+
+        return CASTING_TABLE[fromIndex][toIndex];
     }
 }

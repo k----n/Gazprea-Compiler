@@ -19,6 +19,8 @@ pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
 assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"
 
 varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"
+varInit_output() ::= "call void @_Z10std_outputv()"
+varInit_input() ::= "call void @_Z9std_inputv()"
 
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
 
