@@ -18,6 +18,8 @@
 
 void _unwrap();
 
+bool toBool();
+
 extern Stack<Value>* stack;
 
 extern int stdInputError;
