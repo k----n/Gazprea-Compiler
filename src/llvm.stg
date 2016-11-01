@@ -14,6 +14,12 @@ define void @GazFunc_<name>() #3 {
 >>
 functionReturn() ::= "ret void"
 
+// name is the unique name of the tuple
+// fields are the data types in llvm form (e.g. i32, i8, etc.)
+tuple_struct(name, fields) ::= <<
+%Gaz_Struct.<name> = type {<fields; separator=",\n">}
+>>
+
 pushVariable(name) ::= "call void @_Z4pushPPv(i8** <name>)"
 pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
 assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"

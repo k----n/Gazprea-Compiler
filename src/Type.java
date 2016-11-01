@@ -6,10 +6,10 @@ public class Type {
     }
 
     public enum COLLECTION_TYPES {
-        NONE, MATRIX, VECTOR, TUPLE, INTERVAL
+        NONE, MATRIX, VECTOR, INTERVAL
     }
     public enum TYPES {
-        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM, TUPLE
+        TUPLE, BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
@@ -62,34 +62,29 @@ public class Type {
     private TYPES type;
 
     // special augmentation for tuple types
-    private ArrayList<Type> tupleTypes;
-
+    private Tuple tupleType = null;
 
     // TODO: May need a refactor based on how structs (tuples) will be defined in C
     // collection type tuple constructor
-    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, ArrayList<Type> tupleTypes) {
-        this(specifier, type, collection_type);
-        this.tupleTypes = tupleTypes;
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, Tuple tupleType) {
+        this.specifier = specifier;
+        this.type = type;
+        this.collection_type = collection_type;
+        this.tupleType = tupleType;
     }
 
-    // non collection tuple constructor
-    Type(SPECIFIERS specifier, TYPES type, ArrayList<Type> tupleTypes) {
-        this(specifier, type, null, tupleTypes);
+    Type(SPECIFIERS specifier, TYPES type, Tuple tupleType) {
+        this(specifier, type, null, tupleType);
     }
 
     // collection type variables constructor
     Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type) {
-        this.specifier = specifier;
-        this.type = type;
-        this.collection_type = collection_type;
-        this.tupleTypes = null;
+        this(specifier, type, collection_type, null);
     }
 
     // non collection type variables constructor
     Type(SPECIFIERS specifier, TYPES type) {
-        this.specifier = specifier;
-        this.type = type;
-        this.collection_type = null;
+        this(specifier, type, null, null);
     }
 
     public SPECIFIERS getSpecifier() {

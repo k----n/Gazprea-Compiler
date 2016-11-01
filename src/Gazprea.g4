@@ -28,9 +28,12 @@ functionBlock
 // Blocks
 block: '{' translationalUnit* '}';
 
+tupleTypeDetails: '(' (tupleTypeAtom ',')+ tupleTypeAtom ')';
+tupleTypeAtom: type Identifier?;
+
 // Types
 type
- : TypeSpecifier? typeName TypeType?
+ : TypeSpecifier? typeName tupleTypeDetails? TypeType?
  | TypeSpecifier typeName? TypeType?
  ;
 
@@ -73,7 +76,8 @@ conditional: If expression translationalUnit;
 
 // Expressions
 expression
- : Identifier
+ : TupleAccess
+ | Identifier
  // CHECK PRECEDENCE
  | literal
  | '(' expression ')'
@@ -156,6 +160,8 @@ functionName
  : Identifier
  | BuiltinFunction
  ;
+
+TupleAccess: Identifier '.' (IntegerLiteral | Identifier);
 
 Assign: '=';
 Interval: '..';
