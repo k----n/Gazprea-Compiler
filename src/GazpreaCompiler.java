@@ -263,9 +263,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             return this.visitFunctionCall(ctx.functionCall());
         }
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
-            Type right = (Type)visit(ctx.expression(0));
-            Type left = (Type)visit(ctx.expression(1));
-            // TODO CHECK TYPE AND PROMOTE
+            Type left = (Type)visit(ctx.expression(0));
+            Type right = (Type)visit(ctx.expression(1));
+            String typeLetter = Type.getResultFunction(left, right);
+
+            // TODO make sure swapping is right and NULL works
+            for (int i = 0; i < 2; i ++) {
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
+                ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                this.addCode(swapStack.render());
+            }
 
             String operator = ctx.op.getText();
             if (operator == null){
@@ -275,102 +284,136 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             switch(operator) {
                 // CASE: concat
                 case "||": {
-
-                };
+                    // TODO
+                }
                 // CASE: OR
                 case "or": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: XOR
                 case "xor": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: AND
                 case "and": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: ==
                 case "==": {
                     // TODO TUPLE
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("equal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: !=
                 case "!=": {
                     // TODO TUPLE
-
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: <
                 case "<": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: <=
                 case "<=": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: >
                 case ">": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: >=
                 case ">=": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: by
                 case "by": {
-
-                };
+                    // TODO
+                }
                 // CASE: +
                 case "+": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("addition");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: -
                 case "-": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("subtraction");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: dotproduct
                 case "**": {
-
-                };
+                    // TODO
+                    if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))){
+                        throw new Error("Types must be vectors");
+                    }
+                }
                 // CASE: *
                 case "*": {
-                    // TODO type promotion
                     ST operatorCall = this.llvmGroup.getInstanceOf("multiplication");
-                    operatorCall.add("typeLetter", "iv"); // TODO get the type of values pushed to stack for typeLetter
+                    operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
                     return null;
                 }
                 // CASE: /
                 case "/": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("division");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: %
                 case "%": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: ^
                 case "^": {
-
-                };
+                    ST operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: interval ..
                 case "..": {
+                    // TODO
+                    if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
+                        throw new Error("Types must be ineger in interval");
+                    }
 
-                };
+                }
 
             }
-
-//            String operator = "";
-//            if (ctx.Multiplication() != null) {
-//                operator = ctx.Multiplication().getText();
-//            }
-//
-//            ST operatorCall = null;
-//            switch (operator) {
-//                case "*": operatorCall = this.llvmGroup.getInstanceOf("multiplicationOperator");
-//            }
-//            if (operatorCall != null) {
-//                this.addCode(operatorCall.render());
-//            }
         }
         return null;
     }

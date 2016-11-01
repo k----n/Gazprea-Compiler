@@ -30,15 +30,16 @@ public class Type {
     // TABLE FOR RESULT OF OPERATIONS
     // TODO TUPLE NOT IMPLEMENTED
     // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
-    private static String[/*from*/][/*to*/] RESULTS_TABLE =
+    // iv = integer, rv = real, bv = boolean -- 'v' is appended because llvm does that
+    private static String[/*left*/][/*right*/] RESULT_TABLE =
             {/*  bool       int         char        real            NULL        IDNTY       TUPLE*/
-    /*bool*/    {"bool",    "void",     "void",     "void",         "void",     "void",     "void"},
-    /*int*/     {"void",    "int",      "void",     "real",         "void",     "void",     "void"},
-    /*char*/    {"void",    "void",     "char",     "void",         "void",     "void",     "void"},
-    /*real*/    {"void",    "void",     "void",     "real",         "void",     "void",     "void"},
-    /*NULL*/    {"bool",    "int",      "char",     "real",         "void",     "void",     "void"},
+    /*bool*/    {"bv",      "void",     "void",     "void",         "void",     "void",     "void"},
+    /*int*/     {"void",    "iv",       "void",     "rv",           "void",     "void",     "void"},
+    /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*real*/    {"void",    "rv",       "void",     "rv",           "void",     "void",     "void"},
+    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void"},
     /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
-    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple"},
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
@@ -174,6 +175,19 @@ public class Type {
         int toIndex = getTypeTableIndex(to);
 
         return PROMOTION_TABLE[fromIndex][toIndex];
+    }
+
+    public static String getResultFunction(Type left, Type right) {
+        int fromIndex = getTypeTableIndex(left);
+        int toIndex = getTypeTableIndex(right);
+
+        String result = RESULT_TABLE[fromIndex][toIndex];
+
+        if (result.equals("void")){
+            throw new Error("Incompatible types");
+        }
+
+        return result;
     }
 
     public static String getCastingFunction(Type from, Type to) {

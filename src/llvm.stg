@@ -38,6 +38,8 @@ pushIdentity() ::= "call void @_Z12pushIdentityv()"
 pushInteger(value) ::= "call void @_Z11pushIntegeri(i32 <value>)"
 pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
 
+
+
 addition(typeLetter) ::= "call void @_Z5add_<typeLetter>()"
 subtraction(typeLetter) ::= "call void @_Z5sub_<typeLetter>()"
 multiplication(typeLetter) ::= "call void @_Z5mul_<typeLetter>()"
@@ -54,6 +56,8 @@ notequal(typeLetter) ::= "call void @_Z5neq_<typeLetter>()"
 logicalor(typeLetter) ::= "call void @_Z5lor_<typeLetter>()"
 logicalxor(typeLetter) ::= "call void @_Z5lxr_<typeLetter>()"
 logicaland(typeLetter) ::= "call void @_Z5lnd_<typeLetter>()"
+
+promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

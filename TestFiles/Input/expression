@@ -1,9 +1,0 @@
-/* expression test, delete later */
-
-//const boolean x;
-
-procedure main(){ 
-
-        /* must have a return */ 
-        return; 
-}
