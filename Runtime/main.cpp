@@ -9,6 +9,7 @@
 #ifdef LLVM_BUILD
 asm("REPLACE_ME-GLOBAL_VARIABLES");
 asm("REPLACE_ME-FUNCTIONS");
+asm("REPLACE_ME-STRUCTS");
 #endif
 
 Stack<Value>* stack;

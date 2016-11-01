@@ -62,6 +62,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         program.add("variables", globalVariables);
         program.add("functions", functionIR);
         program.add("code", this.topLevelCode);
+        program.add("structs", "");
         String code = program.render();
 
         System.out.println(code);
