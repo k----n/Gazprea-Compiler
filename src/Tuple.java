@@ -54,6 +54,8 @@ public class Tuple {
                 return "i1";
             case REAL:
                 return "float";
+            default:
+                return "";
         }
     }
 }
