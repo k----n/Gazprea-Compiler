@@ -76,25 +76,26 @@ conditional: If expression translationalUnit;
 // Expressions
 expression
  : Identifier
+ // CHECK PRECEDENCE
  | literal
  | '(' expression ')'
  | As '<' type '>' '(' expression ')'
  | generator
  | filter
  | functionCall
- | <assoc=right> expression op=Concatenation expression
- | expression op=(Or|Xor) expression
- | expression op=And expression
- | expression op=(Equals|NotEqual) expression
- | expression op=(LessThan|LessThanOrEqual|GreaterThan|GreaterThanOrEqual) expression
- | expression op=By expression
- | expression op=Sign expression
- | expression op=DotProduct expression
- | expression op=(Multiplication|Division|Modulus) expression
- | <assoc=right> expression op=Exponentiation expression
- | <assoc=right> op=(Sign|Not) expression
- | expression op=Interval expression
  | expression '[' expression ']'
+ | expression op=Interval expression
+ | <assoc=right> op=(Sign|Not) expression
+ | <assoc=right> expression op=Exponentiation expression
+ | expression op=DotProduct expression // NOT SURE ABOUT THIS PRECEDENCE
+ | expression op=(Multiplication|Division|Modulus) expression
+ | expression op=Sign expression
+ | expression op=By expression
+ | expression op=(LessThan|LessThanOrEqual|GreaterThan|GreaterThanOrEqual) expression
+ | expression op=(Equals|NotEqual) expression
+ | expression op=And expression
+ | expression op=(Or|Xor) expression
+ | <assoc=right> expression op=Concatenation expression
  ;
 
 // Literals

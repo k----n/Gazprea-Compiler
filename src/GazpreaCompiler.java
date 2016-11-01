@@ -239,10 +239,101 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 return newType;
             }
         }
+        else if (ctx.generator() != null) {
+            // TODO
+        }
+        else if (ctx.filter() != null) {
+            // TODO
+        }
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
         }
-//        if (ctx.expression() != null && ctx.expression().size() == 2) {
+        // TODO FIX THIS
+        else if (ctx.expression() != null && ctx.expression().size() == 2) {
+            String operator = ctx.op.getText();
+            if (operator == null){
+                // INDEXING OR MATRIX
+            }
+            switch(operator) {
+                // CASE: concat
+                case "||": {
+
+                };
+                // CASE: OR
+                case "or": {
+
+                };
+                // CASE: XOR
+                case "xor": {
+
+                };
+                // CASE: AND
+                case "and": {
+
+                };
+                // CASE: ==
+                case "==": {
+
+                };
+                // CASE: !=
+                case "!=": {
+
+                };
+                // CASE: <
+                case "<": {
+
+                };
+                // CASE: <=
+                case "<=": {
+
+                };
+                // CASE: >
+                case ">": {
+
+                };
+                // CASE: >=
+                case ">=": {
+
+                };
+                // CASE: by
+                case "by": {
+
+                };
+                // CASE: +
+                case "+": {
+
+                };
+                // CASE: -
+                case "-": {
+
+                };
+                // CASE: dotproduct
+                case "**": {
+
+                };
+                // CASE: *
+                case "*": {
+
+                };
+                // CASE: /
+                case "/": {
+
+                };
+                // CASE: %
+                case "%": {
+
+                };
+                // CASE: ^
+                case "^": {
+
+                };
+                // CASE: interval ..
+                case "..": {
+
+                };
+
+            }
+
 //            String operator = "";
 //            if (ctx.Multiplication() != null) {
 //                operator = ctx.Multiplication().getText();
@@ -255,7 +346,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 //            if (operatorCall != null) {
 //                this.addCode(operatorCall.render());
 //            }
-//        }
+        }
+        else {
+
+            // CASE: Vector index or MATRIX
+        }
         return null;
     }
 
@@ -277,6 +372,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             line.add("value", ctx.getText());
             retType = Type.TYPES.INTEGER;
         } else if (ctx.BooleanLiteral() != null) {
+            line = this.llvmGroup.getInstanceOf("pushBoolean");
+            line.add("value", ctx.getText());
             retType = Type.TYPES.BOOLEAN;
         } else if (ctx.CharacterLiteral() != null) {
             retType = Type.TYPES.CHARACTER;
