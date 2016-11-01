@@ -27,6 +27,20 @@ public class Type {
     /*IDNTY*/   {"idBool",  "idInt",    "idChar",   "idReal",       "void",     "noop"}
             };
 
+    // TABLE FOR RESULT OF OPERATIONS
+    // TODO TUPLE NOT IMPLEMENTED
+    // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
+    private static String[/*from*/][/*to*/] RESULTS_TABLE =
+            {/*  bool       int         char        real            NULL        IDNTY       TUPLE*/
+    /*bool*/    {"bool",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*int*/     {"void",    "int",      "void",     "real",         "void",     "void",     "void"},
+    /*char*/    {"void",    "void",     "char",     "void",         "void",     "void",     "void"},
+    /*real*/    {"void",    "void",     "void",     "real",         "void",     "void",     "void"},
+    /*NULL*/    {"bool",    "int",      "char",     "real",         "void",     "void",     "void"},
+    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+            };
+
     private static String[/*from*/][/*to*/] CASTING_TABLE =
             {/*  bool           int             char                 real */
     /*bool*/    {"noop",        "bool_to_int",  "bool_to_char",      "void"},
@@ -142,6 +156,7 @@ public class Type {
             case REAL: return 3;
             case NULL: return 4;
             case IDENTITY: return 5;
+            case TUPLE: return 6;
             default: throw new RuntimeException("Undefined type in table");
         }
     }
