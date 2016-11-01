@@ -1,0 +1,54 @@
+/* Boolean tests */
+
+const boolean x;
+
+procedure main(){ 
+        var out = std_output();
+	
+	// negation
+	x = not true;
+        x -> out;
+
+	// logical or true
+	x = true or false;
+	x -> out;
+
+	// logical or false
+	x = false or false;
+	x -> out;
+
+	// logical XOR false
+	x = true xor true;
+	x -> out;
+
+	// logical XOR true
+	x = true xor false;
+	x -> out;
+
+	// logical and true
+	x = true and true;
+	x -> out;
+
+	// logical and false
+	x = true and false;
+	x -> out;
+
+	// logical equals true
+	x = true == true;
+	x -> out;
+
+	// logical equals false
+	x = true == false;
+        x -> out;
+
+	// logical not equals true
+	x = true != false;
+	x -> out;
+
+	// logical not equals false
+	x = true != false;
+        x -> out;  
+ 
+        /* must have a return */ 
+        return; 
+}
