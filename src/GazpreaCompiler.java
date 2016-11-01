@@ -248,13 +248,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
         }
-        // TODO FIX THIS
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
-            visit(ctx.expression(0));
-            visit(ctx.expression(1));
+            Type right = (Type)visit(ctx.expression(0));
+            Type left = (Type)visit(ctx.expression(1));
+            // TODO CHECK TYPE AND PROMOTE
+
             String operator = ctx.op.getText();
             if (operator == null){
-                // INDEXING OR MATRIX
+                // TODO INDEXING OR MATRIX
+                return null;
             }
             switch(operator) {
                 // CASE: concat

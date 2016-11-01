@@ -9,7 +9,7 @@ public class Type {
         NONE, MATRIX, VECTOR, TUPLE, INTERVAL
     }
     public enum TYPES {
-        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM
+        BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM, TUPLE
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
@@ -25,6 +25,20 @@ public class Type {
     /*real*/    {"void",    "void",     "void",     "noop",         "void",     "void"},
     /*NULL*/    {"nulBool", "nulInt",   "nulChar",  "nulReal",      "noop",     "void"},
     /*IDNTY*/   {"idBool",  "idInt",    "idChar",   "idReal",       "void",     "noop"}
+            };
+
+    // TABLE FOR RESULT OF OPERATIONS
+    // TODO TUPLE NOT IMPLEMENTED
+    // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
+    private static String[/*from*/][/*to*/] RESULTS_TABLE =
+            {/*  bool       int         char        real            NULL        IDNTY       TUPLE*/
+    /*bool*/    {"bool",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*int*/     {"void",    "int",      "void",     "real",         "void",     "void",     "void"},
+    /*char*/    {"void",    "void",     "char",     "void",         "void",     "void",     "void"},
+    /*real*/    {"void",    "void",     "void",     "real",         "void",     "void",     "void"},
+    /*NULL*/    {"bool",    "int",      "char",     "real",         "void",     "void",     "void"},
+    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
@@ -147,6 +161,7 @@ public class Type {
             case REAL: return 3;
             case NULL: return 4;
             case IDENTITY: return 5;
+            case TUPLE: return 6;
             default: throw new RuntimeException("Undefined type in table");
         }
     }
