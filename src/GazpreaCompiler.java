@@ -251,6 +251,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
         // TODO FIX THIS
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
+            visit(ctx.expression(0));
+            visit(ctx.expression(1));
             String operator = ctx.op.getText();
             if (operator == null){
                 // INDEXING OR MATRIX
@@ -274,10 +276,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 };
                 // CASE: ==
                 case "==": {
+                    // TODO TUPLE
 
                 };
                 // CASE: !=
                 case "!=": {
+                    // TODO TUPLE
+
 
                 };
                 // CASE: <
@@ -314,8 +319,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 };
                 // CASE: *
                 case "*": {
-
-                };
+                    // TODO type promotion
+                    ST operatorCall = this.llvmGroup.getInstanceOf("multiplication");
+                    operatorCall.add("typeLetter", "iv"); // TODO get the type of values pushed to stack for typeLetter
+                    this.addCode(operatorCall.render());
+                    return null;
+                }
                 // CASE: /
                 case "/": {
 
@@ -347,10 +356,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 //            if (operatorCall != null) {
 //                this.addCode(operatorCall.render());
 //            }
-        }
-        else {
-
-            // CASE: Vector index or MATRIX
         }
         return null;
     }
