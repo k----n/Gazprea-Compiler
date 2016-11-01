@@ -59,6 +59,10 @@ public class Type {
         this.tupleType = tupleType;
     }
 
+    Type(SPECIFIERS specifier, TYPES type, Tuple tupleType) {
+        this(specifier, type, null, tupleType);
+    }
+
     // collection type variables constructor
     Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type) {
         this(specifier, type, collection_type, null);

@@ -1,3 +1,4 @@
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -570,6 +571,29 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
+    public Pair<GazpreaParser.TypeContext, TerminalNode> visitTupleTypeAtom(GazpreaParser.TupleTypeAtomContext ctx) {
+        return new Pair<>(ctx.type(), ctx.Identifier());
+    }
+
+    @Override
+    public Type visitTupleTypeDetails(GazpreaParser.TupleTypeDetailsContext ctx) {
+        ArrayList<String> fields = new ArrayList<String>();
+
+        for (int i = 0; i < ctx.tupleTypeAtom().size(); ++i) {
+            Pair<GazpreaParser.TypeContext, TerminalNode> atom = this.visitTupleTypeAtom(ctx.tupleTypeAtom().get(i));
+            if (atom.right() == null) {
+                fields.add(null);
+            } else {
+                fields.add(atom.right().getText());
+            }
+        }
+
+        Type type = new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, new Tuple(fields));
+
+        return type;
+    }
+
+    @Override
     public Type visitType(GazpreaParser.TypeContext ctx) {
         Type.TYPES typeName = Type.TYPES.NULL;
 
@@ -584,7 +608,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case Type.strREAL:
                     typeName = Type.TYPES.REAL; break;
                 case Type.strTUPLE:
-                    typeName = Type.TYPES.TUPLE; break;
+                    return this.visitTupleTypeDetails(ctx.tupleTypeDetails());
                 case Type.strSTRING:
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;

@@ -14,11 +14,8 @@ public class Tuple {
     // Holds the last used field Id
     private Integer fieldId;
 
-    private String tupleName;
-
-    Tuple(String name, ArrayList<String> fields) {
+    Tuple(ArrayList<String> fields) {
         this.fieldId = 0;
-        this.tupleName = name;
         fields.forEach(this::addField);
     }
 
@@ -32,11 +29,11 @@ public class Tuple {
         this.variables.put(this.fieldId, null);
     }
 
-    public String getTupleName() {
-        return tupleName;
-    }
-
     private Boolean isStringId(String id) {
+        if (id == null) {
+            return false;
+        }
+
         try {
             Integer.parseInt(id);
         } catch(NumberFormatException e) {
