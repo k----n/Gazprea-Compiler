@@ -202,9 +202,21 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return null;
     }
 
+    private Pair<String, String> parseTupleAccess(String access) {
+        String[] parts = access.split(".");
+        return new Pair<String, String>(parts[0], parts[1]);
+    }
+
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
-        if (ctx.Identifier() != null) {
+        if (ctx.TupleAccess() != null) {
+            // the accessing of a tuple field
+            Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
+            // TODO: get type of variable referenced.
+            // TODO: get field of variable referenced and put it on stack
+            // TODO: return type of field referenced.
+        }
+        else if (ctx.Identifier() != null) {
             // TODO: This should unwrap the variable and put it on the stack and return the type
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
             Variable variable = this.scope.getVariable(ctx.Identifier().getText());
@@ -522,14 +534,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 //        String sizeData = this.visitSizeData(ctx.sizeData());
 
         // expression portion type
-        Type assignedType = null;
+        Type assignedType;
 
         if (ctx.expression() != null) {
             // expression portion is included
 
             assignedType = this.visitExpression(ctx.expression());
 
-            if (!declaredType.equals(assignedType) && declaredType.getType() != Type.TYPES.NULL) {
+            if (declaredType.getType() == Type.TYPES.TUPLE || assignedType.getType() == Type.TYPES.TUPLE) {
+                // TODO: declare the struct in LLVM
+                // TODO: Assign the type appropriately
+            } else if (!declaredType.equals(assignedType) && declaredType.getType() != Type.TYPES.NULL) {
                 // case where variable is not implicitly declared and the declared type is different from
                 // the assigned value
                 String promotionFunction = Type.getPromoteFunction(assignedType, declaredType);

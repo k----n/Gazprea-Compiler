@@ -43,5 +43,17 @@ public class Tuple {
         return true;
     }
 
-
+    private static String typeToLLVMStructType(Type type) {
+        // TODO: USE THIS FUNCTION
+        switch (type.getType()) {
+            case INTEGER:
+                return "i32";
+            case CHARACTER:
+                return "i8";
+            case BOOLEAN:
+                return "i1";
+            case REAL:
+                return "float";
+        }
+    }
 }
