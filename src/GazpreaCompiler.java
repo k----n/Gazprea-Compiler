@@ -231,24 +231,39 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
         else if (ctx.expression() != null && ctx.expression().size() == 1) {
             // CASE: where there is only one expression in the expression statement
-            if (ctx.As() == null && ctx.Sign() == null) {
-                // CASE: parenthesis
-                return this.visitExpression(ctx.expression(0));
-            } else if (ctx.As() == null) {
-                // CASE: + or - expression
-                Type type = this.visitExpression(ctx.expression(0));
-
-                if (ctx.Sign().getText() == "-") {
-                    // TODO: call function that negatizes the expression
+            Type type = this.visitExpression(ctx.expression(0));
+            if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("-")) {
+                if (type.getType().equals(Type.TYPES.INTEGER)) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "iv");
+                    this.addCode(negation.render());
+                } else {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "rv");
+                    this.addCode(negation.render());
                 }
-
+                return type;
+            }
+            else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("+")) {
+                return type;
+            }
+            else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("not")) {
+                ST negation = this.llvmGroup.getInstanceOf("negation");
+                negation.add("typeLetter", "bv");
+                this.addCode(negation.render());
+                return type;
+            }
+            else if (ctx.As() == null) {
+                // CASE: parenthesis
                 return type;
             } else {
                 // CASE: casting case
-                Type originalType = this.visitExpression(ctx.expression(0));
                 Type newType = this.visitType(ctx.type());
 
-                // TODO: get respective casting function
+                String typeLetter = Type.getCastingFunction(type, newType);
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
 
                 return newType;
             }
@@ -263,6 +278,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             return this.visitFunctionCall(ctx.functionCall());
         }
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
+            // CASE: where there is two expressions in the expression statement
             Type left = (Type)visit(ctx.expression(0));
             Type right = (Type)visit(ctx.expression(1));
             String typeLetter = Type.getResultFunction(left, right);
@@ -281,137 +297,130 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // TODO INDEXING OR MATRIX
                 return null;
             }
+            ST operatorCall;
             switch(operator) {
                 // CASE: concat
-                case "||": {
+                case "||":
                     // TODO
-                }
+                return null;
                 // CASE: OR
-                case "or": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                case "or":
+                    operatorCall = this.llvmGroup.getInstanceOf("logicalor");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: XOR
-                case "xor": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                case "xor":
+                    operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: AND
-                case "and": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                case "and":
+                    operatorCall = this.llvmGroup.getInstanceOf("logicaland");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: ==
-                case "==": {
+                case "==":
                     // TODO TUPLE
-                    ST operatorCall = this.llvmGroup.getInstanceOf("equal");
+                    operatorCall = this.llvmGroup.getInstanceOf("equal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: !=
-                case "!=": {
+                case "!=":
                     // TODO TUPLE
-                    ST operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                    operatorCall = this.llvmGroup.getInstanceOf("notequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: <
-                case "<": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                case "<":
+                    operatorCall = this.llvmGroup.getInstanceOf("lessthan");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: <=
-                case "<=": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                case "<=":
+                    operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: >
-                case ">": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
+                case ">":
+                    operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: >=
-                case ">=": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
+                case ">=":
+                    operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+
                 // CASE: by
-                case "by": {
+                case "by":
                     // TODO
-                }
+                return null;
                 // CASE: +
-                case "+": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("addition");
+                case "+":
+                    operatorCall = this.llvmGroup.getInstanceOf("addition");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: -
-                case "-": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("subtraction");
+                case "-":
+                    operatorCall = this.llvmGroup.getInstanceOf("subtraction");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: dotproduct
-                case "**": {
+                case "**":
                     // TODO
                     if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))){
                         throw new Error("Types must be vectors");
                     }
-                }
+                return null;
                 // CASE: *
-                case "*": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("multiplication");
+                case "*":
+                    operatorCall = this.llvmGroup.getInstanceOf("multiplication");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: /
-                case "/": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("division");
+                case "/":
+                    operatorCall = this.llvmGroup.getInstanceOf("division");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: %
-                case "%": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                case "%":
+                    operatorCall = this.llvmGroup.getInstanceOf("modulus");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: ^
-                case "^": {
-                    ST operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
+                case "^":
+                    operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
                 // CASE: interval ..
-                case "..": {
+                case "..":
                     // TODO
                     if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
                         throw new Error("Types must be ineger in interval");
                     }
-
-                }
+                return null;
 
             }
         }

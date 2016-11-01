@@ -1,0 +1,14 @@
+/* expression test, delete later */
+
+const boolean x;
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	// logical or false
+	x = as<boolean>(0);
+	x -> out;
+
+        /* must have a return */ 
+        return 0; 
+}

@@ -44,10 +44,10 @@ public class Type {
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
             {/*  bool           int             char                 real */
-    /*bool*/    {"noop",        "bool_to_int",  "bool_to_char",      "void"},
-    /*int*/     {"int_to_bool", "noop",         "int_to_char",       "int_to_real"},
-    /*char*/    {"void",        "char_to_int",  "noop",              "char_to_real"},
-    /*real*/    {"void",        "real_to_int",  "void",              "noop"},
+    /*bool*/    {"bv",          "iv",           "cv",                "rv"  },
+    /*int*/     {"bv",          "iv",           "cv",                "rv"  },
+    /*char*/    {"bv",          "iv",           "cv",                "rv"  },
+    /*real*/    {"void",        "iv",           "void",              "rv"  },
             };
 
     private static String[] NULL_TABLE =
@@ -113,6 +113,23 @@ public class Type {
             case INPUT_STREAM: return strIN;
             default:        return "";
         }
+    }
+
+    public static Type getReturnType(String type) {
+        TYPES retType;
+        switch(type) {
+            case "iv":
+                retType = TYPES.INTEGER;
+                break;
+            case "rv":
+                retType = TYPES.REAL;
+                break;
+            case "bv":
+                retType = TYPES.BOOLEAN;
+                break;
+            default: return null;
+        }
+        return new Type(Type.SPECIFIERS.CONST, retType);
     }
 
     @Override
@@ -194,6 +211,12 @@ public class Type {
         int fromIndex = getTypeTableIndex(from);
         int toIndex = getTypeTableIndex(to);
 
-        return CASTING_TABLE[fromIndex][toIndex];
+        String result = CASTING_TABLE[fromIndex][toIndex];
+
+        if (result.equals("void")){
+            throw new Error("Cannot cast to this type");
+        }
+
+        return result;
     }
 }

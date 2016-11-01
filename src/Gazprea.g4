@@ -115,7 +115,7 @@ literal
 
 vectorLiteral: '[' (expression (',' expression)*)? ']';
 //
-tupleLiteral: '(' expression (',' expression)* ')';
+tupleLiteral: '(' expression (',' expression)+ ')';
 
 
 // Keywords
