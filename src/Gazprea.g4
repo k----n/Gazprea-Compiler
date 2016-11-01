@@ -30,9 +30,11 @@ block: '{' translationalUnit* '}';
 
 // Types
 type
- : TypeSpecifier? typeName TypeType?
+ : TypeSpecifier? typeName tupleTypeDetails? TypeType?
  | TypeSpecifier typeName? TypeType?
  ;
+
+tupleTypeDetails: '(' (typeName ',')* typeName ')';
 
 typeName
  : BuiltinType

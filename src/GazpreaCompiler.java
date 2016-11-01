@@ -486,6 +486,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     typeName = Type.TYPES.INTEGER; break;
                 case Type.strREAL:
                     typeName = Type.TYPES.REAL; break;
+                case Type.strTUPLE:
+                    typeName = Type.TYPES.TUPLE; break;
                 case Type.strSTRING:
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;
@@ -518,9 +520,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     break;
                 case Type.strVECTOR:
                     typeType = Type.COLLECTION_TYPES.VECTOR;
-                    break;
-                case Type.strTUPLE:
-                    typeType = Type.COLLECTION_TYPES.TUPLE;
                     break;
                 case Type.strMATRIX:
                     typeType = Type.COLLECTION_TYPES.MATRIX;
