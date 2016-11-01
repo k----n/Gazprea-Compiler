@@ -33,3 +33,12 @@ void _unwrap() {
 	}
 	value->release();
 }
+
+bool toBool() {
+	Value* value = stack->pop();
+	bool* returnValuePtr = value->booleanValue();
+	bool returnValue = *returnValuePtr;
+	delete returnValuePtr;
+	value->release();
+	return returnValue;
+}

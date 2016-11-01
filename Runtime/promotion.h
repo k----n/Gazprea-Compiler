@@ -15,8 +15,12 @@ void promoteTo_b() {
 	int* intValue;
 	char* charValue;
 	switch (value->getType()->getType()) {
-		case NullType: printf("Cannot promote Null\n"); exit(1);
-		case IdentityType: printf("Cannot promote Identity\n"); exit(1);
+		case NullType:
+			newValue = new Value(false);
+			break;
+		case IdentityType:
+			newValue = new Value(true);
+			break;
 		case BooleanType:
 			newValue = value;
 			newValue->retain();
@@ -50,8 +54,12 @@ void promoteTo_i() {
 	float* realValue;
 	char* charValue;
 	switch (value->getType()->getType()) {
-		case NullType: printf("Cannot promote Null\n"); exit(1);
-		case IdentityType: printf("Cannot promote Identity\n"); exit(1);
+		case NullType:
+			newValue = new Value(0);
+			break;
+		case IdentityType:
+			newValue = new Value(1);
+			break;
 		case BooleanType:
 			boolValue = value->booleanValue();
 			newValue = new Value(*boolValue ? 1 : 0);
@@ -88,8 +96,12 @@ void promoteTo_r() {
 	int* intValue;
 	char* charValue;
 	switch (value->getType()->getType()) {
-		case NullType: printf("Cannot promote Null\n"); exit(1);
-		case IdentityType: printf("Cannot promote Identity\n"); exit(1);
+		case NullType:
+			newValue = new Value(0.0f);
+			break;
+		case IdentityType:
+			newValue = new Value(1.0f);
+			break;
 		case BooleanType:
 			boolValue = value->booleanValue();
 			newValue = new Value(*boolValue ? 1.0f : 0.0f);
@@ -125,8 +137,12 @@ void promoteTo_c() {
 	bool* boolValue;
 	int* intValue;
 	switch (value->getType()->getType()) {
-		case NullType: printf("Cannot promote Null\n"); exit(1);
-		case IdentityType: printf("Cannot promote Identity\n"); exit(1);
+		case NullType:
+			newValue = new Value('\0');
+			break;
+		case IdentityType:
+			newValue = new Value('\1');
+			break;
 		case BooleanType:
 			boolValue = value->booleanValue();
 			newValue = new Value((char)(*boolValue ? 1 : 0));
