@@ -57,7 +57,5 @@ logicalor(typeLetter) ::= "call void @_Z5lor_<typeLetter>()"
 logicalxor(typeLetter) ::= "call void @_Z5lxr_<typeLetter>()"
 logicaland(typeLetter) ::= "call void @_Z5lnd_<typeLetter>()"
 
-promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
-
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"
