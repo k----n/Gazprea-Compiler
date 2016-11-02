@@ -442,7 +442,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             retType = Type.TYPES.IDENTITY;
         } else if (ctx.IntegerLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushInteger");
-            line.add("value", ctx.getText());
+            line.add("value", ctx.getText().replaceAll("_", ""));
             retType = Type.TYPES.INTEGER;
         } else if (ctx.BooleanLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushBoolean");
@@ -453,6 +453,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         } else if (ctx.StringLiteral() != null) {
             retType = Type.TYPES.STRING;
         } else if (ctx.RealLiteral() != null) {
+            line = this.llvmGroup.getInstanceOf("pushReal");
+            float val = Float.parseFloat(ctx.getText().replaceAll("_", ""));
+            String hex_val = Long.toHexString(Double.doubleToLongBits(val));
+            line.add("value", "0x" + hex_val.toUpperCase());
             retType = Type.TYPES.REAL;
         } else if (ctx.tupleLiteral() != null) {
             // TODO: handle tuple types

@@ -18,7 +18,7 @@ void printInteger(Value* value) {
 
 void printReal(Value* value) {
 	float* realValue_ptr = value->realValue();
-	printf("%lf", *realValue_ptr);
+	printf("%g", *realValue_ptr);
 	delete realValue_ptr;
 }
 

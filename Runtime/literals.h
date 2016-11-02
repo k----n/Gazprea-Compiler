@@ -32,3 +32,13 @@ void pushInteger(int value) {
 void varInitPushNullInteger() {
 	pushInteger(0);
 }
+
+void pushReal(float value) {
+	Value* floatValue = new Value(value);
+	stack->push(floatValue);
+	floatValue->release();
+}
+
+void varInitPushNullReal() {
+	pushReal(0.0);
+}
