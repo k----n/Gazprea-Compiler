@@ -42,3 +42,13 @@ void pushReal(float value) {
 void varInitPushNullReal() {
 	pushReal(0.0);
 }
+
+void pushCharacter(char value) {
+	Value* charValue = new Value(value);
+	stack->push(charValue);
+	charValue->release();
+}
+
+void varInitPushNullCharacter() {
+	pushReal('\0');
+}

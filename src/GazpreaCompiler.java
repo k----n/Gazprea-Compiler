@@ -449,8 +449,45 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             line.add("value", ctx.getText());
             retType = Type.TYPES.BOOLEAN;
         } else if (ctx.CharacterLiteral() != null) {
+            line = this.llvmGroup.getInstanceOf("pushCharacter");
+            String character = ctx.getText().replaceAll("'", "");
+            char val = 0;
+            switch (character) {
+                case "\\a":
+                    val = 7;
+                    break;
+                case "\\b":
+                    val = '\b';
+                    break;
+                case "\\n":
+                    val = '\n';
+                    break;
+                case "\\r":
+                    val = '\r';
+                    break;
+                case "\\t":
+                    val = '\t';
+                    break;
+                case "\\\\":
+                    val = '\\';
+                    break;
+                case "\\'":
+                    val = '\'';
+                    break;
+                case "\\\"":
+                    val = '\"';
+                    break;
+                case "\\0":
+                    val = '\0';
+                    break;
+                default:
+                    val = character.charAt(0);
+                    break;
+            }
+            line.add("value", (int) val);
             retType = Type.TYPES.CHARACTER;
         } else if (ctx.StringLiteral() != null) {
+            // TODO
             retType = Type.TYPES.STRING;
         } else if (ctx.RealLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushReal");
