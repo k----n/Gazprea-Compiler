@@ -216,10 +216,24 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // the accessing of a tuple field
             Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
 
+            String varName = tupleAccess.left();
+            String field = tupleAccess.right();
 
-            // TODO: get type of variable referenced.
-            // TODO: get field of variable referenced and put it on stack
-            // TODO: return type of field referenced.
+            // first get the tuple on the stack
+            ST line = this.llvmGroup.getInstanceOf("pushVariable");
+            Variable variable = this.scope.getVariable(varName);
+            line.add("name", variable.getMangledName());
+            this.addCode(line.render());
+
+            // then get the field respective to the tuple on the stack
+            Tuple tupleType = variable.getType().getTupleType();
+            Integer fieldNumber = tupleType.getFieldNumber(field);
+
+            ST getTupleField = this.llvmGroup.getInstanceOf("getTupleField");
+            getTupleField.add("index", fieldNumber);
+            this.addCode(getTupleField.render());
+
+            return tupleType.getTypeOfField(fieldNumber);
         }
         else if (ctx.Identifier() != null) {
             // TODO: This should unwrap the variable and put it on the stack and return the type
@@ -499,7 +513,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             line.add("value", "0x" + hex_val.toUpperCase());
             retType = Type.TYPES.REAL;
         } else if (ctx.tupleLiteral() != null) {
-            // TODO: handle tuple types
+            return this.visitTupleLiteral(ctx.tupleLiteral());
         } else if (ctx.vectorLiteral() != null) {
             Type vectorType = this.visitVectorLiteral(ctx.vectorLiteral());
             retCollectionType = Type.COLLECTION_TYPES.VECTOR;
@@ -511,6 +525,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         // TODO: literals are considered constant types
         return new Type(Type.SPECIFIERS.CONST, retType, retCollectionType);
+    }
+
+    @Override
+    public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
+        Tuple tupleType = new Tuple();
+
+        // TODO: FINISH IMPLEMENTING THIS!!!!
+
+        for (int e = 0; e < ctx.expression().size(); ++e) {
+
+        }
+
+        return null;
     }
 
     @Override
@@ -542,10 +569,33 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitAssignment(GazpreaParser.AssignmentContext ctx) {
-        this.visitExpression(ctx.expression());
-        ST assign = this.llvmGroup.getInstanceOf("assignVariable");
-        assign.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
-        this.addCode(assign.render());
+        // tuple asssignment vs. regular assignment
+        if (ctx.TupleAccess() != null) {
+            // the accessing of a tuple field
+            Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
+
+            String varName = tupleAccess.left();
+            String field = tupleAccess.right();
+
+            // first get the tuple on the stack
+            ST line = this.llvmGroup.getInstanceOf("pushVariable");
+            Variable variable = this.scope.getVariable(varName);
+            line.add("name", variable.getMangledName());
+            this.addCode(line.render());
+
+            // then get the field respective to the tuple on the stack
+            Tuple tupleType = variable.getType().getTupleType();
+            Integer fieldNumber = tupleType.getFieldNumber(field);
+
+            ST assignTupleField = this.llvmGroup.getInstanceOf("assignTupleField");
+            assignTupleField.add("index", fieldNumber);
+            this.addCode(assignTupleField.render());
+        } else {
+            this.visitExpression(ctx.expression());
+            ST assign = this.llvmGroup.getInstanceOf("assignVariable");
+            assign.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
+            this.addCode(assign.render());
+        }
         return null;
     }
 
@@ -640,24 +690,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             assignedType = this.visitExpression(ctx.expression());
 
-            if (declaredType.getType() == Type.TYPES.TUPLE || assignedType.getType() == Type.TYPES.TUPLE) {
-                // TODO: declare the struct in LLVM
-                // TODO: Assign the type appropriately
-            } else if (!declaredType.equals(assignedType) && declaredType.getType() != Type.TYPES.NULL) {
-                // case where variable is not implicitly declared and the declared type is different from
-                // the assigned value
-                String promotionFunction = Type.getPromoteFunction(assignedType, declaredType);
-                // TODO: promote to declared type in LLVM
-            } else {
+
+            if (declaredType.getType() == Type.TYPES.NULL) {
                 declaredType = assignedType;
             }
         } else {
             // expression portion is excluded
-
-            // TODO: We can choose which null gets pushed with type
-            String nullFunction = Type.getNullFunction(declaredType);
-            ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
-            this.addCode(nullLine.render());
+            if (declaredType.getType() == Type.TYPES.TUPLE) {
+                ST initializeTuple = declaredType.getTupleType().getInitializingStatements();
+                this.addCode(initializeTuple.render());
+            } else {
+                ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
+                this.addCode(nullLine.render());
+            }
         }
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
@@ -694,18 +739,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitTupleTypeDetails(GazpreaParser.TupleTypeDetailsContext ctx) {
-        ArrayList<String> fields = new ArrayList<String>();
+        Tuple tupleType = new Tuple();
 
         for (int i = 0; i < ctx.tupleTypeAtom().size(); ++i) {
             Pair<GazpreaParser.TypeContext, TerminalNode> atom = this.visitTupleTypeAtom(ctx.tupleTypeAtom().get(i));
-            if (atom.right() == null) {
-                fields.add(null);
-            } else {
-                fields.add(atom.right().getText());
-            }
+            Type atomType = this.visitType(atom.left());
+            tupleType.addField(atom.right().getText(), atomType);
         }
 
-        Type type = new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, new Tuple(fields));
+        Type type = new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
 
         return type;
     }

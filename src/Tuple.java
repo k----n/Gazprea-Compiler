@@ -13,24 +13,25 @@ public class Tuple {
     HashMap<String, Integer> id_to_number;
 
     // Get variable property number refers to
-    HashMap<Integer, Variable> variables;
+    HashMap<Integer, Type> variables;
 
     // Holds the last used field Id
     private Integer fieldId;
 
-    Tuple(ArrayList<String> fields) {
+    Tuple() {
         this.fieldId = 0;
-        fields.forEach(this::addField);
+        id_to_number = new HashMap<>();
+        variables = new HashMap<>();
     }
 
     // used to construct the tuple object
-    public void addField(String field) {
+    public void addField(String field, Type fieldType) {
         ++this.fieldId;
         if (isStringId(field)) {
             this.id_to_number.put(field, this.fieldId);
         }
 
-        this.variables.put(this.fieldId, null);
+        this.variables.put(this.fieldId, fieldType);
     }
 
     public Integer getFieldNumber(String field) {
@@ -39,6 +40,10 @@ public class Tuple {
         } else {
             return id_to_number.get(field);
         }
+    }
+
+    public Type getTypeOfField(Integer fieldNo) {
+        return variables.get(fieldNo);
     }
 
     private Boolean isStringId(String id) {
@@ -59,13 +64,13 @@ public class Tuple {
         STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
         switch (type) {
             case BOOLEAN:
-                return llvmGroup.getInstanceOf("pushIntegerToTuple");
+                return llvmGroup.getInstanceOf("pushNullIntegerToTuple(");
             case CHARACTER:
-                return llvmGroup.getInstanceOf("pushRealToTuple");
+                return llvmGroup.getInstanceOf("pushNullRealToTuple");
             case INTEGER:
-                return llvmGroup.getInstanceOf("pushBooleanToTuple");
+                return llvmGroup.getInstanceOf("pushNullBooleanToTuple");
             case REAL:
-                return llvmGroup.getInstanceOf("pushCharacterToTuple");
+                return llvmGroup.getInstanceOf("pushNullCharacterToTuple");
             default:
                 throw new RuntimeException("Invalid Tuple Type");
         }
@@ -76,8 +81,8 @@ public class Tuple {
         ST varInit_Tuple =  llvmGroup.getInstanceOf("varInit_Tuple");
 
         for (int key = 1; key <= variables.size(); ++key) {
-            Variable var = variables.get(key);
-            varInit_Tuple.add("tuple_statements", getSTForType(var.getType().getType()));
+            Type var = variables.get(key);
+            varInit_Tuple.add("tuple_statements", getSTForType(var.getType()));
         }
 
         return varInit_Tuple;

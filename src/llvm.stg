@@ -35,11 +35,14 @@ call void @_Z19pushBoolNullToTuplev()
 pushNullCharacterToTuple(value) ::= <<
 call void @_Z19pushCharNullToTuplev()
 >>
-
 // expects the expression is already in stack
-assignTupleField(tupleNameMangled, index) ::= <<
+assignTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 call void @_Z16assignTupleFieldv()
+>>
+
+getTupleField(index) ::= <<
+call void @_Z15getValueAtTuplei(i32 <index>)
 >>
 
 
