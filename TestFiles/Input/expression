@@ -5,7 +5,7 @@ procedure main() returns integer{
         var out = std_output();
 
 	// logical or false
-	character x = '1';
+	real x = 4_2_e_+_10_;
 	x -> out;
 
         /* must have a return */ 

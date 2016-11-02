@@ -433,7 +433,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ST line = null;
         Type.TYPES retType = null;
         Type.COLLECTION_TYPES retCollectionType = null;
-
         if (ctx.NullLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushNull");
             retType = Type.TYPES.NULL;
