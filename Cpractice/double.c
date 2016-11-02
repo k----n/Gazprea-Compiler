@@ -5,7 +5,5 @@ int f(double a) {
 }
 
 int main() { 
-  float b = 0x400051EB851EB852;
-
-  
+  float b = 2.;
 }

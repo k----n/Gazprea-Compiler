@@ -1,3 +1,7 @@
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -51,19 +55,31 @@ public class Tuple {
         return true;
     }
 
-    private static String typeToLLVMStructType(Type type) {
-        // TODO: USE THIS FUNCTION
-        switch (type.getType()) {
-            case INTEGER:
-                return "i32";
-            case CHARACTER:
-                return "i8";
+    private ST getSTForType(Type.TYPES type) {
+        STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
+        switch (type) {
             case BOOLEAN:
-                return "i1";
+                return llvmGroup.getInstanceOf("pushIntegerToTuple");
+            case CHARACTER:
+                return llvmGroup.getInstanceOf("pushRealToTuple");
+            case INTEGER:
+                return llvmGroup.getInstanceOf("pushBooleanToTuple");
             case REAL:
-                return "float";
+                return llvmGroup.getInstanceOf("pushCharacterToTuple");
             default:
-                return "";
+                throw new RuntimeException("Invalid Tuple Type");
         }
+    }
+
+    public ST getInitializingStatements() {
+        STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
+        ST varInit_Tuple =  llvmGroup.getInstanceOf("varInit_Tuple");
+
+        for (int key = 1; key <= variables.size(); ++key) {
+            Variable var = variables.get(key);
+            varInit_Tuple.add("tuple_statements", getSTForType(var.getType().getType()));
+        }
+
+        return varInit_Tuple;
     }
 }

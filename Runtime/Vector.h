@@ -38,7 +38,19 @@ public:
 			node->next = newNode;
 		}
 	}
-	
+
+	void set(int index, T* element) {
+	    if (index < 0) { printf("Index out of bounds\n"); exit(1); }
+	    if (index >= this->count) { printf("Index out of bounds\n"); exit(1); }
+
+	    VectorNode* node = this->firstNode;
+        for (int i = 0; i < index; ++i) {
+            node = node->next;
+        }
+        delete(node->value);
+        node->value = element;
+	}
+
 	T* get(int index) const {
 		if (index < 0) { printf("Index out of bounds\n"); exit(1); }
 		if (index >= this->count) { printf("Index out of bounds\n"); exit(1); }

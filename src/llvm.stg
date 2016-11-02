@@ -19,6 +19,29 @@ functionReturn() ::= "ret void"
 tuple_struct(name, fields) ::= <<
 %Gaz_Struct.<name> = type {<fields; separator=",\n">}
 >>
+varInit_Tuple(tuple_statements) ::= <<
+call void @_Z14pushEmptyTuplev();
+<tuple_statements; separator="\n">
+>>
+pushNullIntegerToTuple(value) ::= <<
+call void @_Z18pushIntNullToTuplev()
+>>
+pushNullRealToTuple(value) ::= <<
+call void @_Z19pushRealNullToTuplev()
+>>
+pushNullBooleanToTuple(value) ::= <<
+call void @_Z19pushBoolNullToTuplev()
+>>
+pushNullCharacterToTuple(value) ::= <<
+call void @_Z19pushCharNullToTuplev()
+>>
+
+// expects the expression is already in stack
+assignTupleField(tupleNameMangled, index) ::= <<
+call void @_Z15getValueAtTuplei(i32 <index>)
+call void @_Z16assignTupleFieldv()
+>>
+
 
 pushVariable(name) ::= "call void @_Z4pushPPv(i8** <name>)"
 pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
@@ -28,6 +51,9 @@ varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"
 varInit_output() ::= "call void @_Z10std_outputv()"
 varInit_input() ::= "call void @_Z9std_inputv()"
 varInit_boolean() ::= "call void @_Z22varInitPushNullBooleanv()"
+varInit_real() ::= "call void @_Z19varInitPushNullRealv()"
+varInit_character() ::= "call void @_Z24varInitPushNullCharacterv()"
+
 
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
 
@@ -37,6 +63,10 @@ pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
 pushInteger(value) ::= "call void @_Z11pushIntegeri(i32 <value>)"
 pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
+pushReal(value) ::= "call void @_Z8pushRealf(float <value>)"
+pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
+
+
 
 addition(typeLetter) ::= "call void @_Z5add_<typeLetter>()"
 subtraction(typeLetter) ::= "call void @_Z5sub_<typeLetter>()"

@@ -235,24 +235,39 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
         else if (ctx.expression() != null && ctx.expression().size() == 1) {
             // CASE: where there is only one expression in the expression statement
-            if (ctx.As() == null && ctx.Sign() == null) {
-                // CASE: parenthesis
-                return this.visitExpression(ctx.expression(0));
-            } else if (ctx.As() == null) {
-                // CASE: + or - expression
-                Type type = this.visitExpression(ctx.expression(0));
-
-                if (ctx.Sign().getText() == "-") {
-                    // TODO: call function that negatizes the expression
+            Type type = this.visitExpression(ctx.expression(0));
+            if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("-")) {
+                if (type.getType().equals(Type.TYPES.INTEGER)) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "iv");
+                    this.addCode(negation.render());
+                } else {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "rv");
+                    this.addCode(negation.render());
                 }
-
+                return type;
+            }
+            else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("+")) {
+                return type;
+            }
+            else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("not")) {
+                ST negation = this.llvmGroup.getInstanceOf("negation");
+                negation.add("typeLetter", "bv");
+                this.addCode(negation.render());
+                return type;
+            }
+            else if (ctx.As() == null) {
+                // CASE: parenthesis
                 return type;
             } else {
                 // CASE: casting case
-                Type originalType = this.visitExpression(ctx.expression(0));
                 Type newType = this.visitType(ctx.type());
 
-                // TODO: get respective casting function
+                String typeLetter = Type.getCastingFunction(type, newType);
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
 
                 return newType;
             }
@@ -266,113 +281,152 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
         }
-        // TODO FIX THIS
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
-            visit(ctx.expression(0));
-            visit(ctx.expression(1));
+            // CASE: where there is two expressions in the expression statement
+            Type left = (Type)visit(ctx.expression(0));
+            Type right = (Type)visit(ctx.expression(1));
+            String typeLetter = Type.getResultFunction(left, right);
+
+            // TODO make sure swapping is right and NULL works
+            for (int i = 0; i < 2; i ++) {
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
+                ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                this.addCode(swapStack.render());
+            }
+
             String operator = ctx.op.getText();
             if (operator == null){
-                // INDEXING OR MATRIX
+                // TODO INDEXING OR MATRIX
+                return null;
             }
+            ST operatorCall;
             switch(operator) {
                 // CASE: concat
-                case "||": {
-
-                };
+                case "||":
+                    // TODO
+                return null;
                 // CASE: OR
-                case "or": {
-
-                };
-                // CASE: XOR
-                case "xor": {
-
-                };
-                // CASE: AND
-                case "and": {
-
-                };
-                // CASE: ==
-                case "==": {
-                    // TODO TUPLE
-
-                };
-                // CASE: !=
-                case "!=": {
-                    // TODO TUPLE
-
-
-                };
-                // CASE: <
-                case "<": {
-
-                };
-                // CASE: <=
-                case "<=": {
-
-                };
-                // CASE: >
-                case ">": {
-
-                };
-                // CASE: >=
-                case ">=": {
-
-                };
-                // CASE: by
-                case "by": {
-
-                };
-                // CASE: +
-                case "+": {
-
-                };
-                // CASE: -
-                case "-": {
-
-                };
-                // CASE: dotproduct
-                case "**": {
-
-                };
-                // CASE: *
-                case "*": {
-                    // TODO type promotion
-                    ST operatorCall = this.llvmGroup.getInstanceOf("multiplication");
-                    operatorCall.add("typeLetter", "iv"); // TODO get the type of values pushed to stack for typeLetter
+                case "or":
+                    operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                    operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return null;
-                }
+                    return Type.getReturnType(typeLetter);
+                // CASE: XOR
+                case "xor":
+                    operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: AND
+                case "and":
+                    operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: ==
+                case "==":
+                    // TODO TUPLE
+                    operatorCall = this.llvmGroup.getInstanceOf("equal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: !=
+                case "!=":
+                    // TODO TUPLE
+                    operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: <
+                case "<":
+                    operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: <=
+                case "<=":
+                    operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: >
+                case ">":
+                    operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: >=
+                case ">=":
+                    operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+                // CASE: by
+                case "by":
+                    // TODO
+                return null;
+                // CASE: +
+                case "+":
+                    operatorCall = this.llvmGroup.getInstanceOf("addition");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+                // CASE: -
+                case "-":
+                    operatorCall = this.llvmGroup.getInstanceOf("subtraction");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+                // CASE: dotproduct
+                case "**":
+                    // TODO
+                    if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))){
+                        throw new Error("Types must be vectors");
+                    }
+                return null;
+                // CASE: *
+                case "*":
+                    operatorCall = this.llvmGroup.getInstanceOf("multiplication");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
                 // CASE: /
-                case "/": {
-
-                };
+                case "/":
+                    operatorCall = this.llvmGroup.getInstanceOf("division");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
                 // CASE: %
-                case "%": {
-
-                };
+                case "%":
+                    operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
                 // CASE: ^
-                case "^": {
-
-                };
+                case "^":
+                    operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
                 // CASE: interval ..
-                case "..": {
-
-                };
+                case "..":
+                    // TODO
+                    if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
+                        throw new Error("Types must be ineger in interval");
+                    }
+                return null;
 
             }
-
-//            String operator = "";
-//            if (ctx.Multiplication() != null) {
-//                operator = ctx.Multiplication().getText();
-//            }
-//
-//            ST operatorCall = null;
-//            switch (operator) {
-//                case "*": operatorCall = this.llvmGroup.getInstanceOf("multiplicationOperator");
-//            }
-//            if (operatorCall != null) {
-//                this.addCode(operatorCall.render());
-//            }
         }
         return null;
     }
@@ -383,7 +437,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ST line = null;
         Type.TYPES retType = null;
         Type.COLLECTION_TYPES retCollectionType = null;
-
         if (ctx.NullLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushNull");
             retType = Type.TYPES.NULL;
@@ -392,17 +445,58 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             retType = Type.TYPES.IDENTITY;
         } else if (ctx.IntegerLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushInteger");
-            line.add("value", ctx.getText());
+            line.add("value", ctx.getText().replaceAll("_", ""));
             retType = Type.TYPES.INTEGER;
         } else if (ctx.BooleanLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushBoolean");
             line.add("value", ctx.getText());
             retType = Type.TYPES.BOOLEAN;
         } else if (ctx.CharacterLiteral() != null) {
+            line = this.llvmGroup.getInstanceOf("pushCharacter");
+            String character = ctx.getText().replaceAll("'", "");
+            char val = 0;
+            switch (character) {
+                case "\\a":
+                    val = 7;
+                    break;
+                case "\\b":
+                    val = '\b';
+                    break;
+                case "\\n":
+                    val = '\n';
+                    break;
+                case "\\r":
+                    val = '\r';
+                    break;
+                case "\\t":
+                    val = '\t';
+                    break;
+                case "\\\\":
+                    val = '\\';
+                    break;
+                case "\\'":
+                    val = '\'';
+                    break;
+                case "\\\"":
+                    val = '\"';
+                    break;
+                case "\\0":
+                    val = '\0';
+                    break;
+                default:
+                    val = character.charAt(0);
+                    break;
+            }
+            line.add("value", (int) val);
             retType = Type.TYPES.CHARACTER;
         } else if (ctx.StringLiteral() != null) {
+            // TODO
             retType = Type.TYPES.STRING;
         } else if (ctx.RealLiteral() != null) {
+            line = this.llvmGroup.getInstanceOf("pushReal");
+            float val = Float.parseFloat(ctx.getText().replaceAll("_", ""));
+            String hex_val = Long.toHexString(Double.doubleToLongBits(val));
+            line.add("value", "0x" + hex_val.toUpperCase());
             retType = Type.TYPES.REAL;
         } else if (ctx.tupleLiteral() != null) {
             // TODO: handle tuple types

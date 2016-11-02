@@ -2,7 +2,7 @@
 
 const boolean x;
 
-procedure main(){ 
+procedure main() returns integer{ 
         var out = std_output();
 	
 	// negation
@@ -50,5 +50,5 @@ procedure main(){
         x -> out;  
  
         /* must have a return */ 
-        return; 
+        return 0; 
 }

@@ -77,9 +77,9 @@ conditional: If expression translationalUnit;
 // Expressions
 expression
  : TupleAccess
- | Identifier
  // CHECK PRECEDENCE
  | literal
+ | Identifier
  | '(' expression ')'
  | As '<' type '>' '(' expression ')'
  | generator
@@ -105,8 +105,8 @@ literal
  : NullLiteral
  | IdentityLiteral
  | BooleanLiteral
- | Sign? IntegerLiteral
  | RealLiteral
+ | Sign? IntegerLiteral
  | CharacterLiteral
  | vectorLiteral
  | StringLiteral
@@ -115,7 +115,7 @@ literal
 
 vectorLiteral: '[' (expression (',' expression)*)? ']';
 //
-tupleLiteral: '(' expression (',' expression)* ')';
+tupleLiteral: '(' expression (',' expression)+ ')';
 
 
 // Keywords
@@ -247,8 +247,8 @@ fragment FractionalConstant
  : DigitSequence? '.' DigitSequence
  | DigitSequence '.'?
  ;
-fragment DigitSequence: Digit+;
-fragment ExponentPart: [eE] Sign? DigitSequence;
+fragment DigitSequence: (Digit '_'*)+;
+fragment ExponentPart: [eE] '_'* Sign? '_'* DigitSequence;
 fragment Character
  : ~['\\\r\n]
  | EscapeSequence

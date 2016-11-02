@@ -1,9 +1,13 @@
 /* expression test, delete later */
 
-//const boolean x;
 
-procedure main(){ 
+procedure main() returns integer{ 
+        var out = std_output();
+
+	// logical or false
+	real x = 4_2_e_+_10_;
+	x -> out;
 
         /* must have a return */ 
-        return; 
+        return 0; 
 }

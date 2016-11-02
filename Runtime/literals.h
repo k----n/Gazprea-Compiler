@@ -42,3 +42,23 @@ void pushEmptyTuple() {
 void varInitPushEmptyTuple() {
     pushEmptyTuple();
 }
+
+void pushReal(float value) {
+	Value* floatValue = new Value(value);
+	stack->push(floatValue);
+	floatValue->release();
+}
+
+void varInitPushNullReal() {
+	pushReal(0.0);
+}
+
+void pushCharacter(char value) {
+	Value* charValue = new Value(value);
+	stack->push(charValue);
+	charValue->release();
+}
+
+void varInitPushNullCharacter() {
+	pushReal('\0');
+}

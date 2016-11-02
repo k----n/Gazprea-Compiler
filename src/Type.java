@@ -27,12 +27,27 @@ public class Type {
     /*IDNTY*/   {"idBool",  "idInt",    "idChar",   "idReal",       "void",     "noop"}
             };
 
+    // TABLE FOR RESULT OF OPERATIONS
+    // TODO TUPLE NOT IMPLEMENTED
+    // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
+    // iv = integer, rv = real, bv = boolean -- 'v' is appended because llvm does that
+    private static String[/*left*/][/*right*/] RESULT_TABLE =
+            {/*  bool       int         char        real            NULL        IDNTY       TUPLE*/
+    /*bool*/    {"bv",      "void",     "void",     "void",         "void",     "void",     "void"},
+    /*int*/     {"void",    "iv",       "void",     "rv",           "void",     "void",     "void"},
+    /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*real*/    {"void",    "rv",       "void",     "rv",           "void",     "void",     "void"},
+    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void"},
+    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
+    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple"},
+            };
+
     private static String[/*from*/][/*to*/] CASTING_TABLE =
             {/*  bool           int             char                 real */
-    /*bool*/    {"noop",        "bool_to_int",  "bool_to_char",      "void"},
-    /*int*/     {"int_to_bool", "noop",         "int_to_char",       "int_to_real"},
-    /*char*/    {"void",        "char_to_int",  "noop",              "char_to_real"},
-    /*real*/    {"void",        "real_to_int",  "void",              "noop"},
+    /*bool*/    {"bv",          "iv",           "cv",                "rv"  },
+    /*int*/     {"bv",          "iv",           "cv",                "rv"  },
+    /*char*/    {"bv",          "iv",           "cv",                "rv"  },
+    /*real*/    {"void",        "iv",           "void",              "rv"  },
             };
 
     private static String[] NULL_TABLE =
@@ -100,6 +115,23 @@ public class Type {
         }
     }
 
+    public static Type getReturnType(String type) {
+        TYPES retType;
+        switch(type) {
+            case "iv":
+                retType = TYPES.INTEGER;
+                break;
+            case "rv":
+                retType = TYPES.REAL;
+                break;
+            case "bv":
+                retType = TYPES.BOOLEAN;
+                break;
+            default: return null;
+        }
+        return new Type(Type.SPECIFIERS.CONST, retType);
+    }
+
     @Override
     // compares types by 2 main components
     // TODO: consider doing tuple types comparison as well
@@ -142,6 +174,7 @@ public class Type {
             case REAL: return 3;
             case NULL: return 4;
             case IDENTITY: return 5;
+            case TUPLE: return 6;
             default: throw new RuntimeException("Undefined type in table");
         }
     }
@@ -161,10 +194,29 @@ public class Type {
         return PROMOTION_TABLE[fromIndex][toIndex];
     }
 
+    public static String getResultFunction(Type left, Type right) {
+        int fromIndex = getTypeTableIndex(left);
+        int toIndex = getTypeTableIndex(right);
+
+        String result = RESULT_TABLE[fromIndex][toIndex];
+
+        if (result.equals("void")){
+            throw new Error("Incompatible types");
+        }
+
+        return result;
+    }
+
     public static String getCastingFunction(Type from, Type to) {
         int fromIndex = getTypeTableIndex(from);
         int toIndex = getTypeTableIndex(to);
 
-        return CASTING_TABLE[fromIndex][toIndex];
+        String result = CASTING_TABLE[fromIndex][toIndex];
+
+        if (result.equals("void")){
+            throw new Error("Cannot cast to this type");
+        }
+
+        return result;
     }
 }
