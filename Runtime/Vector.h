@@ -25,7 +25,9 @@ public:
 		VectorNode* newNode = new VectorNode;
 		newNode->next = nullptr;
 		newNode->value = element;
-		
+
+		this->count++;
+
 		if (this->firstNode == nullptr) {
 			this->firstNode = newNode;
 		} else {
@@ -45,26 +47,26 @@ public:
 		for (int i = 0; i < index; ++i) {
 			node = node->next;
 		}
-		T* value = node->value;
+		T* value = (T*) node->value;
 		((Object*)value)->retain();
 		return value;
 	}
 	
 	int getCount() const { return this->count; }
-	
+
+	~Vector() {
+    		VectorNode* node = this->firstNode;
+    		while (node != nullptr) {
+    			VectorNode* nextNode = node->next;
+    			node->value->release();
+    			delete node;
+    			node = nextNode;
+    		}
+    	}
+
 private:
 	VectorNode* firstNode = nullptr;
 	int count = 0;
-	
-	~Vector() {
-		VectorNode* node = this->firstNode;
-		while (node != nullptr) {
-			VectorNode* nextNode = node->next;
-			node->value->release();
-			delete node;
-			node = nextNode;
-		}
-	}
 	
 	typedef Object super;
 };

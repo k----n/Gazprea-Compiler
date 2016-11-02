@@ -7,8 +7,6 @@ struct tuple {
   int d;
 };
 
-void 
-
 int main() {
   struct tuple *alg = new struct tuple();
 

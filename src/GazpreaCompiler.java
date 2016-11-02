@@ -15,6 +15,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, Function> functions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
+    private Map<String, Tuple> tuples = new HashMap<>();
+
     private List<String> topLevelCode = new ArrayList<>();
 
     private Map<String, String> functionNameMappings = new HashMap<>();
@@ -213,6 +215,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.TupleAccess() != null) {
             // the accessing of a tuple field
             Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
+
+
             // TODO: get type of variable referenced.
             // TODO: get field of variable referenced and put it on stack
             // TODO: return type of field referenced.
@@ -561,8 +565,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
             this.addCode(nullLine.render());
         }
-
-        // TODO: differentiating between a tuple expression and a parenthesis expression
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
         this.scope.initVariable(variableName, variable);

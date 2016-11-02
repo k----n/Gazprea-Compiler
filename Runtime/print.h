@@ -63,6 +63,7 @@ void printValue() {
 		case IntegerType:	printInteger(value);					break;
 		case RealType:		printReal(value);						break;
 		case CharacterType:	printCharacter(value);					break;
+		case TupleType:     printf("Cannot print TupleType\n");     exit(1);
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);

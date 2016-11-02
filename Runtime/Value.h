@@ -5,6 +5,7 @@
 #include "allowedImports.h"
 #include "Object.h"
 #include "ValueType.h"
+#include "Vector.h"
 
 class Value : public Object {
 public:
@@ -35,7 +36,14 @@ public:
 		*newValue = value;
 		this->value = newValue;
 	}
-	
+
+	Value(Vector<Value> value) : super(TypeValue) {
+	    this->valueType = new ValueType(TupleType);
+	    Vector<Value> *newValue = new Vector<Value>();
+	    *newValue = value;
+	    this->value = newValue;
+	}
+
 	/// - Note: `value` is an exception as it becomes fully owned by `Value` -
 	///         it is NOT retained and should not be released externally.
 	Value(ValueType* type, void* value) : super(TypeValue) {
@@ -70,6 +78,9 @@ public:
 				copy->value = new char;
 				*(char*)(copy->value) = *(char*)this->value;
 				break;
+			case TupleType:
+			    copy->value = (Vector<Value> *)this->copy();
+			    break;
 			case Lvalue:
 				// TODO: Retain???
 				break;
@@ -88,6 +99,7 @@ public:
 	bool isInteger()	{ return this->valueType->getType() == IntegerType;	}
 	bool isReal()		{ return this->valueType->getType() == RealType;	}
 	bool isCharacter()	{ return this->valueType->getType() == CharacterType;}
+	bool isTupleType()  { return this->valueType->getType() == TupleType;   }
 	bool isStandardIn()	{ return this->valueType->getType() == StandardIn;	}
 	bool isStandardOut(){ return this->valueType->getType() == StandardOut;	}
 	bool isLvalue()		{ return this->valueType->getType() == Lvalue;		}
@@ -127,7 +139,16 @@ public:
 		*c = *(char*)this->value;
 		return c;
 	}
-	
+
+	Vector<Value>* tupleValue() {
+        Vector<Value> *v = new Vector<Value>();
+        if (this->isNull())     { printf("This is a null tuple\n"); exit(1); }
+        if (this->isIdentity()) { printf("This is an identity tuple\n"); exit(1); }
+        if (!this->isTupleType()) { printf("Not a tuple value\n"); exit(1); }
+        *v = *(Vector<Value> *)this->value;
+        return v;
+	}
+
 	Value* lvalue() {
 		if (!this->isLvalue()) { printf("Not an lvalue\n"); exit(1); }
 		Value* value = *(Value**)this->value;
@@ -153,6 +174,7 @@ private:
 			case IntegerType:	delete (int*)   this->value; break;
 			case RealType:		delete (float*)this->value; break;
 			case CharacterType:	delete (char*)	this->value; break;
+			case TupleType:     delete (Vector<Value> *) this->value; break;
 			case StandardIn:
 			case StandardOut:
 			case Lvalue:

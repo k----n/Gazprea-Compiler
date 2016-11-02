@@ -29,6 +29,14 @@ public class Tuple {
         this.variables.put(this.fieldId, null);
     }
 
+    public Integer getFieldNumber(String field) {
+        if (isStringId(field)) {
+            return Integer.parseInt(field);
+        } else {
+            return id_to_number.get(field);
+        }
+    }
+
     private Boolean isStringId(String id) {
         if (id == null) {
             return false;

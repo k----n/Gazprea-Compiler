@@ -21,7 +21,7 @@ void rightArrowOperator() {
 			printValue();
 			break;
 //		case MatrixType:
-//		case TupleType:
+		case TupleType:     printf("Cannot print TupleType\n"); exit(1);
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 //		case VectorStart:	printf("Cannot print VectorStart\n");	exit(1);
@@ -72,6 +72,7 @@ void leftArrowOperator() {
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(characterValue);
 			break;
+		case TupleType:     printf("Cannot input TupleType\n"); exit(1);
 		case StandardOut:	printf("Cannot input StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot input StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot input Lvalue\n");		exit(1);
