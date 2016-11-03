@@ -69,7 +69,8 @@ notstatement
 // | iteratorLoop
  ;
 
-declaration: type Identifier sizeData? (Assign expression)?;
+declaration: type Identifier sizeData? (Assign expression)?
+            | typedef;
 
 returnStatement: Return expression?;
 
