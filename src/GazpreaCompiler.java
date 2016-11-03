@@ -716,6 +716,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Type declaredType = this.visitType(ctx.type());
 
         String variableName = ctx.Identifier().getText();
+
+        // check to see that variable name is not a typedef
+        if (typedefs.containsKey(variableName)){
+            throw new Error("Cannot use type names");
+        }
+
 //        String sizeData = this.visitSizeData(ctx.sizeData());
 
         // expression portion type

@@ -2,6 +2,8 @@
 
 typedef integer int;
 
+typedef int int_;
+
 procedure main() returns integer{
         var out = std_output();
 	var int x = 1;
