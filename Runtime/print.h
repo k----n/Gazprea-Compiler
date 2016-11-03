@@ -1,7 +1,5 @@
 #pragma once
 
-bool shouldPrintNewLine = true;
-
 void printBoolean(Value* value) {
 	if (*value->booleanValue()) {
 		printf("T");
@@ -70,7 +68,4 @@ void printValue() {
 	}
 	valueType->release();
 	value->release();
-	if (shouldPrintNewLine) {
-		printf("\n");
-	}
 }

@@ -22,6 +22,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, String> functionNameMappings = new HashMap<>();
 
+    private int conditionalIndex = 0;
+
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
 
@@ -662,6 +664,25 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 this.addCode(postCallAssign.render());
             }
         });
+
+        return null;
+    }
+
+    @Override
+    public Object visitConditional(GazpreaParser.ConditionalContext ctx) {
+        this.visitExpression(ctx.expression());
+
+        ++this.conditionalIndex;
+
+        ST startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
+        startConditional.add("index", this.conditionalIndex);
+        this.currentFunction.addLine(startConditional.render());
+
+        this.visitTranslationalUnit(ctx.translationalUnit());
+
+        ST endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
+        endConditional.add("index", this.conditionalIndex);
+        this.currentFunction.addLine(endConditional.render());
 
         return null;
     }

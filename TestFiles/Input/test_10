@@ -1,7 +1,5 @@
 /* Boolean tests */
 
-
-
 procedure main() returns integer{ 
         var out = std_output();
 
@@ -10,7 +8,7 @@ procedure main() returns integer{
 	// unary expression
 	// negation of true
 	x = not true;
-        x -> out;
+	x -> out;
 
 	// negation of false
 	x = not false;
@@ -47,7 +45,7 @@ procedure main() returns integer{
 
 	// logical equals false
 	x = true == false;
-        x -> out;
+	x -> out;
 
 	// logical not equals true
 	x = true != false;
