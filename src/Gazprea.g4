@@ -125,7 +125,10 @@ Procedure: 'procedure';
 Return: 'return';
 Returns: 'returns';
 
-assignment: Identifier Assign expression;
+assignment
+    : TupleAccess Assign expression
+    | Identifier Assign expression
+    ;
 
 typedef: Typedef type Identifier;
 

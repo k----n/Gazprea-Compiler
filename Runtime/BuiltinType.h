@@ -8,7 +8,9 @@ enum BuiltinType {
 	IntegerType,
 	RealType,
 	CharacterType,
-	
+
+    TupleType,
+
 	StandardOut,
 	StandardIn,
 

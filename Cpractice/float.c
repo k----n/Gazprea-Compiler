@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 int main() {
-  float a;
+  double b = 2.04;
+  float a = 2.04;
   bool s;
 }

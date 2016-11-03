@@ -16,7 +16,7 @@ public:
 	}
 	
 	virtual Object* copy() const = 0;
-	
+	virtual ~Object() {}
 protected:
 	ObjectType type;
 	
@@ -24,7 +24,7 @@ protected:
 		this->ref_count = 1;
 		this->type = type;
 	}
-	virtual ~Object() {}
+
 	
 private:
 	int ref_count;

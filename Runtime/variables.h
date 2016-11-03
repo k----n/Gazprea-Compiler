@@ -20,6 +20,9 @@ void assign(void** variable) {
 	
 	// Transform the rvalue to the default value when using `null`
 	if (rvalue->isNull()) {
+	    int varSize;
+	    int dex;
+	    Value *v;
 		rvalue->release();
 		ValueType* rType = nullptr;
 		switch ((*var)->getType()->getType()) {
@@ -32,6 +35,31 @@ void assign(void** variable) {
 			case IntegerType:	rvalue = new Value(0);			break;
 			case RealType:		rvalue = new Value(0.0f);		break;
 			case CharacterType:	rvalue = new Value((char)0);	break;
+			case TupleType:
+			    rvalue = new Value(new Vector<Value>());
+			    rvalue = new Value(new Vector<Value>());
+                varSize = (*var)->tupleValue()->getCount();
+                dex = 0;
+                while(dex < varSize) {
+                    v = (*var)->tupleValue()->get(dex);
+                    switch(v->getType()->getType()) {
+                        case NullType:
+                        case IdentityType:
+                        case TupleType:
+                        case StandardOut:
+                        case StandardIn:
+                        case Lvalue:
+                            printf("Tuple cannot contain this type\n");
+                            exit(1);
+                            break;
+                        case BooleanType:	rvalue->tupleValue()->append(new Value(false));		break;
+                        case IntegerType:	rvalue->tupleValue()->append(new Value(0));			break;
+                        case RealType:		rvalue->tupleValue()->append(new Value(0.0f));		break;
+                        case CharacterType:	rvalue->tupleValue()->append(new Value((char)0));	break;
+                    }
+                    ++dex;
+                }
+                break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);
@@ -48,8 +76,12 @@ void assign(void** variable) {
 				break;
 		}
 	}
+
 	// Transform the rvalue to the default value when using `identity`
 	if (rvalue->isIdentity()) {
+	    Value *v;
+	    int varSize;
+	    int dex;
 		rvalue->release();
 		ValueType* rType = nullptr;
 		switch ((*var)->getType()->getType()) {
@@ -62,6 +94,30 @@ void assign(void** variable) {
 			case IntegerType:	rvalue = new Value(1);			break;
 			case RealType:		rvalue = new Value(1.0f);		break;
 			case CharacterType:	rvalue = new Value((char)1);	break;
+			case TupleType:
+                rvalue = new Value(new Vector<Value>());
+                varSize = (*var)->tupleValue()->getCount();
+                dex = 0;
+                while(dex < varSize) {
+                    v = (*var)->tupleValue()->get(dex);
+                    switch(v->getType()->getType()) {
+                        case NullType:
+                        case IdentityType:
+                        case TupleType:
+                        case StandardOut:
+                        case StandardIn:
+                        case Lvalue:
+                            printf("Tuple cannot contain this type\n");
+                            exit(1);
+                            break;
+                        case BooleanType:	rvalue->tupleValue()->append(new Value(true));		break;
+                        case IntegerType:	rvalue->tupleValue()->append(new Value(1));			break;
+                        case RealType:		rvalue->tupleValue()->append(new Value(1.0f));		break;
+                        case CharacterType:	rvalue->tupleValue()->append(new Value((char)1));	break;
+                    }
+                    ++dex;
+                }
+                break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);

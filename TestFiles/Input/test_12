@@ -1,0 +1,7 @@
+
+procedure main() returns integer {
+    const out = std_output();
+    real y = 3;
+    y -> out;	
+    return 0;  
+}

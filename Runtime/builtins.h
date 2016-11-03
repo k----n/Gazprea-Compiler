@@ -17,6 +17,7 @@ void stream_state() {
 		case IntegerType:
 		case RealType:
 		case CharacterType:
+		case TupleType:
 		case StandardOut:
 		case Lvalue:
 			printf("Argument was not a stream");

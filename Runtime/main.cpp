@@ -2,6 +2,7 @@
 
 #include "declarations.h"
 #include "literals.h"
+#include "tuples.h"
 #include "builtins.h"
 #include "operators.h"
 #include "variables.h"

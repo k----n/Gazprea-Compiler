@@ -1,3 +1,7 @@
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -9,24 +13,37 @@ public class Tuple {
     HashMap<String, Integer> id_to_number;
 
     // Get variable property number refers to
-    HashMap<Integer, Variable> variables;
+    HashMap<Integer, Type> variables;
 
     // Holds the last used field Id
     private Integer fieldId;
 
-    Tuple(ArrayList<String> fields) {
+    Tuple() {
         this.fieldId = 0;
-        fields.forEach(this::addField);
+        id_to_number = new HashMap<>();
+        variables = new HashMap<>();
     }
 
     // used to construct the tuple object
-    public void addField(String field) {
+    public void addField(String field, Type fieldType) {
         ++this.fieldId;
         if (isStringId(field)) {
             this.id_to_number.put(field, this.fieldId);
         }
 
-        this.variables.put(this.fieldId, null);
+        this.variables.put(this.fieldId, fieldType);
+    }
+
+    public Integer getFieldNumber(String field) {
+        if (isStringId(field)) {
+            return Integer.parseInt(field);
+        } else {
+            return id_to_number.get(field);
+        }
+    }
+
+    public Type getTypeOfField(Integer fieldNo) {
+        return variables.get(fieldNo);
     }
 
     private Boolean isStringId(String id) {
@@ -43,19 +60,31 @@ public class Tuple {
         return true;
     }
 
-    private static String typeToLLVMStructType(Type type) {
-        // TODO: USE THIS FUNCTION
-        switch (type.getType()) {
-            case INTEGER:
-                return "i32";
-            case CHARACTER:
-                return "i8";
+    private ST getSTForType(Type.TYPES type) {
+        STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
+        switch (type) {
             case BOOLEAN:
-                return "i1";
+                return llvmGroup.getInstanceOf("pushNullIntegerToTuple(");
+            case CHARACTER:
+                return llvmGroup.getInstanceOf("pushNullRealToTuple");
+            case INTEGER:
+                return llvmGroup.getInstanceOf("pushNullBooleanToTuple");
             case REAL:
-                return "float";
+                return llvmGroup.getInstanceOf("pushNullCharacterToTuple");
             default:
-                return "";
+                throw new RuntimeException("Invalid Tuple Type");
         }
+    }
+
+    public ST getInitializingStatements() {
+        STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
+        ST varInit_Tuple =  llvmGroup.getInstanceOf("varInit_Tuple");
+
+        for (int key = 1; key <= variables.size(); ++key) {
+            Type var = variables.get(key);
+            varInit_Tuple.add("tuple_statements", getSTForType(var.getType()));
+        }
+
+        return varInit_Tuple;
     }
 }

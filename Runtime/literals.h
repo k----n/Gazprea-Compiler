@@ -33,6 +33,16 @@ void varInitPushNullInteger() {
 	pushInteger(0);
 }
 
+void pushEmptyTuple() {
+    Value* vecValue = new Value(new Vector<Value>());
+    stack->push(vecValue);
+    vecValue->release();
+}
+
+void varInitPushEmptyTuple() {
+    pushEmptyTuple();
+}
+
 void pushReal(float value) {
 	Value* floatValue = new Value(value);
 	stack->push(floatValue);

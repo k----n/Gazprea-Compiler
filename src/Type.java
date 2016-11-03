@@ -62,6 +62,7 @@ public class Type {
     private COLLECTION_TYPES collection_type;
     private TYPES type;
 
+
     // special augmentation for tuple types
     private Tuple tupleType = null;
 
@@ -219,4 +220,9 @@ public class Type {
 
         return result;
     }
+
+    public Tuple getTupleType() {
+        return tupleType;
+    }
+
 }
