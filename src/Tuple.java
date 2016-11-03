@@ -35,7 +35,7 @@ public class Tuple {
     }
 
     public Integer getFieldNumber(String field) {
-        if (isStringId(field)) {
+        if (!isStringId(field)) {
             return Integer.parseInt(field);
         } else {
             return id_to_number.get(field);
@@ -47,29 +47,25 @@ public class Tuple {
     }
 
     private Boolean isStringId(String id) {
-        if (id == null) {
-            return false;
-        }
-
         try {
             Integer.parseInt(id);
         } catch(NumberFormatException e) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
-    private ST getSTForType(Type.TYPES type) {
+    public static ST getSTForType(Type.TYPES type) {
         STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
         switch (type) {
-            case BOOLEAN:
-                return llvmGroup.getInstanceOf("pushNullIntegerToTuple(");
-            case CHARACTER:
-                return llvmGroup.getInstanceOf("pushNullRealToTuple");
             case INTEGER:
-                return llvmGroup.getInstanceOf("pushNullBooleanToTuple");
+                return llvmGroup.getInstanceOf("pushNullIntegerToTuple");
             case REAL:
+                return llvmGroup.getInstanceOf("pushNullRealToTuple");
+            case BOOLEAN:
+                return llvmGroup.getInstanceOf("pushNullBooleanToTuple");
+            case CHARACTER:
                 return llvmGroup.getInstanceOf("pushNullCharacterToTuple");
             default:
                 throw new RuntimeException("Invalid Tuple Type");

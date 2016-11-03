@@ -41,6 +41,10 @@ call void @_Z15getValueAtTuplei(i32 <index>)
 call void @_Z16assignTupleFieldv()
 >>
 
+assignTupleField2(index) ::= <<
+call void @_Z16assignTupleFieldv()
+>>
+
 getTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 >>

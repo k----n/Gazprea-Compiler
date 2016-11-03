@@ -5,6 +5,7 @@ import org.stringtemplate.v4.STGroupFile;
 
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
@@ -206,7 +207,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     private Pair<String, String> parseTupleAccess(String access) {
-        String[] parts = access.split(".");
+        String[] parts = access.split(Pattern.quote("."));
         return new Pair<String, String>(parts[0], parts[1]);
     }
 
@@ -531,13 +532,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
         Tuple tupleType = new Tuple();
 
-        // TODO: FINISH IMPLEMENTING THIS!!!!
-
         for (int e = 0; e < ctx.expression().size(); ++e) {
+            Type exprType = this.visitExpression(ctx.expression(e));
+            ST push_to_tuple = Tuple.getSTForType(exprType.getType());
+            this.addCode(push_to_tuple.render());
 
+            tupleType.addField("" + (e+1), exprType);
+            ST assignTuple = this.llvmGroup.getInstanceOf("assignTupleField2");
+            assignTuple.add("index", e+1);
+            this.addCode(assignTuple.render());
         }
 
-        return null;
+        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
 
     @Override
@@ -690,10 +696,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             assignedType = this.visitExpression(ctx.expression());
 
-
             if (declaredType.getType() == Type.TYPES.NULL) {
                 declaredType = assignedType;
             }
+
+            if (declaredType.getType() == Type.TYPES.TUPLE) {
+                ST initializeTuple = declaredType.getTupleType().getInitializingStatements();
+                this.addCode(initializeTuple.render());
+            }
+
         } else {
             // expression portion is excluded
             if (declaredType.getType() == Type.TYPES.TUPLE) {
@@ -716,7 +727,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.variables.put(variableName, variable);
         }
 
-        if (variable.getType().getType() != Type.TYPES.NULL) {
+        if (variable.getType().getType() != Type.TYPES.NULL && variable.getType().getType() != Type.TYPES.TUPLE) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
 
@@ -757,7 +768,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Type.TYPES typeName = Type.TYPES.NULL;
 
         if (ctx.typeName() != null) {
-            switch(ctx.typeName().getText()) {
+            switch(this.visitTypeName(ctx.typeName())) {
                 case Type.strBOOLEAN:
                     typeName = Type.TYPES.BOOLEAN; break;
                 case Type.strCHARACTER:
@@ -814,7 +825,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public String visitTypeName(GazpreaParser.TypeNameContext ctx) {
-        return ctx.getText(); // for now, just return this text
+        String string;
+        if (ctx.BuiltinType() != null) {
+            string = ctx.BuiltinType().getText();
+        } else {
+            string = ctx.Identifier().getText();
+        }
+
+        if (string.contains(Type.strTUPLE)) {
+            return Type.strTUPLE;
+        }
+
+        return string; // for now, just return this text
     }
 
     @Override
