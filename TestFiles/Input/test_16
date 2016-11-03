@@ -1,9 +1,9 @@
 /* Integer tests */
 
-const integer x;
-
 procedure main() returns integer{ 
         var out = std_output();
+
+	var integer x;
 
 	// max int
 	x = 2147483647;

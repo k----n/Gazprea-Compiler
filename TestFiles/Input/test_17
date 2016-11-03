@@ -1,9 +1,9 @@
 /* Real tests */
 
-const real x;
-
 procedure main() returns integer{ 
         var out = std_output();
+
+	var real x;
 
 	// max real
 	x = (2 ^ 31) - 1;

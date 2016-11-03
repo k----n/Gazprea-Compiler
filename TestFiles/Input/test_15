@@ -1,9 +1,9 @@
 /* Character tests */
 
-const character x;
-
 procedure main() returns integer{ 
         var out = std_output();
+
+	var character x;
 
 	// bell
 	x = '\a';

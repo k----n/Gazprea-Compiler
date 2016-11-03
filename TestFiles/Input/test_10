@@ -1,9 +1,11 @@
 /* Boolean tests */
 
-const boolean x;
+
 
 procedure main() returns integer{ 
         var out = std_output();
+
+	var boolean x;
 
 	// unary expression
 	// negation of true
