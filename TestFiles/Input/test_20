@@ -1,0 +1,18 @@
+/* Type inference tests */
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	// test case from spec page
+	var x = 2; 
+	const y = x * 2;
+	
+	y -> out;
+
+	// this throws an error when it shouldn't GOOD NIGHT
+	var u = null + 1 + null; 
+	u -> out;
+
+	return 0;
+
+}
