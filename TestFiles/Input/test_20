@@ -9,9 +9,20 @@ procedure main() returns integer{
 	
 	y -> out;
 
-	// this throws an error when it shouldn't GOOD NIGHT
+	// output int 1
 	var u = null + 1 + null; 
 	u -> out;
+
+	// output int 1
+	var i = 1 + null + null; 
+	i -> out;
+
+	// output real 0.666667
+	var k = (2.0 / 3.0) + null + null; 
+	k -> out;
+
+	var z = true and null; 
+	z -> out;
 
 	return 0;
 

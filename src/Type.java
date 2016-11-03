@@ -33,10 +33,10 @@ public class Type {
     // iv = integer, rv = real, bv = boolean -- 'v' is appended because llvm does that
     private static String[/*left*/][/*right*/] RESULT_TABLE =
             {/*  bool       int         char        real            NULL        IDNTY       TUPLE*/
-    /*bool*/    {"bv",      "void",     "void",     "void",         "void",     "void",     "void"},
-    /*int*/     {"void",    "iv",       "void",     "rv",           "void",     "void",     "void"},
+    /*bool*/    {"bv",      "void",     "void",     "void",         "bv",       "void",     "void"},
+    /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "void",     "void"},
     /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
-    /*real*/    {"void",    "rv",       "void",     "rv",           "void",     "void",     "void"},
+    /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "void",     "void"},
     /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void"},
     /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
     /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple"},
