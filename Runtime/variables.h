@@ -134,9 +134,7 @@ void assign(void** variable) {
 				break;
 		}
 	}
-	
-	// TODO: PROMOTION
-	
+
 	if (*var != nullptr) { (*var)->release(); }
 	if (rvalue->isLvalue()) {
 		Value* newValue = rvalue->lvalue();

@@ -832,10 +832,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             string = ctx.Identifier().getText();
         }
 
-        if (string.contains(Type.strTUPLE)) {
-            return Type.strTUPLE;
-        }
-
         return string; // for now, just return this text
     }
 

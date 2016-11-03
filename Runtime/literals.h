@@ -36,7 +36,7 @@ void varInitPushNullInteger() {
 void pushEmptyTuple() {
     Value* vecValue = new Value(new Vector<Value>());
     stack->push(vecValue);
-    //vecValue->release();
+    vecValue->release();
 }
 
 void varInitPushEmptyTuple() {

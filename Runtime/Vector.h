@@ -43,11 +43,13 @@ public:
 	    if (index < 0) { printf("Index out of bounds\n"); exit(1); }
 	    if (index >= this->count) { printf("Index out of bounds\n"); exit(1); }
 
+	    ((Object*)element)->retain();
+
 	    VectorNode* node = this->firstNode;
         for (int i = 0; i < index; ++i) {
             node = node->next;
         }
-        delete(node->value);
+        node->value->release();
         node->value = element;
 	}
 

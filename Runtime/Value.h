@@ -88,14 +88,6 @@ public:
 		return copy;
 	}
 
-    void *getValue() {
-        return this->value;
-    }
-
-	void setValue(void *val) {
-	    this->value = val;
-	}
-
 	ValueType* getType() {
 		this->valueType->retain();
 		return this->valueType;

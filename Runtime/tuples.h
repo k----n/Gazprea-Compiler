@@ -5,14 +5,22 @@
 
 void getValueAtTuple(int index) {
     Value *tuple = stack->pop();
-    stack->push(tuple->tupleValue()->get(index));
+    Vector<Value> *tupleVal = tuple->tupleValue();
+    Value *value = tupleVal->get(index);
+    stack->push(value);
+    tuple->release();
+    tupleVal->release();
+    value->release();
 }
 
-void assignTupleField() {
-    Value *tupleField = stack->pop();
+void assignTupleField(int index) {
+    Value *tupleValue = stack->pop();
+    Vector<Value> *tuple = tupleValue->tupleValue();
     Value *exprValue = stack->pop();
 
-    tupleField->setValue(exprValue->getValue());
+    tupleValue->set(index, value);
+
+
 }
 
 void pushIntNullToTuple() {
