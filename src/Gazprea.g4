@@ -247,7 +247,7 @@ Identifier
 fragment True: 'true';
 fragment False: 'false';
 fragment FractionalConstant
- : DigitSequence? '.' DigitSequence
+ : DigitSequence? '.' '_'* DigitSequence
  | DigitSequence '.'?
  ;
 fragment DigitSequence: (Digit '_'*)+;

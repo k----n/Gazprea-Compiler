@@ -14,6 +14,10 @@ procedure main() returns integer{
 	x -> out;
 
 	// underscores
+
+	x = 1__ + 1___0;
+	x -> out;
+
 	x = 1__23_4;
 	x -> out;
 

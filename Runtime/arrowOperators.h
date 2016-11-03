@@ -63,6 +63,7 @@ void leftArrowOperator() {
 			*lhs->lvalue_ptr() = new Value(intValue);
 			break;
 		case RealType:
+		    // TODO account for underscores in floats
 			readErrorCode = scanf("%f", &realValue);
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(realValue);
