@@ -1,0 +1,20 @@
+/* Assignment tests *work in progress* */
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	integer int_var = 7; 
+	real real_var = 0.0; 
+	boolean bool_var = true; 
+	 
+	/* Since 'x' is an integer it can be promoted to a real number */ 
+	real_var = int_var;  /* Legal */ 
+
+	// should return 2
+	integer ___10___ = 1;
+	integer _4___________2____e___ = 1;
+	(_4___________2____e___+___10___) -> out;
+
+	return 0;
+
+}

@@ -1,0 +1,33 @@
+/* Declaration and block tests */
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	integer i = 10; 
+	real j = 5.2;
+	{ 
+	  real j = 3;
+	  integer i = 2;
+	  i = i + 1; 
+	  (i + j) -> out;
+	}
+	i -> out;
+	i + j -> out;
+
+	integer x = 3; 
+	integer y = 0; 
+	real z = 0; 
+	 
+	{ 
+	  real x = 7.1; 
+	  z = x; 
+	} 
+	 
+	y = x;
+
+	y -> out;
+	z -> out;
+
+	return 0;
+
+}
