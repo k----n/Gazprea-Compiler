@@ -467,7 +467,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             retType = Type.TYPES.BOOLEAN;
         } else if (ctx.CharacterLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushCharacter");
-            String character = ctx.getText().replaceAll("'", "");
+            String character = ctx.getText().substring(1, ctx.getText().length()-1);
             char val = 0;
             switch (character) {
                 case "\\a":

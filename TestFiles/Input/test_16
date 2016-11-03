@@ -1,0 +1,132 @@
+/* Integer tests */
+
+const integer x;
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	// max int
+	x = 2147483647;
+        x -> out;
+
+	// min int
+	x = -2147483648;
+	x -> out;
+
+	// underscores
+	x = 1__23_4;
+	x -> out;
+
+	x = 1234;
+	x -> out;
+
+	x = 12__3_4;
+	x -> out;
+	
+	x = 1_2_3_4___;
+	x -> out;
+
+	// addition
+	x = 1 + 1;
+	x -> out;
+
+	// subtraction
+	x = 1 - 2;
+	x -> out;
+
+	x = 2 - 1;
+	x -> out;
+
+	// multiplication
+	x = 1 * 2;
+	x -> out;
+
+	// division
+	x = 1 / 2;
+	x -> out;
+
+	x = 2 / 1;
+	x -> out;
+
+	// modulus
+	x = 1 % 2;
+	x -> out;
+
+	x = 2 % 1;
+	x -> out;
+	
+	// exponentiation
+	x = 1 ^ 2;
+	x -> out;
+
+	x = 2 ^ 1;
+	x -> out;
+
+	// unary negation
+	x = - 1;
+	x -> out;
+
+	x = - (1 + 1);
+	x -> out;
+
+	// unary plus
+	x = +(1 % 2);
+	x -> out;
+
+	x = +(2 % 1);
+	x -> out;
+
+	// unary ( + (- 1))
+	x = ( + (- 1));
+	x -> out;
+
+	// less than
+	x = 2 < 1;
+	x -> out;
+
+	x = 1 < 2;
+	x -> out;
+
+	// greater than
+	x = 2 > 1;
+	x -> out;
+
+	x = 1 > 2;
+	x -> out;
+
+
+	// less than or equal to
+	x = 2 <= 1;
+	x -> out;
+
+	x = 1 <= 2;
+	x -> out;
+
+	// greater than or equal to
+	x = 2 >= 1;
+	x -> out;
+
+	x = 1 >= 2;
+	x -> out;
+
+	// equals
+	x = 2 == 1;
+	x -> out;
+
+	x = 1 == 1;
+	x -> out;
+
+	// not equals
+	x = 2 != 1;
+	x -> out;
+
+	x = 1 != 1;
+	x -> out;
+
+	// precedence
+	x = +(-(((((((2 == 1) != 0) < 0) > 0) <= 0) >= 0) + 1 - 2) * -1 / 1 % 2 ^ 2);
+	x -> out;
+
+        /* must have a return */ 
+        return 0; 
+}
