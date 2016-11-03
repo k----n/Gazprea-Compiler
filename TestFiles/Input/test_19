@@ -1,0 +1,56 @@
+/* Type casting tests */
+
+procedure main() returns integer{ 
+        var out = std_output();
+	
+	// boolean to boolean
+	as<boolean>(true) -> out;
+
+	// boolean to integer
+	as<integer>(true) -> out;
+	as<integer>(false) -> out;
+
+	// boolean to real
+	as<real>(true) -> out;
+	as<real>(false) -> out;
+
+	// boolean to character
+	as<character>(true) -> out;
+	as<character>(false) -> out;
+
+	// integer to boolean
+	as<boolean>(1) -> out;
+	as<boolean>(0) -> out;
+
+	// integer to integer
+	as<integer>(1) -> out;
+
+	// integer to real
+	as<real>(1) -> out;
+
+	// integer to character
+	as<character>(65) -> out;
+
+	// real to integer
+	as<integer>(1.69696969) -> out;
+	as<integer>(69696.969) -> out;
+
+	// real to real
+	as<real>(1.93465) -> out;
+
+	// character to boolean
+	as<boolean>('A') -> out;
+	as<boolean>('\0') -> out;
+
+	// character to integer
+	as<integer>('A') -> out;
+
+	// character to real
+	as<real>('A') -> out;
+
+	// character to character
+	as<character>('A') -> out;
+
+        /* must have a return */ 
+        return 0; 
+}

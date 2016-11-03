@@ -63,3 +63,5 @@ gen
 *.ll
 *.xcodeproj
 runtime.stg
+
+*.Rhistory

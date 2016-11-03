@@ -1,0 +1,29 @@
+/* Type inference tests */
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	// test case from spec page
+	var x = 2; 
+	const y = x * 2;
+	
+	y -> out;
+
+	// output int 1
+	var u = null + 1 + null; 
+	u -> out;
+
+	// output int 1
+	var i = 1 + null + null; 
+	i -> out;
+
+	// output real 0.666667
+	var k = (2.0 / 3.0) + null + null; 
+	k -> out;
+
+	var z = true and null; 
+	z -> out;
+
+	return 0;
+
+}
