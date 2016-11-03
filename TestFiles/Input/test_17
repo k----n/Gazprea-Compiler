@@ -1,0 +1,147 @@
+/* Real tests */
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	var real x;
+
+	// max real
+	x = (2 ^ 31) - 1;
+        x -> out;
+
+	// min real
+	x = - (2^ 31);
+	x -> out;
+
+	// underscores and different representations
+	x = .42;
+	x -> out;
+
+	x = 42.0;
+	x -> out;
+
+	x = 42e-10;
+	x -> out;
+	
+	x = 42e10;
+	x -> out;
+
+	x = 42.e-10;
+	x -> out;
+
+	x = 42.e+10;
+	x -> out;
+
+	x = ._____42__;
+	x -> out;
+
+	x = 4_2_._0_;
+	x -> out;
+
+	x = 4_2_e_+_10_;
+	x -> out;
+
+	// addition
+	x = 1_e+_10_ + 1_e+_10_;
+	x -> out;
+
+	// subtraction
+	x = 1.1 - 2.2;
+	x -> out;
+
+	x = 2.1 - 1.2;
+	x -> out;
+
+	// multiplication
+	x = 1.1 * 2.2;
+	x -> out;
+
+	// division
+	x = 1.1 / 2.2;
+	x -> out;
+
+	x = 2.2 / 1.1;
+	x -> out;
+
+	// modulus
+	x = 1.1 % 2.1;
+	x -> out;
+
+	x = 2.1 % 1.1;
+	x -> out;
+	
+	// exponentiation
+	x = 1.1 ^ 2.1;
+	x -> out;
+
+	x = 2.1 ^ 1.1;
+	x -> out;
+
+	// unary negation
+	x = - 1.1;
+	x -> out;
+
+	x = - (1.1 + 1.1);
+	x -> out;
+
+	// unary plus
+	x = +(1.1 % 2.1);
+	x -> out;
+
+	x = +(2.1 % 1.1);
+	x -> out;
+
+	// unary ( + (- 1))
+	x = ( + (- 1.23));
+	x -> out;
+
+	// less than
+	x = 2.2 < 1.2;
+	x -> out;
+
+	x = 1.78 < 2;
+	x -> out;
+
+	// greater than
+	x = 2.34 > 1;
+	x -> out;
+
+	x = 1.22 > 2;
+	x -> out;
+
+
+	// less than or equal to
+	x = 2 <= 1.3;
+	x -> out;
+
+	x = 1 <= 2.9;
+	x -> out;
+
+	// greater than or equal to
+	x = 2 >= 1.34;
+	x -> out;
+
+	x = 1 >= 2.3;
+	x -> out;
+
+	// equals
+	x = 2 == 1.1;
+	x -> out;
+
+	x = 1 == 1.3;
+	x -> out;
+
+	// not equals
+	x = 2 != 1.1;
+	x -> out;
+
+	x = 1 != 1.2;
+	x -> out;
+
+	// precedence
+	x = +(-(((((((2 == 1) != 0) < 0) > 0) <= 0) >= 0) + 1 - 2.34) * -1 / 1 % 2 ^ 2);
+	x -> out;
+
+        /* must have a return */ 
+        return 0; 
+}

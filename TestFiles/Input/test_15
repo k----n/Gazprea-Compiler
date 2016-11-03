@@ -1,0 +1,54 @@
+/* Character tests */
+
+procedure main() returns integer{ 
+        var out = std_output();
+
+	var character x;
+
+	// bell
+	x = '\a';
+        x -> out;
+
+	// backspace
+	x = '\b';
+        x -> out;
+
+	// line feed
+	x = '\n';
+        x -> out;
+
+	// carriage return
+	x = '\r';
+        x -> out;
+
+	// tab
+	x = '\t';
+        x -> out;
+
+	// backslash
+	x = '\\';
+        x -> out;
+
+	// apostrophe
+	x = '\'';
+        x -> out;
+
+	// quotation mark
+	x = '\"';
+        x -> out;
+
+	// null
+	x = '\0';
+        x -> out;
+
+	// normal character
+	x = 'a';
+        x -> out;
+
+	// normal character
+	x = 'b';
+        x -> out;
+
+        /* must have a return */ 
+        return 0; 
+}

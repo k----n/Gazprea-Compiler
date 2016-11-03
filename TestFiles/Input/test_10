@@ -1,14 +1,22 @@
 /* Boolean tests */
 
-const boolean x;
+
 
 procedure main() returns integer{ 
         var out = std_output();
-	
-	// negation
+
+	var boolean x;
+
+	// unary expression
+	// negation of true
 	x = not true;
         x -> out;
 
+	// negation of false
+	x = not false;
+        x -> out;
+
+	// binary expression
 	// logical or true
 	x = true or false;
 	x -> out;
@@ -47,6 +55,10 @@ procedure main() returns integer{
 
 	// logical not equals false
 	x = true != false;
+        x -> out;  
+
+	// precedence
+	x = not (true and false) or true == true != false;
         x -> out;  
  
         /* must have a return */ 
