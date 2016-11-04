@@ -26,11 +26,13 @@ _conditional_<index>_label_false:
 >>
 
 loopStart(index) ::= <<
+  br label %_loop_<index>_label
 _loop_<index>_label:
 >>
 
 loopEnd(index) ::= <<
   br label %_loop_<index>_label
+  _break_<index>_label:
 >>
 
 continue(index) ::= <<

@@ -3,13 +3,18 @@
 procedure main() returns integer{
 
     loop {
-	1 -> std_output();
-	break;
 
 
 	loop {
 	  2 -> std_output();
+	  break;
+
+
 	}
+	  loop {
+	  3 -> std_output();
+	  break;
+	  }
 
 	//break;
     }

@@ -28,6 +28,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private int loopIndex = 0;
     private int breakIndex = 0;
 
+    private Deque<Integer> currentLoop = new ArrayDeque<>();
+    private Deque<Integer> currentBreak = new ArrayDeque<>();
+
+
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
 
@@ -710,75 +714,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         endConditional.add("index", myConditionalIndex);
         this.currentFunction.addLine(endConditional.render());
 
-        /*
-        int numElse = ctx.If().size()- ctx.Else().size() + 1 ;
-        int numElseIfs = ctx.expression().size() - 1 - numElse;
-
-        int ei;
-        for (ei = 1; ei < numElseIfs; ++ei) {
-            ++this.conditionalIndex;
-            myConditionalIndex = this.conditionalIndex;
-
-            startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
-            startConditional.add("index", myConditionalIndex);
-            this.currentFunction.addLine(startConditional.render());
-
-            ST nullBool = this.llvmGroup.getInstanceOf("varInit_boolean");
-            this.currentFunction.addLine(nullBool.render());
-
-            for (int c = 0; c < ei; ++c) {
-                this.visitExpression(ctx.expression(c));
-                ST LORop = this.llvmGroup.getInstanceOf("logicalor");
-                LORop.add("typeLetter", "bv");
-                this.currentFunction.addLine(LORop.render());
-            }
-
-            ST NOTop = this.llvmGroup.getInstanceOf("negation");
-            NOTop.add("typeLetter", "bv");
-
-            this.visitExpression(ctx.expression().get(ei));
-
-            ST LANDop = this.llvmGroup.getInstanceOf("logicaland");
-            LANDop.add("typeLetter", "bv");
-            this.currentFunction.addLine(LANDop.render());
-
-            this.visitTranslationalUnit(ctx.translationalUnit(ei));
-
-            endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
-            endConditional.add("index", myConditionalIndex);
-            this.currentFunction.addLine(endConditional.render());
-        }
-
-
-        if (numElse >= 1) {
-            ++this.conditionalIndex;
-            myConditionalIndex = this.conditionalIndex;
-
-            startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
-            startConditional.add("index", myConditionalIndex);
-            this.currentFunction.addLine(startConditional.render());
-
-            ST nullBool = this.llvmGroup.getInstanceOf("varInit_boolean");
-            this.currentFunction.addLine(nullBool.render());
-
-            for (int c = 0; c < ctx.expression().size() - 1; ++c) {
-                this.visitExpression(ctx.expression(c));
-                ST LORop = this.llvmGroup.getInstanceOf("logicalor");
-                LORop.add("typeLetter", "bv");
-                this.currentFunction.addLine(LORop.render());
-            }
-
-            ST NOTop = this.llvmGroup.getInstanceOf("negation");
-            NOTop.add("typeLetter", "bv");
-
-            this.visitTranslationalUnit(ctx.translationalUnit(ctx.translationalUnit().size()-1));
-
-            endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
-            endConditional.add("index", myConditionalIndex);
-            this.currentFunction.addLine(endConditional.render());
-        }
-        */
-
         return null;
     }
 
@@ -796,35 +731,41 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ++this.loopIndex;
         ++this.breakIndex;
 
+        currentLoop.addFirst(loopIndex);
+        currentBreak.addFirst(breakIndex);
+
         ST startInfiniteLoop = this.llvmGroup.getInstanceOf("loopStart");
-        startInfiniteLoop.add("index", this.loopIndex);
+        startInfiniteLoop.add("index", currentLoop.peekFirst());
         this.currentFunction.addLine(startInfiniteLoop.render());
 
         this.visitTranslationalUnit(ctx.translationalUnit());
 
         ST endInfiniteLoop = this.llvmGroup.getInstanceOf("loopEnd");
-        endInfiniteLoop.add("index", this.loopIndex);
+        endInfiniteLoop.add("index", currentLoop.peekFirst());
         this.currentFunction.addLine(endInfiniteLoop.render());
 
         // TODO account for breaking from inner to outer (use a stack or some shit)
         ST endBreakLabel = this.llvmGroup.getInstanceOf("endBreakLabel");
-        endBreakLabel.add("index", this.breakIndex);
+        endBreakLabel.add("index", currentBreak.peekFirst());
         this.currentFunction.addLine(endBreakLabel.render());
+
+        currentBreak.removeFirst();
 
         return null;
     }
 
     @Override public Type visitBreakStatement(GazpreaParser.BreakStatementContext ctx) {
         ST breakLabel = this.llvmGroup.getInstanceOf("breakLabel");
-        breakLabel.add("index", this.breakIndex);
+        breakLabel.add("index", currentBreak.peekFirst());
         this.currentFunction.addLine(breakLabel.render());
+        currentLoop.removeFirst();
         return null;
     }
 
     @Override public Type visitContinueStatement(GazpreaParser.ContinueStatementContext ctx) {
         // TODO also use a stack to keep track of which instance of loop we're in
         ST continueLabel = this.llvmGroup.getInstanceOf("continueLabel");
-        continueLabel.add("index", this.loopIndex);
+        continueLabel.add("index", currentLoop.peekFirst());
         this.currentFunction.addLine(continueLabel.render());
         return null;
     }
