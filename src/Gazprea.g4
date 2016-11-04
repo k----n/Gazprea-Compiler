@@ -56,6 +56,8 @@ statement_
 
 statement
  : returnStatement
+ | breakStatement
+ | continueStatement
  | streamStatement
  | assignment
  | declaration
@@ -64,7 +66,7 @@ statement
 
 notstatement
  : conditional
-// | infiniteLoop
+ | infiniteLoop
 // | predicatedLoop
 // | iteratorLoop
  ;
@@ -74,14 +76,22 @@ declaration: type Identifier sizeData? (Assign expression)?
 
 returnStatement: Return expression?;
 
+breakStatement: Break;
+
+continueStatement: Continue;
+
 streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
 
 conditional: If expression translationalUnit;
 
+
+// loops
 infiniteLoop: Loop translationalUnit;
+
 predicatedLoop: prePredicatedLoop | postPredicatedLoop;
 prePredicatedLoop: Loop While expression translationalUnit;
 postPredicatedLoop: Loop translationalUnit While expression;
+
 iteratorLoop: Loop iteratorLoopVariables translationalUnit;
 iteratorLoopVariables: iteratorLoopVariable (',' iteratorLoopVariable)*;
 iteratorLoopVariable: Identifier In expression;

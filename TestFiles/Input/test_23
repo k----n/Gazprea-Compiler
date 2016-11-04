@@ -6,7 +6,7 @@ typedef int int_;
 
 procedure main() returns integer{
         var out = std_output();
-	var int x = 1;
+	var int_ x = 1;
 
 	x -> out;
 

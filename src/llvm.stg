@@ -25,6 +25,26 @@ conditionalEnd(index) ::= <<
 _conditional_<index>_label_false:
 >>
 
+loopStart(index) ::= <<
+_loop_<index>_label:
+>>
+
+loopEnd(index) ::= <<
+  br label %_loop_<index>_label
+>>
+
+continue(index) ::= <<
+  br label %_loop_<index>_label
+>>
+
+breakLabel(index) ::= <<
+ br label %_break_<index>_label
+>>
+
+endBreakLabel(index) ::= <<
+_break_<index>_label:
+>>
+
 // name is the unique name of the tuple
 // fields are the data types in llvm form (e.g. i32, i8, etc.)
 tuple_struct(name, fields) ::= <<

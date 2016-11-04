@@ -25,6 +25,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Map<String, Type> typedefs = new HashMap<>();
 
     private int conditionalIndex = 0;
+    private int loopIndex = 0;
+    private int breakIndex = 0;
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -697,6 +699,43 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             return ctx.Identifier().getText();
         }
         return "";
+    }
+
+    @Override public Type visitInfiniteLoop(GazpreaParser.InfiniteLoopContext ctx) {
+        ++this.loopIndex;
+        ++this.breakIndex;
+
+        ST startInfiniteLoop = this.llvmGroup.getInstanceOf("loopStart");
+        startInfiniteLoop.add("index", this.loopIndex);
+        this.currentFunction.addLine(startInfiniteLoop.render());
+
+        this.visitTranslationalUnit(ctx.translationalUnit());
+
+        ST endInfiniteLoop = this.llvmGroup.getInstanceOf("loopEnd");
+        endInfiniteLoop.add("index", this.loopIndex);
+        this.currentFunction.addLine(endInfiniteLoop.render());
+
+        // TODO account for breaking from inner to outer (use a stack or some shit)
+        ST endBreakLabel = this.llvmGroup.getInstanceOf("endBreakLabel");
+        endBreakLabel.add("index", this.breakIndex);
+        this.currentFunction.addLine(endBreakLabel.render());
+
+        return null;
+    }
+
+    @Override public Type visitBreakStatement(GazpreaParser.BreakStatementContext ctx) {
+        ST breakLabel = this.llvmGroup.getInstanceOf("breakLabel");
+        breakLabel.add("index", this.breakIndex);
+        this.currentFunction.addLine(breakLabel.render());
+        return null;
+    }
+
+    @Override public Type visitContinueStatement(GazpreaParser.ContinueStatementContext ctx) {
+        // TODO also use a stack to keep track of which instance of loop we're in
+        ST continueLabel = this.llvmGroup.getInstanceOf("continueLabel");
+        continueLabel.add("index", this.loopIndex);
+        this.currentFunction.addLine(continueLabel.render());
+        return null;
     }
 
     @Override

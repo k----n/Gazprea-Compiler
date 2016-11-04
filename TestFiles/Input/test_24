@@ -1,0 +1,19 @@
+// loop tests
+
+procedure main() returns integer{
+
+    loop {
+	1 -> std_output();
+	break;
+
+
+	loop {
+	  2 -> std_output();
+	}
+
+	//break;
+    }
+
+
+	return 0;
+}
