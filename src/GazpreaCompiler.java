@@ -696,23 +696,25 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         // Else
 
-        this.visitExpression(ctx.expression());
-        ST NOTop = this.llvmGroup.getInstanceOf("negation");
-        NOTop.add("typeLetter", "bv");
-        this.currentFunction.addLine(NOTop.render());
+        if (ctx.Else() != null) {
+            this.visitExpression(ctx.expression());
+            ST NOTop = this.llvmGroup.getInstanceOf("negation");
+            NOTop.add("typeLetter", "bv");
+            this.currentFunction.addLine(NOTop.render());
 
-        ++this.conditionalIndex;
-        myConditionalIndex = this.conditionalIndex;
+            ++this.conditionalIndex;
+            myConditionalIndex = this.conditionalIndex;
 
-        startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
-        startConditional.add("index", myConditionalIndex);
-        this.currentFunction.addLine(startConditional.render());
+            startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
+            startConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(startConditional.render());
 
-        this.visitTranslationalUnit(ctx.translationalUnit(1));
+            this.visitTranslationalUnit(ctx.translationalUnit(1));
 
-        endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
-        endConditional.add("index", myConditionalIndex);
-        this.currentFunction.addLine(endConditional.render());
+            endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
+            endConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(endConditional.render());
+        }
 
         return null;
     }
