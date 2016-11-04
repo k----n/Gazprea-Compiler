@@ -333,20 +333,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall = this.llvmGroup.getInstanceOf("logicalor");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
                 // CASE: XOR
                 case "xor":
                     operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: AND
                 case "and":
                     operatorCall = this.llvmGroup.getInstanceOf("logicaland");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: ==
                 case "==":
@@ -354,7 +354,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall = this.llvmGroup.getInstanceOf("equal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: !=
                 case "!=":
@@ -362,35 +362,35 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall = this.llvmGroup.getInstanceOf("notequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: <
                 case "<":
                     operatorCall = this.llvmGroup.getInstanceOf("lessthan");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: <=
                 case "<=":
                     operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: >
                 case ">":
                     operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: >=
                 case ">=":
                     operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: by
                 case "by":
@@ -673,20 +673,111 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitConditional(GazpreaParser.ConditionalContext ctx) {
+    public Object visitConditional(GazpreaParser.ConditionalContext ctx) {;
+        // If
         this.visitExpression(ctx.expression());
 
         ++this.conditionalIndex;
+        int myConditionalIndex = this.conditionalIndex;
 
         ST startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
-        startConditional.add("index", this.conditionalIndex);
+        startConditional.add("index", myConditionalIndex);
         this.currentFunction.addLine(startConditional.render());
 
-        this.visitTranslationalUnit(ctx.translationalUnit());
+        this.visitTranslationalUnit(ctx.translationalUnit(0));
 
         ST endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
-        endConditional.add("index", this.conditionalIndex);
+        endConditional.add("index", myConditionalIndex);
         this.currentFunction.addLine(endConditional.render());
+
+        // Else
+
+        this.visitExpression(ctx.expression());
+        ST NOTop = this.llvmGroup.getInstanceOf("negation");
+        NOTop.add("typeLetter", "bv");
+        this.currentFunction.addLine(NOTop.render());
+
+        ++this.conditionalIndex;
+        myConditionalIndex = this.conditionalIndex;
+
+        startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
+        startConditional.add("index", myConditionalIndex);
+        this.currentFunction.addLine(startConditional.render());
+
+        this.visitTranslationalUnit(ctx.translationalUnit(1));
+
+        endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
+        endConditional.add("index", myConditionalIndex);
+        this.currentFunction.addLine(endConditional.render());
+
+        /*
+        int numElse = ctx.If().size()- ctx.Else().size() + 1 ;
+        int numElseIfs = ctx.expression().size() - 1 - numElse;
+
+        int ei;
+        for (ei = 1; ei < numElseIfs; ++ei) {
+            ++this.conditionalIndex;
+            myConditionalIndex = this.conditionalIndex;
+
+            startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
+            startConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(startConditional.render());
+
+            ST nullBool = this.llvmGroup.getInstanceOf("varInit_boolean");
+            this.currentFunction.addLine(nullBool.render());
+
+            for (int c = 0; c < ei; ++c) {
+                this.visitExpression(ctx.expression(c));
+                ST LORop = this.llvmGroup.getInstanceOf("logicalor");
+                LORop.add("typeLetter", "bv");
+                this.currentFunction.addLine(LORop.render());
+            }
+
+            ST NOTop = this.llvmGroup.getInstanceOf("negation");
+            NOTop.add("typeLetter", "bv");
+
+            this.visitExpression(ctx.expression().get(ei));
+
+            ST LANDop = this.llvmGroup.getInstanceOf("logicaland");
+            LANDop.add("typeLetter", "bv");
+            this.currentFunction.addLine(LANDop.render());
+
+            this.visitTranslationalUnit(ctx.translationalUnit(ei));
+
+            endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
+            endConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(endConditional.render());
+        }
+
+
+        if (numElse >= 1) {
+            ++this.conditionalIndex;
+            myConditionalIndex = this.conditionalIndex;
+
+            startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
+            startConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(startConditional.render());
+
+            ST nullBool = this.llvmGroup.getInstanceOf("varInit_boolean");
+            this.currentFunction.addLine(nullBool.render());
+
+            for (int c = 0; c < ctx.expression().size() - 1; ++c) {
+                this.visitExpression(ctx.expression(c));
+                ST LORop = this.llvmGroup.getInstanceOf("logicalor");
+                LORop.add("typeLetter", "bv");
+                this.currentFunction.addLine(LORop.render());
+            }
+
+            ST NOTop = this.llvmGroup.getInstanceOf("negation");
+            NOTop.add("typeLetter", "bv");
+
+            this.visitTranslationalUnit(ctx.translationalUnit(ctx.translationalUnit().size()-1));
+
+            endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
+            endConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(endConditional.render());
+        }
+        */
 
         return null;
     }

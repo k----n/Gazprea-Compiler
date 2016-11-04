@@ -82,7 +82,7 @@ continueStatement: Continue;
 
 streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
 
-conditional: If expression translationalUnit;
+conditional: If expression translationalUnit (Else translationalUnit)?;
 
 
 // loops

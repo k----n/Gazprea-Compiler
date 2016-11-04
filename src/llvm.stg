@@ -106,6 +106,7 @@ pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
 
 
 
+
 addition(typeLetter) ::= "call void @_Z5add_<typeLetter>()"
 subtraction(typeLetter) ::= "call void @_Z5sub_<typeLetter>()"
 multiplication(typeLetter) ::= "call void @_Z5mul_<typeLetter>()"
