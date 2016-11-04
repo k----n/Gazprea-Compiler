@@ -56,6 +56,11 @@ public:
 		return value;
 	}
 	
+	T* popOrNull() {
+		if (this->topNode == nullptr) { return nullptr; }
+		return this->pop();
+	}
+	
 private:
 	StackNode* topNode;
 	

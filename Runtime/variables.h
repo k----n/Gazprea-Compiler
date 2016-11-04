@@ -20,12 +20,16 @@ void assign(void** variable) {
 	
 	// Transform the rvalue to the default value when using `null`
 	if (rvalue->isNull()) {
-	    int varSize;
-	    int dex;
-	    Value *v;
 		rvalue->release();
 		ValueType* rType = nullptr;
-		switch ((*var)->getType()->getType()) {
+		int varSize;
+		int index;
+		Value* innerValue = nullptr;
+		Vector<Value>* tupleValue = nullptr;
+		ValueType* valueType = (*var)->getType();
+		ValueType* innerValueType = nullptr;
+		Vector<Value>* rvalueVector = nullptr;
+		switch (valueType->getType()) {
 			case NullType:
 			case IdentityType:
 				printf("Cannot determine type");
@@ -36,29 +40,52 @@ void assign(void** variable) {
 			case RealType:		rvalue = new Value(0.0f);		break;
 			case CharacterType:	rvalue = new Value((char)0);	break;
 			case TupleType:
-			    rvalue = new Value(new Vector<Value>());
-			    rvalue = new Value(new Vector<Value>());
-                varSize = (*var)->tupleValue()->getCount();
-                dex = 0;
-                while(dex < varSize) {
-                    v = (*var)->tupleValue()->get(dex);
-                    switch(v->getType()->getType()) {
+				rType = new ValueType(TupleType);
+			    rvalue = new Value(rType, new Vector<Value>());
+			    rvalue = new Value(rType, new Vector<Value>());
+				tupleValue = (*var)->tupleValue();
+                varSize = tupleValue->getCount();
+                index = 0;
+                while(index < varSize) {
+                    innerValue = tupleValue->get(index);
+					innerValueType = innerValue->getType();
+                    switch(innerValueType->getType()) {
                         case NullType:
                         case IdentityType:
                         case TupleType:
                         case StandardOut:
                         case StandardIn:
                         case Lvalue:
+						case StartVector:
                             printf("Tuple cannot contain this type\n");
                             exit(1);
                             break;
-                        case BooleanType:	rvalue->tupleValue()->append(new Value(false));		break;
-                        case IntegerType:	rvalue->tupleValue()->append(new Value(0));			break;
-                        case RealType:		rvalue->tupleValue()->append(new Value(0.0f));		break;
-                        case CharacterType:	rvalue->tupleValue()->append(new Value((char)0));	break;
+                        case BooleanType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(false));
+							break;
+                        case IntegerType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(0));
+							break;
+                        case RealType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(0.0f));
+							break;
+                        case CharacterType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value((char)0));
+							break;
                     }
-                    ++dex;
+					innerValueType->release();
+					innerValue->release();
+					innerValue = nullptr;
+					innerValueType = nullptr;
+                    ++index;
                 }
+				tupleValue->release();
+				if (innerValueType != nullptr) { innerValueType->release(); }
+				if (innerValue != nullptr) { innerValue->release(); }
                 break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
@@ -74,17 +101,27 @@ void assign(void** variable) {
 				printf("Cannot lvalue");
 				exit(1);
 				break;
+			case StartVector:
+				printf("Cannot start Vector");
+				exit(1);
+				break;
 		}
+		valueType->release();
 	}
 
 	// Transform the rvalue to the default value when using `identity`
 	if (rvalue->isIdentity()) {
-	    Value *v;
-	    int varSize;
-	    int dex;
 		rvalue->release();
+		rvalue = nullptr;
 		ValueType* rType = nullptr;
-		switch ((*var)->getType()->getType()) {
+		int varSize;
+		int index;
+		Value* innerValue = nullptr;
+		Vector<Value>* tupleValue = nullptr;
+		ValueType* valueType = (*var)->getType();
+		ValueType* innerValueType = nullptr;
+		Vector<Value>* rvalueVector = nullptr;
+		switch (valueType->getType()) {
 			case NullType:
 			case IdentityType:
 				printf("Cannot determine type");
@@ -95,29 +132,51 @@ void assign(void** variable) {
 			case RealType:		rvalue = new Value(1.0f);		break;
 			case CharacterType:	rvalue = new Value((char)1);	break;
 			case TupleType:
-                rvalue = new Value(new Vector<Value>());
-                varSize = (*var)->tupleValue()->getCount();
-                dex = 0;
-                while(dex < varSize) {
-                    v = (*var)->tupleValue()->get(dex);
-                    switch(v->getType()->getType()) {
-                        case NullType:
-                        case IdentityType:
-                        case TupleType:
-                        case StandardOut:
-                        case StandardIn:
-                        case Lvalue:
-                            printf("Tuple cannot contain this type\n");
-                            exit(1);
-                            break;
-                        case BooleanType:	rvalue->tupleValue()->append(new Value(true));		break;
-                        case IntegerType:	rvalue->tupleValue()->append(new Value(1));			break;
-                        case RealType:		rvalue->tupleValue()->append(new Value(1.0f));		break;
-                        case CharacterType:	rvalue->tupleValue()->append(new Value((char)1));	break;
-                    }
-                    ++dex;
-                }
-                break;
+				rType = new ValueType(TupleType);
+				rvalue = new Value(rType, new Vector<Value>());
+				tupleValue = (*var)->tupleValue();
+				varSize = tupleValue->getCount();
+				index = 0;
+				while(index < varSize) {
+					innerValue = tupleValue->get(index);
+					innerValueType = innerValue->getType();
+					switch(innerValueType->getType()) {
+						case NullType:
+						case IdentityType:
+						case TupleType:
+						case StandardOut:
+						case StandardIn:
+						case Lvalue:
+						case StartVector:
+							printf("Tuple cannot contain this type\n");
+							exit(1);
+							break;
+						case BooleanType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(true));
+							break;
+						case IntegerType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(1));
+							break;
+						case RealType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(1.0f));
+							break;
+						case CharacterType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value((char)1));
+							break;
+					}
+					innerValueType->release();
+					innerValue->release();
+					innerValue = nullptr;
+					innerValueType = nullptr;
+					++index;
+				}
+				tupleValue->release();
+				if (innerValueType != nullptr) { innerValueType->release(); }
+				break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);
@@ -130,6 +189,10 @@ void assign(void** variable) {
 				break;
 			case Lvalue:
 				printf("Cannot lvalue");
+				exit(1);
+				break;
+			case StartVector:
+				printf("Cannot Start Vector");
 				exit(1);
 				break;
 		}

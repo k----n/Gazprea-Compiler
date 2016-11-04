@@ -8,7 +8,8 @@ void rightArrowOperator() {
 	_unwrap();
 	Value* lhs = stack->pop();
 	if (!rhs->isStandardOut()) { printf("RHS value is not stdout\n"); exit(1); }
-	switch (lhs->getType()->getType()) {
+	ValueType* type = lhs->getType();
+	switch (type->getType()) {
 		case NullType:		printf("Cannot print NullType\n");		exit(1);
 		case IdentityType:	printf("Cannot print IdentityType\n");	exit(1);
 		case BooleanType:
@@ -24,9 +25,10 @@ void rightArrowOperator() {
 		case TupleType:     printf("Cannot print TupleType\n"); exit(1);
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
-//		case VectorStart:	printf("Cannot print VectorStart\n");	exit(1);
+		case StartVector:	printf("Cannot print VectorStart\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);
 	}
+	type->release();
 	lhs->release();
 	rhs->release();
 }
@@ -42,7 +44,9 @@ void leftArrowOperator() {
 	float realValue;
 	char characterValue;
 	int readErrorCode;
-	switch (lhs->lvalue()->getType()->getType()) {
+	Value* lvalue = lhs->lvalue();
+	ValueType* type = lvalue->getType();
+	switch (type->getType()) {
 		case NullType:		printf("Cannot input NullType\n");		exit(1);
 		case IdentityType:	printf("Cannot input IdentityType\n");	exit(1);
 		case BooleanType:
@@ -73,11 +77,14 @@ void leftArrowOperator() {
 			(*(Value**)lhs->lvalue_ptr())->release();
 			*lhs->lvalue_ptr() = new Value(characterValue);
 			break;
-		case TupleType:     printf("Cannot input TupleType\n"); exit(1);
+		case TupleType:     printf("Cannot input TupleType\n");		exit(1);
 		case StandardOut:	printf("Cannot input StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot input StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot input Lvalue\n");		exit(1);
+		case StartVector:	printf("Cannot input StartVector\n");	exit(1);
 	}
+	lvalue->release();
+	type->release();
 	switch (readErrorCode) {
 		case 1: stdInputError = 0;
 		case 0: stdInputError = 1;

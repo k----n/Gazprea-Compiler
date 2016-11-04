@@ -55,32 +55,4 @@ public class Tuple {
 
         return false;
     }
-
-    public static ST getSTForType(Type.TYPES type) {
-        STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
-        switch (type) {
-            case INTEGER:
-                return llvmGroup.getInstanceOf("pushNullIntegerToTuple");
-            case REAL:
-                return llvmGroup.getInstanceOf("pushNullRealToTuple");
-            case BOOLEAN:
-                return llvmGroup.getInstanceOf("pushNullBooleanToTuple");
-            case CHARACTER:
-                return llvmGroup.getInstanceOf("pushNullCharacterToTuple");
-            default:
-                throw new RuntimeException("Invalid Tuple Type");
-        }
-    }
-
-    public ST getInitializingStatements() {
-        STGroup llvmGroup = new STGroupFile("./src/llvm.stg");
-        ST varInit_Tuple =  llvmGroup.getInstanceOf("varInit_Tuple");
-
-        for (int key = 1; key <= variables.size(); ++key) {
-            Type var = variables.get(key);
-            varInit_Tuple.add("tuple_statements", getSTForType(var.getType()));
-        }
-
-        return varInit_Tuple;
-    }
 }
