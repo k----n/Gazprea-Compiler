@@ -25,14 +25,15 @@ public:
 	}
 	
 	void append(T* element) {
+	    /* TODO: ASSUMING VALUE * ONLY FOR NOW */
 		((Object*)element)->retain();
-		
+
 		VectorNode* newNode = new VectorNode;
 		newNode->next = nullptr;
 		newNode->value = element;
-		
+
 		this->count++;
-		
+
 		if (this->firstNode == nullptr) {
 			this->firstNode = newNode;
 		} else {
