@@ -1,0 +1,9 @@
+procedure f() {
+{} {{{5->std_output();}}}
+}
+
+procedure main() returns integer{
+
+call f();
+return 0;
+}

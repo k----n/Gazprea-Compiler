@@ -329,14 +329,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 return type;
             } else {
                 // CASE: casting case
-                Type newType = this.visitType(ctx.type());
+                Type newType;
+                if (ctx.type() != null) {
+                    newType = this.visitType(ctx.type());
+                    String typeLetter = Type.getCastingFunction(type, newType);
+                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                    promoteCall.add("typeLetter", typeLetter);
+                    this.addCode(promoteCall.render());
 
-                String typeLetter = Type.getCastingFunction(type, newType);
-                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                promoteCall.add("typeLetter", typeLetter);
-                this.addCode(promoteCall.render());
+                    return newType;
+                }
+                // TODO tuple case
+                newType = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
 
-                return newType;
+
             }
         }
         else if (ctx.generator() != null) {
