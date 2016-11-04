@@ -75,7 +75,7 @@ returnStatement: Return expression?;
 
 streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
 
-conditional: If expression translationalUnit;
+conditional: If expression translationalUnit (Else translationalUnit)?;
 
 infiniteLoop: Loop translationalUnit;
 predicatedLoop: prePredicatedLoop | postPredicatedLoop;

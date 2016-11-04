@@ -18,7 +18,6 @@ void assignTupleField(int index) {
     Vector<Value> *tuple = tupleValue->tupleValue();
     Value *exprValue = stack->pop();
 
-    tupleValue->set(index, value);
 
 
 }
