@@ -32,5 +32,14 @@ procedure main() returns integer {
     6 -> std_output();
     '\n' -> std_output();
 
+    if (x == 2) {
+       7 -> std_output();
+       '\n' -> std_output();   	     
+    }
+
+    if x == 2 and x > 1 and x < 3
+        8 -> std_output();
+    '\n' -> std_output();
+
     return 0;
 }
