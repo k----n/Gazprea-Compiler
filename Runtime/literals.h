@@ -91,11 +91,56 @@ void endTuple() {
 }
 
 void setTuple(int i) {
-    Value * tuple = stack->pop();
-    Value *value = stack->pop();
+    Value *value1 = stack->pop();
+    Value* value = stack->pop(); // this is the tuple
 
-    tuple->tupleValue()->set(i, value);
+    	if (!value->isLvalue()) {
+    		printf("Not an lvalue");
+    		exit(1);
+    	}
+    	Value** ptr = value->lvalue_ptr();
+    	if (!(*ptr)->isTuple()) {
+    		printf("NOT A VECTOR OR TUPLE\n");
+    		exit(1);
+    	}
 
-    value->release();
+    ((Vector<Value>*)(*ptr)->value_ptr())->set(i, value1);
+
+    Vector<Value>* tupleValues = new Vector<Value>;
+
+    int index = ((Vector<Value>*)(*ptr)->value_ptr())->getCount();
+
+		Value* node;
+    for (int j = 0; j < index; ++j) {
+        node = ((Vector<Value>*)(*ptr)->value_ptr())->get(j);
+    	tupleValues->append(node);
+    }
+
+	ValueType* type = new ValueType(TupleType);
+
+    Value* tuple = new Value(type, tupleValues);
+
+    stack -> push(tuple);
+
+    type->release();
     tuple->release();
+    value->release();
+    value1->release();
 }
+
+//void getAt(int index) {
+//	Value* value = stack->pop();
+//	if (!value->isLvalue()) {
+//		printf("Not an lvalue");
+//		exit(1);
+//	}
+//	Value** ptr = value->lvalue_ptr();
+//	if (!(*ptr)->isTuple()) {
+//		printf("NOT A VECTOR OR TUPLE\n");
+//		exit(1);
+//	}
+//
+//	Value* lvalue = ((Vector<Value>*)(*ptr)->value_ptr())->getLvalue(index);
+//	stack->push(lvalue);
+//	lvalue->release();
+//}
