@@ -28,6 +28,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private int loopIndex;
     private int breakIndex;
 
+    private ArrayList<Type> promoteType = new ArrayList<>();
+
+
     private Deque<Integer> currentLoop = new ArrayDeque<>();
     private Deque<Integer> currentBreak = new ArrayDeque<>();
 
@@ -340,8 +343,23 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     return newType;
                 }
                 // TODO tuple case
-                newType = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+                Tuple tupleType = new Tuple();
 
+                ST startVector = this.llvmGroup.getInstanceOf("startVector");
+                this.addCode(startVector.render());
+                for (int e = 0; e < ctx.tupleTypeDetails().tupleTypeAtom().size(); ++e){
+                    Type exprType = visitType(visitTupleTypeAtom(ctx.tupleTypeDetails().tupleTypeAtom().get(e)).left());
+                    String typeLetter = Type.getCastingFunction(promoteType.get(e), exprType);
+                    visitExpression(ctx.expression(0).literal().tupleLiteral().expression(e));
+                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                    promoteCall.add("typeLetter", typeLetter);
+                    this.addCode(promoteCall.render());
+                    exprType = Type.getReturnType(typeLetter);
+                    tupleType.addField("" + (e+1), exprType);
+                }
+                ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
+                this.addCode(endTuple.render());
+                return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
 
             }
         }
@@ -980,6 +998,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         for (int i = 0; i < ctx.tupleTypeAtom().size(); ++i) {
             Pair<GazpreaParser.TypeContext, TerminalNode> atom = this.visitTupleTypeAtom(ctx.tupleTypeAtom().get(i));
             Type atomType = this.visitType(atom.left());
+            promoteType.add(i, atomType);
             if (atom.right() != null) {
                 tupleType.addField(atom.right().getText(), atomType);
             } else {
@@ -1039,7 +1058,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         typeName = typedefs.get(typeNameString).getType();
                     }
                     else {
-                        throw (new RuntimeException("Type name does not exist"));
+                        throw (new RuntimeException("Type name does not exist" + typeNameString));
                     }
             }
         }

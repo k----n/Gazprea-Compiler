@@ -127,6 +127,9 @@ public class Type {
             case "bv":
                 retType = TYPES.BOOLEAN;
                 break;
+            case "cv":
+                retType = TYPES.CHARACTER;
+                break;
             default: return null;
         }
         return new Type(Type.SPECIFIERS.CONST, retType);
