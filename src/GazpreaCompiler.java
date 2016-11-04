@@ -767,6 +767,40 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return super.visitPrePredicatedLoop(ctx);
     }
 
+    @Override public Type visitPostPredicatedLoop(GazpreaParser.PostPredicatedLoopContext ctx) {
+        ++this.loopIndex;
+
+        int myLoopIndex = this.loopIndex;
+
+        currentLoop.addFirst(myLoopIndex);
+
+
+        ST startLoop = this.llvmGroup.getInstanceOf("loopStart");
+        startLoop.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(startLoop.render());
+
+        this.visitTranslationalUnit(ctx.translationalUnit());
+
+        this.visitExpression(ctx.expression());
+
+        ST loopConditional = this.llvmGroup.getInstanceOf("loopConditional");
+        loopConditional.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(loopConditional.render());
+
+        ST endLoop = this.llvmGroup.getInstanceOf("loopEnd");
+        endLoop.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(endLoop.render());
+
+        ST loopConditionalEnd = this.llvmGroup.getInstanceOf("loopConditionalEnd");
+        loopConditionalEnd.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(loopConditionalEnd.render());
+
+        currentLoop.removeFirst();
+
+        return null;
+    }
+
+
     @Override public Type visitBreakStatement(GazpreaParser.BreakStatementContext ctx) {
         //  br label %_break_<index>_label
         ST breakLabel = this.llvmGroup.getInstanceOf("breakStatement");
