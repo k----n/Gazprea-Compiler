@@ -754,6 +754,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return null;
     }
 
+    @Override
+    public Object visitPrePredicatedLoop(GazpreaParser.PrePredicatedLoopContext ctx) {
+        ++this.loopIndex;
+
+        int myLoopIndex = this.loopIndex;
+
+        currentLoop.add(myLoopIndex);
+
+
+
+        return super.visitPrePredicatedLoop(ctx);
+    }
+
     @Override public Type visitBreakStatement(GazpreaParser.BreakStatementContext ctx) {
         //  br label %_break_<index>_label
         ST breakLabel = this.llvmGroup.getInstanceOf("breakStatement");

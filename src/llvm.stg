@@ -16,32 +16,43 @@ functionReturn() ::= "ret void"
 
 
 conditionalStart(index) ::= <<
-  %_conditional_<index>_start_var1 = call zeroext i1 @_Z6toBoolv()
-  %_conditional_<index>_start_var2 = icmp eq i1 %_conditional_<index>_start_var1, 0
-  br i1 %_conditional_<index>_start_var2, label %_conditional_<index>_label_false, label %_conditional_<index>_label_true
-  _conditional_<index>_label_true:
+  %.conditional_<index>_start_var1 = call zeroext i1 @_Z6toBoolv()
+  %.conditional_<index>_start_var2 = icmp eq i1 %.conditional_<index>_start_var1, 0
+  br i1 %.conditional_<index>_start_var2, label %.conditional_<index>_label_false, label %.conditional_<index>_label_true
+  .conditional_<index>_label_true:
 >>
 conditionalEnd(index) ::= <<
-  br label %_conditional_<index>_label_false
-_conditional_<index>_label_false:
+  br label %.conditional_<index>_label_false
+  .conditional_<index>_label_false:
+>>
+
+loopConditional(index) ::= <<
+  %.loopConditional_<index>_start_var1 = call zeroext i1 @_Z6toBoolv()
+  %.loopConditional_<index>_start_var2 = icmp eq i1 %.loopConditional_<index>_start_var1, 0
+  br i1 %.loopConditional_<index>_start_var2, label %.loopConditional_<index>_label_false, label %.loopConditional_<index>_label_true
+  .loopConditional_<index>_label_true:
+>>
+loopConditionalEnd(index) ::= <<
+  br label %.loopConditional_<index>_label_false
+  .loopConditional_<index>_label_false:
 >>
 
 loopStart(index) ::= <<
-  br label %_loop_<index>_label
-  _loop_<index>_label:
+  br label %.loop_<index>_label
+  .loop_<index>_label:
 >>
 
 loopEnd(index) ::= <<
-  br label %_loop_<index>_label
-  _break_<index>_label:
+  br label %.loop_<index>_label
+  .break_<index>_label:
 >>
 
 continueStatement(index) ::= <<
-  br label %_loop_<index>_label
+  br label %.loop_<index>_label
 >>
 
 breakStatement(index) ::= <<
- br label %_break_<index>_label
+ br label %.break_<index>_label
 >>
 
 
