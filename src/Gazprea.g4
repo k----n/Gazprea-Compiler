@@ -67,7 +67,7 @@ statement
 notstatement
  : conditional
  | infiniteLoop
-// | predicatedLoop
+ | predicatedLoop
 // | iteratorLoop
  ;
 
@@ -90,7 +90,7 @@ infiniteLoop: Loop translationalUnit;
 
 predicatedLoop: prePredicatedLoop | postPredicatedLoop;
 prePredicatedLoop: Loop While expression translationalUnit;
-postPredicatedLoop: Loop translationalUnit While expression;
+postPredicatedLoop: Loop translationalUnit While expression ';';
 
 iteratorLoop: Loop iteratorLoopVariables translationalUnit;
 iteratorLoopVariables: iteratorLoopVariable (',' iteratorLoopVariable)*;
