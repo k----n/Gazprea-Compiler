@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Stack.h"
 #include "Value.h"
+#include "Stack.h"
 
 #define LOAD(type, name, call) \
 	_unwrap(); \

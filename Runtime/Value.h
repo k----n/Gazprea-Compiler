@@ -184,3 +184,4 @@ private:
 	
 	typedef Object super;
 };
+

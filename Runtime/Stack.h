@@ -45,7 +45,14 @@ public:
 		newNode->value = element;
 		this->topNode = newNode;
 	}
-	
+
+	T* peek() {
+	    if (this->topNode == nullptr) {
+	        printf("Attempting to peek empty stack\n"); exit(1); }
+	    T* value = (T*) this->topNode->value;
+	    return value;
+	}
+
 	T* pop() {
 		if (this->topNode == nullptr) {
 			printf("Attempting to pop empty stack\n"); exit(1); }

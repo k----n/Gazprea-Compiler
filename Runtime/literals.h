@@ -89,3 +89,13 @@ void endTuple() {
 	elements->release();
 	//tupleValues->release(); - Do not release
 }
+
+void setTuple(int i) {
+    Value * tuple = stack->pop();
+    Value *value = stack->pop();
+
+    tuple->tupleValue()->set(i, value);
+
+    value->release();
+    tuple->release();
+}
