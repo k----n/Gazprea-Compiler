@@ -651,11 +651,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitAssignment(GazpreaParser.AssignmentContext ctx) {
         // tuple asssignment vs. regular assignment
         if (ctx.TupleAccess() != null) {
+            // TODO fix this tuple assignment
             // the accessing of a tuple field
             Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
 
             String varName = tupleAccess.left();
             String field = tupleAccess.right();
+
 
             // first get the tuple on the stack
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
@@ -663,9 +665,16 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             line.add("name", variable.getMangledName());
             this.addCode(line.render());
 
+            visitExpression(ctx.expression());
+
             // then get the field respective to the tuple on the stack
             Tuple tupleType = variable.getType().getTupleType();
             Integer fieldNumber = tupleType.getFieldNumber(field);
+
+            if (tupleType.getTypeOfField(fieldNumber) != null){
+                throw new Error(Type.getIdFunction(tupleType.getTypeOfField(fieldNumber) ));
+
+            }
 
             ST assignTupleField = this.llvmGroup.getInstanceOf("assignTupleField");
             assignTupleField.add("index", fieldNumber);

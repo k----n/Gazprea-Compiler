@@ -78,8 +78,7 @@ call void @_Z19pushCharNullToTuplev()
 >>
 // expects the expression is already in stack
 assignTupleField(index) ::= <<
-call void @_Z5getAti(i32 <index>)
-call void @_Z16assignTupleFieldv()
+call void @_Z8setTuplei(i32 <index>)
 >>
 
 assignTupleField2(index) ::= <<
