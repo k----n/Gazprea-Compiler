@@ -14,11 +14,12 @@ define void @GazFunc_<name>() #3 {
 >>
 functionReturn() ::= "ret void"
 
+
 conditionalStart(index) ::= <<
   %_conditional_<index>_start_var1 = call zeroext i1 @_Z6toBoolv()
   %_conditional_<index>_start_var2 = icmp eq i1 %_conditional_<index>_start_var1, 0
   br i1 %_conditional_<index>_start_var2, label %_conditional_<index>_label_false, label %_conditional_<index>_label_true
-_conditional_<index>_label_true:
+  _conditional_<index>_label_true:
 >>
 conditionalEnd(index) ::= <<
   br label %_conditional_<index>_label_false
@@ -27,7 +28,7 @@ _conditional_<index>_label_false:
 
 loopStart(index) ::= <<
   br label %_loop_<index>_label
-_loop_<index>_label:
+  _loop_<index>_label:
 >>
 
 loopEnd(index) ::= <<
@@ -39,13 +40,10 @@ continue(index) ::= <<
   br label %_loop_<index>_label
 >>
 
-breakLabel(index) ::= <<
+breakStatement(index) ::= <<
  br label %_break_<index>_label
 >>
 
-endBreakLabel(index) ::= <<
-_break_<index>_label:
->>
 
 // name is the unique name of the tuple
 // fields are the data types in llvm form (e.g. i32, i8, etc.)

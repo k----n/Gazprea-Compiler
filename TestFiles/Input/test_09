@@ -1,4 +1,4 @@
-function f(integer x) returns integer;
+procedure f() returns integer;
 
 procedure main() returns integer {
     const out = std_output();
@@ -7,4 +7,4 @@ procedure main() returns integer {
     return 0;
 }
 
-function f() returns integer = 7;
+procedure f() returns integer = 7;

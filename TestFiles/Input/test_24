@@ -10,13 +10,13 @@ procedure main() returns integer{
 	  break;
 
 
-	}
+	
 	  loop {
 	  3 -> std_output();
 	  break;
 	  }
-
-	//break;
+	  }
+	break;
     }
 
 

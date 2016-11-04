@@ -24,13 +24,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, Type> typedefs = new HashMap<>();
 
-    private int conditionalIndex = 0;
-    private int loopIndex = 0;
-    private int breakIndex = 0;
+    private int conditionalIndex;
+    private int loopIndex;
+    private int breakIndex;
 
     private Deque<Integer> currentLoop = new ArrayDeque<>();
     private Deque<Integer> currentBreak = new ArrayDeque<>();
-
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -42,6 +41,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
+
+        breakIndex = 0;
+        loopIndex = 0;
+        conditionalIndex = 0;
     }
 
     @Override
@@ -731,10 +734,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override public Type visitInfiniteLoop(GazpreaParser.InfiniteLoopContext ctx) {
         ++this.loopIndex;
-        ++this.breakIndex;
 
-        currentLoop.addFirst(loopIndex);
-        currentBreak.addFirst(breakIndex);
+        int myLoopIndex = this.loopIndex;
+
+        currentLoop.addFirst(myLoopIndex);
 
         ST startInfiniteLoop = this.llvmGroup.getInstanceOf("loopStart");
         startInfiniteLoop.add("index", currentLoop.peekFirst());
@@ -746,21 +749,16 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         endInfiniteLoop.add("index", currentLoop.peekFirst());
         this.currentFunction.addLine(endInfiniteLoop.render());
 
-        // TODO account for breaking from inner to outer (use a stack or some shit)
-        ST endBreakLabel = this.llvmGroup.getInstanceOf("endBreakLabel");
-        endBreakLabel.add("index", currentBreak.peekFirst());
-        this.currentFunction.addLine(endBreakLabel.render());
-
-        currentBreak.removeFirst();
+        currentLoop.removeFirst();
 
         return null;
     }
 
     @Override public Type visitBreakStatement(GazpreaParser.BreakStatementContext ctx) {
-        ST breakLabel = this.llvmGroup.getInstanceOf("breakLabel");
-        breakLabel.add("index", currentBreak.peekFirst());
+        //  br label %_break_<index>_label
+        ST breakLabel = this.llvmGroup.getInstanceOf("breakStatement");
+        breakLabel.add("index", currentLoop.peekFirst());
         this.currentFunction.addLine(breakLabel.render());
-        currentLoop.removeFirst();
         return null;
     }
 
