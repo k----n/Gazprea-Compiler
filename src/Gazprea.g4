@@ -103,7 +103,7 @@ expression
  | literal
  | Identifier
  | '(' expression ')'
- | As '<' (type | tupleTypeDetails) '>' '(' expression ')'
+ | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)
  | generator
  | filter
  | functionCall

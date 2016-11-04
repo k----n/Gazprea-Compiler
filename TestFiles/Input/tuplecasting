@@ -1,0 +1,21 @@
+procedure main() returns integer {
+    tuple(integer r, character c, real f) t = as<(integer, integer, integer)>(1,'a',3.2);
+    t.r -> std_output();
+    t.c -> std_output();
+    t.f -> std_output();
+
+    '\n' -> std_output();
+
+    t = as<(integer, integer, integer)>(1,'b',3.2);
+    t.r -> std_output();
+    t.c -> std_output();
+    t.f -> std_output();
+
+    '\n' -> std_output();
+
+    tuple(integer r, character c, real f) u = as<(integer, integer, integer)>(1,'c',3.2);
+    u.r -> std_output();
+    u.c -> std_output();
+    u.f -> std_output();
+    return 0;
+}
