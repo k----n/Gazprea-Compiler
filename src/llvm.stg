@@ -25,42 +25,6 @@ conditionalEnd(index) ::= <<
 _conditional_<index>_label_false:
 >>
 
-// name is the unique name of the tuple
-// fields are the data types in llvm form (e.g. i32, i8, etc.)
-tuple_struct(name, fields) ::= <<
-%Gaz_Struct.<name> = type {<fields; separator=",\n">}
->>
-varInit_Tuple(tuple_statements) ::= <<
-call void @_Z14pushEmptyTuplev();
-<tuple_statements; separator="\n">
->>
-pushNullIntegerToTuple(value) ::= <<
-call void @_Z18pushIntNullToTuplev()
->>
-pushNullRealToTuple(value) ::= <<
-call void @_Z19pushRealNullToTuplev()
->>
-pushNullBooleanToTuple(value) ::= <<
-call void @_Z19pushBoolNullToTuplev()
->>
-pushNullCharacterToTuple(value) ::= <<
-call void @_Z19pushCharNullToTuplev()
->>
-// expects the expression is already in stack
-assignTupleField(index) ::= <<
-call void @_Z15getValueAtTuplei(i32 <index>)
-call void @_Z16assignTupleFieldv()
->>
-
-assignTupleField2(index) ::= <<
-call void @_Z16assignTupleFieldv()
->>
-
-getTupleField(index) ::= <<
-call void @_Z15getValueAtTuplei(i32 <index>)
->>
-
-
 pushVariable(name) ::= "call void @_Z4pushPPv(i8** <name>)"
 pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
 assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"
@@ -71,7 +35,6 @@ varInit_input() ::= "call void @_Z9std_inputv()"
 varInit_boolean() ::= "call void @_Z22varInitPushNullBooleanv()"
 varInit_real() ::= "call void @_Z19varInitPushNullRealv()"
 varInit_character() ::= "call void @_Z24varInitPushNullCharacterv()"
-
 
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
 
@@ -84,7 +47,10 @@ pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
 pushReal(value) ::= "call void @_Z8pushRealf(float <value>)"
 pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
 
+startVector() ::= "call void @_Z15pushStartVectorv()"
+endTuple() ::= "call void @_Z8endTuplev()"
 
+getAt(index) ::= "call void @_Z5getAti(i32 <index>)"
 
 addition(typeLetter) ::= "call void @_Z5add_<typeLetter>()"
 subtraction(typeLetter) ::= "call void @_Z5sub_<typeLetter>()"

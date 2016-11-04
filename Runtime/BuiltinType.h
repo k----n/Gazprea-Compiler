@@ -15,4 +15,6 @@ enum BuiltinType {
 	StandardIn,
 
 	Lvalue,
+	
+	StartVector,
 };

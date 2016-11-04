@@ -1,11 +1,7 @@
 procedure main() returns integer {
-    var out = std_output();
-    
     tuple(integer r, integer c, integer f) t = (1,2,3);
-
-    t.r -> out;
-    t.c -> out;
-    t.f -> out;
-
+    t.r -> std_output();
+    t.c -> std_output();
+    t.f -> std_output();
     return 0;
 }

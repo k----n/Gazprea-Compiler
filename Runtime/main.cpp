@@ -2,10 +2,12 @@
 
 #include "declarations.h"
 #include "literals.h"
-#include "tuples.h"
 #include "builtins.h"
 #include "operators.h"
 #include "variables.h"
+#include "vectors.h"
+
+#include "VectorImp.h"
 
 #ifdef LLVM_BUILD
 asm("REPLACE_ME-GLOBAL_VARIABLES");
@@ -24,6 +26,25 @@ int main(int argc, const char * argv[]) {
 #endif
 
 #ifndef LLVM_BUILD
+	
+	void* t1 = nullptr;
+	void* t2 = nullptr;
+	void* t3 = nullptr;
+	
+	pushStartVector();
+	varInitPushNullInteger();
+	varInitPushNullInteger();
+	endTuple();
+	assign(&t1);
+	pushIdentity();
+	assign(&t1);
+	push(&t1);
+	getAt(0);
+	std_output();
+	rightArrowOperator();
+	
+	
+	
 	pushInteger(0); // Push return code
 #endif
 	
