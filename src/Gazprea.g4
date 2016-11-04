@@ -149,7 +149,7 @@ Returns: 'returns';
 
 assignment
     : TupleAccess Assign expression
-    | Identifier Assign expression
+    | Identifier (',' Identifier)* Assign expression
     ;
 
 typedef: Typedef type Identifier;

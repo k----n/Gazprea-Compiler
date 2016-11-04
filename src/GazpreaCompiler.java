@@ -654,9 +654,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(assignTupleField.render());
         } else {
             // TODO check to see if assigning type is valid
-            this.visitExpression(ctx.expression());
+            Type visitType = this.visitExpression(ctx.expression());
+            int idSize = ctx.Identifier().size();
+            if (visitType.getType().equals(Type.TYPES.TUPLE) && idSize > 1){
+                for (int i = 0; i < idSize; i++ ){
+                    ST get = this.llvmGroup.getInstanceOf("getAt");
+                    get.add("index", i);
+                    ST assign = this.llvmGroup.getInstanceOf("assignVariable");
+                    assign.add("name", this.scope.getVariable(ctx.Identifier(i).getText()).getMangledName());
+                    this.addCode(assign.render());
+                }
+                return null;
+            }
             ST assign = this.llvmGroup.getInstanceOf("assignVariable");
-            assign.add("name", this.scope.getVariable(ctx.Identifier().getText()).getMangledName());
+            assign.add("name", this.scope.getVariable(ctx.Identifier(0).getText()).getMangledName());
             this.addCode(assign.render());
         }
         return null;
