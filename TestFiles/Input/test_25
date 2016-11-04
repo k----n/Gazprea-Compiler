@@ -1,11 +1,23 @@
 procedure main() returns integer{
 
 integer x = 1; 
+integer y = 10;
  
 /* Since the conditional is tested after the execution '10' is printed */ 
 loop {
 x -> std_output(); 
+'\n' -> std_output();
 x = x + 1;
+
+loop {
+y -> std_output(); 
+'\n' -> std_output();
+y = y + 1;
+
+
+
+}while y < 12;
+
 }while x < 5;
 
 	return 0;
