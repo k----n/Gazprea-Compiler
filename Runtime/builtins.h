@@ -20,6 +20,7 @@ void stream_state() {
 		case TupleType:
 		case StandardOut:
 		case Lvalue:
+		case StartVector:
 			printf("Argument was not a stream");
 			exit(1);
 		case StandardIn:

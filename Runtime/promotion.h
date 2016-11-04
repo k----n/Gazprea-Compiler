@@ -11,10 +11,11 @@ void swapStackTopTwo() {
 
 void promoteTo_b() {
 	Value* value = stack->pop();
-	Value* newValue;
-	int* intValue;
-	char* charValue;
-	switch (value->getType()->getType()) {
+	Value* newValue = nullptr;
+	int* intValue = nullptr;
+	char* charValue = nullptr;
+	ValueType* type = value->getType();
+	switch (type->getType()) {
 		case NullType:
 			newValue = new Value(false);
 			break;
@@ -42,7 +43,9 @@ void promoteTo_b() {
 			stack->push(newValue);
 			newValue->release();
 			return promoteTo_b();
+		case StartVector: printf("Cannot promote StartVector\n"); exit(1);
 	}
+	type->release();
 	stack->push(newValue);
 	newValue->release();
 	value->release();
@@ -50,11 +53,12 @@ void promoteTo_b() {
 
 void promoteTo_i() {
 	Value* value = stack->pop();
-	Value* newValue;
-	bool* boolValue;
-	float* realValue;
-	char* charValue;
-	switch (value->getType()->getType()) {
+	Value* newValue = nullptr;
+	bool* boolValue = nullptr;
+	float* realValue = nullptr;
+	char* charValue = nullptr;
+	ValueType* type = value->getType();
+	switch (type->getType()) {
 		case NullType:
 			newValue = new Value(0);
 			break;
@@ -85,7 +89,9 @@ void promoteTo_i() {
 			stack->push(newValue);
 			newValue->release();
 			return promoteTo_i();
+		case StartVector: printf("Cannot promote startvector\n"); exit(1);
 	}
+	type->release();
 	stack->push(newValue);
 	newValue->release();
 	value->release();
@@ -93,11 +99,12 @@ void promoteTo_i() {
 
 void promoteTo_r() {
 	Value* value = stack->pop();
-	Value* newValue;
-	bool* boolValue;
-	int* intValue;
-	char* charValue;
-	switch (value->getType()->getType()) {
+	Value* newValue = nullptr;
+	bool* boolValue = nullptr;
+	int* intValue = nullptr;
+	char* charValue = nullptr;
+	ValueType* type = value->getType();
+	switch (type->getType()) {
 		case NullType:
 			newValue = new Value(0.0f);
 			break;
@@ -128,7 +135,9 @@ void promoteTo_r() {
 			stack->push(newValue);
 			newValue->release();
 			return promoteTo_r();
+		case StartVector: printf("Cannot promote StartVector"); exit(1);
 	}
+	type->release();
 	stack->push(newValue);
 	newValue->release();
 	value->release();
@@ -136,10 +145,11 @@ void promoteTo_r() {
 
 void promoteTo_c() {
 	Value* value = stack->pop();
-	Value* newValue;
-	bool* boolValue;
-	int* intValue;
-	switch (value->getType()->getType()) {
+	Value* newValue = nullptr;
+	bool* boolValue = nullptr;
+	int* intValue = nullptr;
+	ValueType* type = value->getType();
+	switch (type->getType()) {
 		case NullType:
 			newValue = new Value('\0');
 			break;
@@ -167,7 +177,9 @@ void promoteTo_c() {
 			stack->push(newValue);
 			newValue->release();
 			return promoteTo_c();
+		case StartVector: printf("Cannot promote StartVector\n"); exit(1);
 	}
+	type->release();
 	stack->push(newValue);
 	newValue->release();
 	value->release();

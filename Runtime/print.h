@@ -65,6 +65,7 @@ void printValue() {
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);
+		case StartVector:	printf("Cannot print StartVector\n");	exit(1);
 	}
 	valueType->release();
 	value->release();

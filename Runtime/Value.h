@@ -36,14 +36,7 @@ public:
 		*newValue = value;
 		this->value = newValue;
 	}
-
-	Value(Vector<Value> value) : super(TypeValue) {
-	    this->valueType = new ValueType(TupleType);
-	    Vector<Value> *newValue = new Vector<Value>();
-	    *newValue = value;
-	    this->value = newValue;
-	}
-
+	
 	/// - Note: `value` is an exception as it becomes fully owned by `Value` -
 	///         it is NOT retained and should not be released externally.
 	Value(ValueType* type, void* value) : super(TypeValue) {
@@ -55,7 +48,6 @@ public:
 	
 	virtual Value* copy() const {
 		Value* copy = new Value(this->valueType, this->value);
-		this->valueType->retain();
 		switch (this->valueType->getType()) {
 			case NullType:
 			case IdentityType:
@@ -79,30 +71,34 @@ public:
 				*(char*)(copy->value) = *(char*)this->value;
 				break;
 			case TupleType:
-			    copy->value = (Vector<Value> *)this->copy();
-			    break;
+				copy->value = this->tupleValue();
+				break;
 			case Lvalue:
+				// TODO: Retain???
+				break;
+			case StartVector:
 				// TODO: Retain???
 				break;
 		}
 		return copy;
 	}
-
+	
 	ValueType* getType() {
 		this->valueType->retain();
 		return this->valueType;
 	}
 	
-	bool isNull()		{ return this->valueType->getType() == NullType;	}
-	bool isIdentity()	{ return this->valueType->getType() == IdentityType;}
-	bool isBoolean()	{ return this->valueType->getType() == BooleanType;	}
-	bool isInteger()	{ return this->valueType->getType() == IntegerType;	}
-	bool isReal()		{ return this->valueType->getType() == RealType;	}
-	bool isCharacter()	{ return this->valueType->getType() == CharacterType;}
-	bool isTupleType()  { return this->valueType->getType() == TupleType;   }
-	bool isStandardIn()	{ return this->valueType->getType() == StandardIn;	}
-	bool isStandardOut(){ return this->valueType->getType() == StandardOut;	}
-	bool isLvalue()		{ return this->valueType->getType() == Lvalue;		}
+	bool isNull()		const { return this->valueType->getType() == NullType;	}
+	bool isIdentity()	const { return this->valueType->getType() == IdentityType;}
+	bool isBoolean()	const { return this->valueType->getType() == BooleanType;	}
+	bool isInteger()	const { return this->valueType->getType() == IntegerType;	}
+	bool isReal()		const { return this->valueType->getType() == RealType;	}
+	bool isCharacter()	const { return this->valueType->getType() == CharacterType;}
+	bool isTuple()		const { return this->valueType->getType() == TupleType;   }
+	bool isStandardIn()	const { return this->valueType->getType() == StandardIn;	}
+	bool isStandardOut()const { return this->valueType->getType() == StandardOut;	}
+	bool isLvalue()		const { return this->valueType->getType() == Lvalue;		}
+	bool isStartVector()const { return this->valueType->getType() == StartVector; }
 	
 	bool* booleanValue() {
 		bool* b = new bool;
@@ -139,16 +135,14 @@ public:
 		*c = *(char*)this->value;
 		return c;
 	}
-
-	Vector<Value>* tupleValue() {
-        Vector<Value> *v = new Vector<Value>();
-        if (this->isNull())     { printf("This is a null tuple\n"); exit(1); }
-        if (this->isIdentity()) { printf("This is an identity tuple\n"); exit(1); }
-        if (!this->isTupleType()) { printf("Not a tuple value\n"); exit(1); }
-        *v = *(Vector<Value> *)this->value;
-        return v;
+	
+	Vector<Value>* tupleValue() const {
+		if (this->isNull())		{ printf("This is a null tuple\n"); exit(1); }
+		if (this->isIdentity())	{ printf("This is an identity tuple\n"); exit(1); }
+		if (!this->isTuple())	{ printf("Not a tuple value\n"); exit(1); }
+		return ((Vector<Value>*)this->value)->copy();
 	}
-
+	
 	Value* lvalue() {
 		if (!this->isLvalue()) { printf("Not an lvalue\n"); exit(1); }
 		Value* value = *(Value**)this->value;
@@ -161,6 +155,10 @@ public:
 		return (Value**)this->value;
 	}
 	
+	void* value_ptr() {
+		return this->value;
+	}
+	
 private:
 	ValueType* valueType;
 	void* value;
@@ -170,14 +168,15 @@ private:
 			case NullType:
 			case IdentityType:
 				break;
-			case BooleanType:	delete (bool*)  this->value; break;
-			case IntegerType:	delete (int*)   this->value; break;
-			case RealType:		delete (float*)this->value; break;
-			case CharacterType:	delete (char*)	this->value; break;
-			case TupleType:     delete (Vector<Value> *) this->value; break;
+			case BooleanType:	delete (bool*)   this->value; break;
+			case IntegerType:	delete (int*)    this->value; break;
+			case RealType:		delete (float*)  this->value; break;
+			case CharacterType:	delete (char*)	 this->value; break;
+			case TupleType:     ((Vector<Value>*)this->value)->release(); break;
 			case StandardIn:
 			case StandardOut:
 			case Lvalue:
+			case StartVector:
 				break;
 		}
 		this->valueType->release();

@@ -243,8 +243,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             Tuple tupleType = variable.getType().getTupleType();
             Integer fieldNumber = tupleType.getFieldNumber(field);
 
-            ST getTupleField = this.llvmGroup.getInstanceOf("getTupleField");
-            getTupleField.add("index", fieldNumber);
+            ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
+            getTupleField.add("index", fieldNumber - 1);
             this.addCode(getTupleField.render());
 
             return tupleType.getTypeOfField(fieldNumber);
@@ -545,16 +545,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
         Tuple tupleType = new Tuple();
 
+        ST startVector = this.llvmGroup.getInstanceOf("startVector");
+        this.addCode(startVector.render());
         for (int e = 0; e < ctx.expression().size(); ++e) {
             Type exprType = this.visitExpression(ctx.expression(e));
-            ST push_to_tuple = Tuple.getSTForType(exprType.getType());
-            this.addCode(push_to_tuple.render());
-
             tupleType.addField("" + (e+1), exprType);
-            ST assignTuple = this.llvmGroup.getInstanceOf("assignTupleField2");
-            assignTuple.add("index", e+1);
-            this.addCode(assignTuple.render());
         }
+        ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
+        this.addCode(endTuple.render());
 
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
@@ -688,14 +686,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         int myConditionalIndex = this.conditionalIndex;
 
         ST startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
-        startConditional.add("index", myConditionalIndex);
-        this.currentFunction.addLine(startConditional.render());
+        startConditional.add("index", this.conditionalIndex);
+        this.addCode(startConditional.render());
 
         this.visitTranslationalUnit(ctx.translationalUnit(0));
 
         ST endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
-        endConditional.add("index", myConditionalIndex);
-        this.currentFunction.addLine(endConditional.render());
+        endConditional.add("index", this.conditionalIndex);
+        this.addCode(endConditional.render());
 
         // Else
 
@@ -861,41 +859,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
 //        String sizeData = this.visitSizeData(ctx.sizeData());
 
-        // expression portion type
-        Type assignedType;
-
-        if (ctx.expression() != null) {
-            // expression portion is included
-
-            assignedType = this.visitExpression(ctx.expression());
-
-            if (declaredType.getType() == Type.TYPES.NULL) {
-                declaredType = assignedType;
-            }
-
-            if (declaredType.getType() == Type.TYPES.TUPLE) {
-                ST initializeTuple = declaredType.getTupleType().getInitializingStatements();
-                this.addCode(initializeTuple.render());
-            }
-
-        } else {
-            // expression portion is excluded
-            if (declaredType.getType() == Type.TYPES.TUPLE) {
-                ST initializeTuple = declaredType.getTupleType().getInitializingStatements();
-                this.addCode(initializeTuple.render());
-            } else {
-                ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
-                this.addCode(nullLine.render());
-            }
-        }
-
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
         this.scope.initVariable(variableName, variable);
 
         if (this.currentFunction != null) {
             ST varLine = this.llvmGroup.getInstanceOf("localVariable");
             varLine.add("name", this.scope.getVariable(variableName).getMangledName());
-            this.currentFunction.addLine(varLine.render());
+            this.addCode(varLine.render());
         } else {
             this.variables.put(variableName, variable);
         }
@@ -907,6 +877,30 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
             this.addCode(initAssign.render());
+        } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null) {
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
+            this.addCode(initAssign.render());
+        }
+
+        // expression portion type
+        Type assignedType;
+
+        if (ctx.expression() != null) {
+            // expression portion is included
+
+            assignedType = this.visitExpression(ctx.expression());
+
+            if (declaredType.getType() == Type.TYPES.NULL) {
+                declaredType = assignedType;
+            }
+        } else {
+            // expression portion is excluded
+            if (declaredType.getType() == Type.TYPES.TUPLE) {
+            } else {
+                ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
+                this.addCode(nullLine.render());
+            }
         }
 
         ST line = this.llvmGroup.getInstanceOf("assignVariable");
@@ -925,11 +919,39 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitTupleTypeDetails(GazpreaParser.TupleTypeDetailsContext ctx) {
         Tuple tupleType = new Tuple();
 
+        ST startVector = this.llvmGroup.getInstanceOf("startVector");
+        this.addCode(startVector.render());
         for (int i = 0; i < ctx.tupleTypeAtom().size(); ++i) {
             Pair<GazpreaParser.TypeContext, TerminalNode> atom = this.visitTupleTypeAtom(ctx.tupleTypeAtom().get(i));
             Type atomType = this.visitType(atom.left());
-            tupleType.addField(atom.right().getText(), atomType);
+            if (atom.right() != null) {
+                tupleType.addField(atom.right().getText(), atomType);
+            } else {
+                tupleType.addField("0", atomType);
+            }
+            ST st;
+            switch (atomType.getType()) {
+                case BOOLEAN:
+                    st = this.llvmGroup.getInstanceOf("varInit_boolean");
+                    this.addCode(st.render());
+                    break;
+                case INTEGER:
+                    st = this.llvmGroup.getInstanceOf("varInit_integer");
+                    this.addCode(st.render());
+                    break;
+                case REAL:
+                    st = this.llvmGroup.getInstanceOf("varInit_real");
+                    this.addCode(st.render());
+                    break;
+                case CHARACTER:
+                    st = this.llvmGroup.getInstanceOf("varInit_character");
+                    this.addCode(st.render());
+                    break;
+                default: throw new RuntimeException("Bad type in tuple");
+            }
         }
+        ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
+        this.addCode(endTuple.render());
 
         Type type = new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
 
