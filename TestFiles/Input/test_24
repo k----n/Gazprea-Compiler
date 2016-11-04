@@ -2,19 +2,23 @@
 
 procedure main() returns integer{
 
+    var x = 3;
     loop {
-
 
 	loop {
 	  2 -> std_output();
+	  if x > 0
+	     x = x - 1;
+	  else
+	     break;
+	  continue;
 	  break;
-
-
 	
-	  loop {
-	  3 -> std_output();
-	  break;
-	  }
+	    loop {
+
+	      3 -> std_output();
+	      break;
+	    }
 	  }
 	break;
     }

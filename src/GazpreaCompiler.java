@@ -763,8 +763,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override public Type visitContinueStatement(GazpreaParser.ContinueStatementContext ctx) {
-        // TODO also use a stack to keep track of which instance of loop we're in
-        ST continueLabel = this.llvmGroup.getInstanceOf("continueLabel");
+        ST continueLabel = this.llvmGroup.getInstanceOf("continueStatement");
         continueLabel.add("index", currentLoop.peekFirst());
         this.currentFunction.addLine(continueLabel.render());
         return null;

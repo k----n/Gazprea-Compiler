@@ -36,7 +36,7 @@ loopEnd(index) ::= <<
   _break_<index>_label:
 >>
 
-continue(index) ::= <<
+continueStatement(index) ::= <<
   br label %_loop_<index>_label
 >>
 
