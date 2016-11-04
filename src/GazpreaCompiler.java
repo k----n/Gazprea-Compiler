@@ -22,6 +22,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, String> functionNameMappings = new HashMap<>();
 
+    private Map<String, Type> typedefs = new HashMap<>();
+
     private int conditionalIndex = 0;
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
@@ -796,9 +798,21 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitDeclaration(GazpreaParser.DeclarationContext ctx) {
         // Type does it's best to get the type of the variable
+
+        if (ctx.typedef() != null){
+            visit(ctx.typedef());
+            return  null;
+        }
+
         Type declaredType = this.visitType(ctx.type());
 
         String variableName = ctx.Identifier().getText();
+
+        // check to see that variable name is not a typedef
+        if (typedefs.containsKey(variableName)){
+            throw new Error("Cannot use type names");
+        }
+
 //        String sizeData = this.visitSizeData(ctx.sizeData());
 
         // expression portion type
@@ -881,7 +895,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Type.TYPES typeName = Type.TYPES.NULL;
 
         if (ctx.typeName() != null) {
-            switch(this.visitTypeName(ctx.typeName())) {
+            String typeNameString = this.visitTypeName(ctx.typeName());
+            switch(typeNameString) {
                 case Type.strBOOLEAN:
                     typeName = Type.TYPES.BOOLEAN; break;
                 case Type.strCHARACTER:
@@ -896,7 +911,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;
                 default:
-                    throw(new RuntimeException("Type name does not exist"));
+                    if (typedefs.containsKey(typeNameString)){
+                        typeName = typedefs.get(typeNameString).getType();
+                    }
+                    else {
+                        throw (new RuntimeException("Type name does not exist"));
+                    }
             }
         }
 
@@ -935,6 +955,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         return new Type(specifier, typeName, typeType);
     }
+
+    @Override public Type visitTypedef(GazpreaParser.TypedefContext ctx) {
+        typedefs.put(ctx.Identifier().getText(), this.visitType(ctx.type()));
+        return null;
+    }
+
 
     @Override
     public String visitTypeName(GazpreaParser.TypeNameContext ctx) {
