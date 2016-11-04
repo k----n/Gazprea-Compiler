@@ -6,6 +6,7 @@
 #include "operators.h"
 #include "variables.h"
 #include "vectors.h"
+#include "noop.h"
 
 #include "VectorImp.h"
 

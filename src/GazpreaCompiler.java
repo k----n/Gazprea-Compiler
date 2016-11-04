@@ -187,7 +187,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitFunctionBlock(GazpreaParser.FunctionBlockContext ctx) {
         this.currentFunction.define();
         if (ctx.block() != null) {
-            this.visitBlock(ctx.block());
+            Boolean result = this.visitBlock(ctx.block());
+
+            if (result.equals((Boolean)false)) {
+                ST line = this.llvmGroup.getInstanceOf("functionReturn");
+                this.addCode(line.render());
+            }
         }
         if (ctx.expression() != null) {
             this.visitExpression(ctx.expression());
@@ -198,11 +203,45 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitBlock(GazpreaParser.BlockContext ctx) {
+    public Boolean visitTranslationalUnit(GazpreaParser.TranslationalUnitContext ctx) {
+        Boolean result = false;
+
+        for (int i = 0; i < ctx.getChildCount(); ++i) {
+            Object obj = visit(ctx.getChild(i));
+
+            if (obj instanceof Boolean) {
+                result = result || ((Boolean)obj);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public Boolean visitStatement_(GazpreaParser.Statement_Context ctx) {
+        super.visitStatement_(ctx);
+
+        if (ctx.statement() != null && ctx.statement().returnStatement() != null) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
+
+
+
+    @Override
+    public Boolean visitBlock(GazpreaParser.BlockContext ctx) {
+        Boolean result = false;
         this.scope.pushScope();
-        ctx.translationalUnit().forEach(this::visitTranslationalUnit);
+
+        for (int i = 0; i < ctx.translationalUnit().size(); ++i) {
+            result = result || this.visitTranslationalUnit(ctx.translationalUnit(i));
+        }
+
         this.scope.popScope();
-        return null;
+
+        return result;
     }
 
     @Override
@@ -686,13 +725,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         int myConditionalIndex = this.conditionalIndex;
 
         ST startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
-        startConditional.add("index", this.conditionalIndex);
+        startConditional.add("index", myConditionalIndex);
         this.addCode(startConditional.render());
 
         this.visitTranslationalUnit(ctx.translationalUnit(0));
 
         ST endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
-        endConditional.add("index", this.conditionalIndex);
+        endConditional.add("index", myConditionalIndex);
         this.addCode(endConditional.render());
 
         // Else

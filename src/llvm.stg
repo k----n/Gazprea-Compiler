@@ -136,3 +136,7 @@ logicaland(typeLetter) ::= "call void @_Z5lnd_<typeLetter>()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"
+
+noop() ::= <<
+    call void @_Z4noopv()
+>>

@@ -1,0 +1,18 @@
+procedure e() {
+}
+
+procedure f() {
+{} {{{5->std_output();}}}
+return;
+}
+
+procedure g() {
+{}{{{}}{}}{}
+}
+
+procedure main() returns integer {
+    call e();
+    call f();
+    call g();
+    return 0;
+}
