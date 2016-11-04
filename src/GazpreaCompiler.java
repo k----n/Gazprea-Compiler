@@ -22,7 +22,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, String> functionNameMappings = new HashMap<>();
 
-    private int conditionalIndex = 0;
+    private Map<String, Type> typedefs = new HashMap<>();
+
+    private int conditionalIndex;
+    private int loopIndex;
+    private int breakIndex;
+
+    private Deque<Integer> currentLoop = new ArrayDeque<>();
+    private Deque<Integer> currentBreak = new ArrayDeque<>();
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -34,6 +41,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
+
+        breakIndex = 0;
+        loopIndex = 0;
+        conditionalIndex = 0;
     }
 
     @Override
@@ -329,20 +340,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall = this.llvmGroup.getInstanceOf("logicalor");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
                 // CASE: XOR
                 case "xor":
                     operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: AND
                 case "and":
                     operatorCall = this.llvmGroup.getInstanceOf("logicaland");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: ==
                 case "==":
@@ -350,7 +361,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall = this.llvmGroup.getInstanceOf("equal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: !=
                 case "!=":
@@ -358,35 +369,35 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall = this.llvmGroup.getInstanceOf("notequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: <
                 case "<":
                     operatorCall = this.llvmGroup.getInstanceOf("lessthan");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: <=
                 case "<=":
                     operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: >
                 case ">":
                     operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: >=
                 case ">=":
                     operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    return Type.getReturnType("bv");
 
                 // CASE: by
                 case "by":
@@ -667,20 +678,44 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitConditional(GazpreaParser.ConditionalContext ctx) {
+    public Object visitConditional(GazpreaParser.ConditionalContext ctx) {;
+        // If
         this.visitExpression(ctx.expression());
 
         ++this.conditionalIndex;
+        int myConditionalIndex = this.conditionalIndex;
 
         ST startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
         startConditional.add("index", this.conditionalIndex);
         this.addCode(startConditional.render());
 
-        this.visitTranslationalUnit(ctx.translationalUnit());
+        this.visitTranslationalUnit(ctx.translationalUnit(0));
 
         ST endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
         endConditional.add("index", this.conditionalIndex);
         this.addCode(endConditional.render());
+
+        // Else
+
+        if (ctx.Else() != null) {
+            this.visitExpression(ctx.expression());
+            ST NOTop = this.llvmGroup.getInstanceOf("negation");
+            NOTop.add("typeLetter", "bv");
+            this.currentFunction.addLine(NOTop.render());
+
+            ++this.conditionalIndex;
+            myConditionalIndex = this.conditionalIndex;
+
+            startConditional = this.llvmGroup.getInstanceOf("conditionalStart");
+            startConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(startConditional.render());
+
+            this.visitTranslationalUnit(ctx.translationalUnit(1));
+
+            endConditional = this.llvmGroup.getInstanceOf("conditionalEnd");
+            endConditional.add("index", myConditionalIndex);
+            this.currentFunction.addLine(endConditional.render());
+        }
 
         return null;
     }
@@ -695,6 +730,56 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return "";
     }
 
+    @Override public Type visitInfiniteLoop(GazpreaParser.InfiniteLoopContext ctx) {
+        ++this.loopIndex;
+
+        int myLoopIndex = this.loopIndex;
+
+        currentLoop.addFirst(myLoopIndex);
+
+        ST startInfiniteLoop = this.llvmGroup.getInstanceOf("loopStart");
+        startInfiniteLoop.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(startInfiniteLoop.render());
+
+        this.visitTranslationalUnit(ctx.translationalUnit());
+
+        ST endInfiniteLoop = this.llvmGroup.getInstanceOf("loopEnd");
+        endInfiniteLoop.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(endInfiniteLoop.render());
+
+        currentLoop.removeFirst();
+
+        return null;
+    }
+
+    @Override
+    public Object visitPrePredicatedLoop(GazpreaParser.PrePredicatedLoopContext ctx) {
+        ++this.loopIndex;
+
+        int myLoopIndex = this.loopIndex;
+
+        currentLoop.add(myLoopIndex);
+
+
+
+        return super.visitPrePredicatedLoop(ctx);
+    }
+
+    @Override public Type visitBreakStatement(GazpreaParser.BreakStatementContext ctx) {
+        //  br label %_break_<index>_label
+        ST breakLabel = this.llvmGroup.getInstanceOf("breakStatement");
+        breakLabel.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(breakLabel.render());
+        return null;
+    }
+
+    @Override public Type visitContinueStatement(GazpreaParser.ContinueStatementContext ctx) {
+        ST continueLabel = this.llvmGroup.getInstanceOf("continueStatement");
+        continueLabel.add("index", currentLoop.peekFirst());
+        this.currentFunction.addLine(continueLabel.render());
+        return null;
+    }
+
     @Override
     public String visitFunctionName(GazpreaParser.FunctionNameContext ctx) {
         return ctx.getText();
@@ -703,9 +788,21 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitDeclaration(GazpreaParser.DeclarationContext ctx) {
         // Type does it's best to get the type of the variable
+
+        if (ctx.typedef() != null){
+            visit(ctx.typedef());
+            return  null;
+        }
+
         Type declaredType = this.visitType(ctx.type());
 
         String variableName = ctx.Identifier().getText();
+
+        // check to see that variable name is not a typedef
+        if (typedefs.containsKey(variableName)){
+            throw new Error("Cannot use type names");
+        }
+
 //        String sizeData = this.visitSizeData(ctx.sizeData());
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
@@ -812,7 +909,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Type.TYPES typeName = Type.TYPES.NULL;
 
         if (ctx.typeName() != null) {
-            switch(this.visitTypeName(ctx.typeName())) {
+            String typeNameString = this.visitTypeName(ctx.typeName());
+            switch(typeNameString) {
                 case Type.strBOOLEAN:
                     typeName = Type.TYPES.BOOLEAN; break;
                 case Type.strCHARACTER:
@@ -827,7 +925,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;
                 default:
-                    throw(new RuntimeException("Type name does not exist"));
+                    if (typedefs.containsKey(typeNameString)){
+                        typeName = typedefs.get(typeNameString).getType();
+                    }
+                    else {
+                        throw (new RuntimeException("Type name does not exist"));
+                    }
             }
         }
 
@@ -866,6 +969,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         return new Type(specifier, typeName, typeType);
     }
+
+    @Override public Type visitTypedef(GazpreaParser.TypedefContext ctx) {
+        typedefs.put(ctx.Identifier().getText(), this.visitType(ctx.type()));
+        return null;
+    }
+
 
     @Override
     public String visitTypeName(GazpreaParser.TypeNameContext ctx) {
