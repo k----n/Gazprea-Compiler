@@ -9,6 +9,9 @@ class Variable {
         this.type = type;
     }
 
+    public void setType(Type type) {
+        this.type = type;
+    }
     public String getName() { return this.name; }
     public String getMangledName() { return this.mangledName; }
     public Type getType() { return this.type; }

@@ -978,7 +978,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             assignedType = this.visitExpression(ctx.expression());
 
             if (declaredType.getType() == Type.TYPES.NULL) {
-                declaredType = assignedType;
+                variable.setType(assignedType);
             }
         } else {
             // expression portion is excluded
