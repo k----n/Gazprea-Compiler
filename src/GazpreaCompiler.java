@@ -651,28 +651,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitAssignment(GazpreaParser.AssignmentContext ctx) {
         // tuple asssignment vs. regular assignment
         if (ctx.TupleAccess() != null) {
-            /*
-            // the accessing of a tuple field
-            Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
-
-            String varName = tupleAccess.left();
-            String field = tupleAccess.right();
-
-            // first get the tuple on the stack
-            ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            Variable variable = this.scope.getVariable(varName);
-            line.add("name", variable.getMangledName());
-            this.addCode(line.render());
-
-            // then get the field respective to the tuple on the stack
-            Tuple tupleType = variable.getType().getTupleType();
-            Integer fieldNumber = tupleType.getFieldNumber(field);
-
-            ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
-            getTupleField.add("index", fieldNumber - 1);
-            this.addCode(getTupleField.render());
-             */
-
             // TODO fix this tuple assignment
             // the accessing of a tuple field
             Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());

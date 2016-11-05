@@ -17,9 +17,9 @@ void getAt(int index) {
 	lvalue->release();
 }
 
+
 void getAt2(int index) {
-    Value *tuple = stack->peek();
-    Vector<Value>* tupleValue = tuple->tupleValue();
-    Value *sVal = tupleValue->get(index);
+    Value *tuple = stack->peek()->copy();
+    Value *sVal = tuple->tupleValue()->get(index)->copy();
     stack->push(sVal);
 }
