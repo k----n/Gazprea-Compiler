@@ -16,17 +16,6 @@ public class Type {
             strINTERVAL="interval", strVECTOR="vector", strMATRIX="matrix", strTUPLE="tuple", strVAR="var", strCONST="const",
             strNULL="null", strIDENTITY="identity", strVOID="void", strOUT="output", strIN="input";
 
-    // TABLE FOR IMPLICIT PROMOTION
-    private static String[/*from*/][/*to*/] PROMOTION_TABLE =
-            {/*  bool       int         char        real            NULL        IDNTY*/
-    /*bool*/    {"noop",    "void",     "void",     "void",         "void",     "void"},
-    /*int*/     {"void",    "noop",     "void",     "int_to_real",  "void",     "void"},
-    /*char*/    {"void",    "void",     "noop",     "void",         "void",     "void"},
-    /*real*/    {"void",    "void",     "void",     "noop",         "void",     "void"},
-    /*NULL*/    {"nulBool", "nulInt",   "nulChar",  "nulReal",      "noop",     "void"},
-    /*IDNTY*/   {"idBool",  "idInt",    "idChar",   "idReal",       "void",     "noop"}
-            };
-
     // TABLE FOR RESULT OF OPERATIONS
     // TODO TUPLE NOT IMPLEMENTED
     // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
@@ -49,13 +38,6 @@ public class Type {
     /*char*/    {"bv",          "iv",           "cv",                "rv"  },
     /*real*/    {"void",        "iv",           "void",              "rv"  },
             };
-
-    private static String[] NULL_TABLE =
-            /*bool          int         char            real*/
-            {"null_bool",   "null_int", "null_char",    "null_real"};
-    private static String[] ID_TABLE =
-            /*bool          int         char            real*/
-            {"id_bool",     "id_int",   "id_char",      "id_real"};
 
 
     private SPECIFIERS specifier;
@@ -180,21 +162,6 @@ public class Type {
             case TUPLE: return 6;
             default: throw new RuntimeException("Undefined type in table");
         }
-    }
-
-    public static String getNullFunction(Type t) {
-        return NULL_TABLE[getTypeTableIndex(t)];
-    }
-
-    public static String getIdFunction(Type t) {
-        return ID_TABLE[getTypeTableIndex(t)];
-    }
-
-    public static String getPromoteFunction(Type from, Type to) {
-        int fromIndex = getTypeTableIndex(from);
-        int toIndex = getTypeTableIndex(to);
-
-        return PROMOTION_TABLE[fromIndex][toIndex];
     }
 
     public static String getResultFunction(Type left, Type right) {

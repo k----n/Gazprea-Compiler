@@ -261,28 +261,26 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return null;
     }
 
-    private Pair<String, String> parseTupleAccess(String access) {
-        String[] parts = access.split(Pattern.quote("."));
-        return new Pair<String, String>(parts[0], parts[1]);
+    private String parseTupleAccessREAL(String real){
+        return real.substring(real.indexOf('.') + 1);
     }
 
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
-        if (ctx.TupleAccess() != null) {
-            // the accessing of a tuple field
-            Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
-
-            String varName = tupleAccess.left();
-            String field = tupleAccess.right();
-
+        if (ctx.Dot() != null || ctx.RealLiteral() != null) {
             // first get the tuple on the stack
-            ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            Variable variable = this.scope.getVariable(varName);
-            line.add("name", variable.getMangledName());
-            this.addCode(line.render());
+            Type type = this.visitExpression(ctx.expression(0));
 
             // then get the field respective to the tuple on the stack
-            Tuple tupleType = variable.getType().getTupleType();
+            String field;
+
+            if (ctx.RealLiteral() != null) {
+                field = parseTupleAccessREAL(ctx.RealLiteral().getText());
+            } else {
+                field = ctx.Identifier().getText();
+            }
+
+            Tuple tupleType = type.getTupleType();
             Integer fieldNumber = tupleType.getFieldNumber(field);
 
             ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
@@ -650,13 +648,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Object visitAssignment(GazpreaParser.AssignmentContext ctx) {
         // tuple asssignment vs. regular assignment
-        if (ctx.TupleAccess() != null) {
-            /*
-            // the accessing of a tuple field
-            Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
+        if (ctx.RealLiteral() != null || ctx.Dot() != null) {
+            String varName = ctx.Identifier(0).getText();
+            String field;
 
-            String varName = tupleAccess.left();
-            String field = tupleAccess.right();
+            if (ctx.RealLiteral() != null) {
+                field = parseTupleAccessREAL(ctx.RealLiteral().getText());
+            } else {
+                field = ctx.Identifier(1).getText();
+            }
 
             // first get the tuple on the stack
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
@@ -671,24 +671,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
             getTupleField.add("index", fieldNumber - 1);
             this.addCode(getTupleField.render());
-             */
 
             // TODO fix this tuple assignment
-            // the accessing of a tuple field
-            Pair<String, String> tupleAccess = parseTupleAccess(ctx.TupleAccess().getText());
-
-            String varName = tupleAccess.left();
-            String field = tupleAccess.right();
-
             // first get the tuple on the stack
-            ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            Variable variable = this.scope.getVariable(varName);
+            line = this.llvmGroup.getInstanceOf("pushVariable");
+            variable = this.scope.getVariable(varName);
             line.add("name", variable.getMangledName());
             this.addCode(line.render());
 
             // then get the field respective to the tuple on the stack
-            Tuple tupleType = variable.getType().getTupleType();
-            Integer fieldNumber = tupleType.getFieldNumber(field);
+            tupleType = variable.getType().getTupleType();
+            fieldNumber = tupleType.getFieldNumber(field);
 
             Type visitType = this.visitExpression(ctx.expression()); // push assigning value to stack
 

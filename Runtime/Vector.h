@@ -17,7 +17,7 @@ public:
 	virtual Vector* copy() const {
 		Vector* copy = new Vector();
 		for (int i = 0; i < this->count; ++i) {
-			T* value = this->get(i);
+			T* value = this->get(i)->copy();
 			copy->append(value);
 			((Object*)value)->release();
 		}

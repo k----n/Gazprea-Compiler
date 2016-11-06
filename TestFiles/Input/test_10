@@ -52,7 +52,7 @@ procedure main() returns integer{
 	x -> out;
 
 	// logical not equals false
-	x = true != false;
+	x = true != true;
         x -> out;  
 
 	// precedence

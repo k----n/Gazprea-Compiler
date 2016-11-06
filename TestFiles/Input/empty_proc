@@ -1,6 +1,13 @@
 procedure e() {
 }
 
+procedure h() returns integer {
+    if (false) {
+    } else {
+      return 7;
+    }
+}
+
 procedure f() {
 {} {{{5->std_output();}}}
 return;

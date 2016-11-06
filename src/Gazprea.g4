@@ -98,11 +98,11 @@ iteratorLoopVariable: Identifier In expression;
 
 // Expressions
 expression
- : TupleAccess
- // CHECK PRECEDENCE
+ : '(' expression ')'
+ | expression RealLiteral
+ | expression Dot Identifier
  | literal
  | Identifier
- | '(' expression ')'
  | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)
  | generator
  | filter
@@ -111,7 +111,7 @@ expression
  | expression op=Interval expression
  | <assoc=right> op=(Sign|Not) expression
  | <assoc=right> expression op=Exponentiation expression
- | expression op=DotProduct expression // NOT SURE ABOUT THIS PRECEDENCE
+ | expression op=DotProduct expression // TODO: NOT SURE ABOUT THIS PRECEDENCE
  | expression op=(Multiplication|Division|Modulus) expression
  | expression op=Sign expression
  | expression op=By expression
@@ -148,7 +148,8 @@ Return: 'return';
 Returns: 'returns';
 
 assignment
-    : TupleAccess Assign expression
+    : Identifier RealLiteral Assign expression
+    | Identifier Dot Identifier Assign expression
     | Identifier (',' Identifier)* Assign expression
     ;
 
@@ -186,10 +187,9 @@ functionName
  | BuiltinFunction
  ;
 
-TupleAccess: Identifier '.' (IntegerLiteral | Identifier);
-
 Assign: '=';
 Interval: '..';
+Dot: '.';
 Concatenation: '||';
 DotProduct: '**';
 Equals: '==';
@@ -269,8 +269,8 @@ Identifier
 fragment True: 'true';
 fragment False: 'false';
 fragment FractionalConstant
- : DigitSequence? '.' '_'* DigitSequence
- | DigitSequence '.'?
+ : DigitSequence? Dot '_'* DigitSequence
+ | DigitSequence Dot?
  ;
 fragment DigitSequence: (Digit '_'*)+;
 fragment ExponentPart: [eE] '_'* Sign? '_'* DigitSequence;

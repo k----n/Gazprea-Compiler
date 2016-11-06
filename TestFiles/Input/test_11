@@ -1,10 +1,30 @@
 function f() returns integer;
+function g() returns integer;
+//function h(integer x) returns integer;
+//function i(integer x) returns integer;
+
+procedure i(integer x) returns integer {
+    return x;	 	   
+}
 
 procedure main() returns integer {
     const out = std_output();
     real y = f();
+    real z = g();
+    //real a = h(4);
+    integer b = i(4);
+
     y -> out;
+    '\n' -> out;
+    z -> out;
+    '\n' -> out;
+    //a -> out;
+    '\n' -> out;
+    b -> out;    
     return 0;
 }
 
-function f() returns integer = 7;
+function f() returns integer = 12;
+function g() returns integer = 7;
+//function h(integer x) returns integer = x + 6;
+//function i(integer x) returns integer = x;
