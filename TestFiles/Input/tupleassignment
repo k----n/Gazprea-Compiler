@@ -1,9 +1,14 @@
 procedure main() returns integer {
     tuple(integer r, character c, real f) t = (1,'a',3.2);
+    tuple(integer r, character c, real f) s = (1,'a',3.2);
     t.r = 2;
     t.r = 3;
 
+    s.c = 'b';
+    s.r = 6;
     t.r -> std_output();
+    s.c -> std_output();
+    s.r -> std_output();
 
     return 0;
 }
