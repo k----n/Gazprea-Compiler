@@ -1,5 +1,8 @@
 procedure main() returns integer {
     var x = (1,2,3);
     x.1 -> std_output();
+    x.2 -> std_output();
+    x.3 -> std_output();
+
     return 0;
 }

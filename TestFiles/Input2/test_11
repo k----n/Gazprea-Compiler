@@ -1,7 +1,7 @@
 procedure f() returns integer;
 procedure g() returns integer;
-//procedure h(integer x) returns integer;
-//procedure i(integer x) returns integer;
+procedure h(integer x) returns integer;
+procedure i(integer x) returns integer;
 
 procedure i(integer x) returns integer {
     return x;	 	   
@@ -11,20 +11,20 @@ procedure main() returns integer {
     const out = std_output();
     real y = f();
     real z = g();
-    //real a = h(4);
-    //integer b = i(4);
+    real a = h(4);
+    integer b = i(4);
 
     y -> out;
     '\n' -> out;
     z -> out;
     '\n' -> out;
-    //a -> out;
+    a -> out;
     '\n' -> out;
-    //b -> out;    
+    b -> out;    
     return 0;
 }
 
 procedure f() returns integer = 12;
 procedure g() returns integer = 7;
-//procedure h(integer x) returns integer = x + 6;
-//procedure i(integer x) returns integer = x;
+procedure h(integer x) returns integer = x + 6;
+procedure i(integer x) returns integer = x;

@@ -128,7 +128,7 @@ procedure main() returns integer{
 	x -> out;
 
 	// precedence
-	x = +(-(((((((2 == 1) != 0) < 0) > 0) <= 0) >= 0) + 1 - 2) * -1 / 1 % 2 ^ 2);
+	x = +as<integer>(-as<integer>(as<integer>(as<integer>(as<integer>(as<integer>(as<integer>(as<integer>(2 == 1) != 0) < 0) > 0) <= 0) >= 0) + 1 - 2) * -1 / 1 % 2 ^ 2);
 	x -> out;
 
         /* must have a return */ 

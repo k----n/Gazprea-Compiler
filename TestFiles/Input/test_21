@@ -13,7 +13,7 @@ procedure main() returns integer{
 	// should return 2
 	integer ___10___ = 1;
 	integer _4___________2____e___ = 1;
-	(_4___________2____e___+___10___) -> out;
+	_4___________2____e___ -> out;
 
 	return 0;
 

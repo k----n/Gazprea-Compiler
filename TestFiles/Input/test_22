@@ -10,9 +10,12 @@ procedure main() returns integer{
 	  integer i = 2;
 	  i = i + 1; 
 	  (i + j) -> out;
+	  '\n' -> out;
 	}
 	i -> out;
+	'\n'-> out;
 	i + j -> out;
+	'\n'->out;
 
 	integer x = 3; 
 	integer y = 0; 
@@ -26,7 +29,9 @@ procedure main() returns integer{
 	y = x;
 
 	y -> out;
+	'\n'->out;
 	z -> out;
+	'\n'->out;
 
 	return 0;
 

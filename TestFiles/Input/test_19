@@ -5,51 +5,71 @@ procedure main() returns integer{
 	
 	// boolean to boolean
 	as<boolean>(true) -> out;
+	'\n' -> out;
 
 	// boolean to integer
 	as<integer>(true) -> out;
+	'\n' -> out;
 	as<integer>(false) -> out;
+	'\n' -> out;
 
 	// boolean to real
 	as<real>(true) -> out;
+	'\n' -> out;
 	as<real>(false) -> out;
+	'\n' -> out;
 
 	// boolean to character
 	as<character>(true) -> out;
+	'\n' -> out;
 	as<character>(false) -> out;
+	'\n' -> out;
 
 	// integer to boolean
 	as<boolean>(1) -> out;
+	'\n' -> out;
 	as<boolean>(0) -> out;
+	'\n' -> out;
 
 	// integer to integer
 	as<integer>(1) -> out;
+	'\n' -> out;
 
 	// integer to real
 	as<real>(1) -> out;
+	'\n' -> out;
 
 	// integer to character
 	as<character>(65) -> out;
+	'\n' -> out;
 
 	// real to integer
 	as<integer>(1.69696969) -> out;
+	'\n' -> out;
 	as<integer>(69696.969) -> out;
+	'\n' -> out;
 
 	// real to real
 	as<real>(1.93465) -> out;
+	'\n' -> out;
 
 	// character to boolean
 	as<boolean>('A') -> out;
+	'\n' -> out;
 	as<boolean>('\0') -> out;
+	'\n' -> out;
 
 	// character to integer
 	as<integer>('A') -> out;
+	'\n' -> out;
 
 	// character to real
 	as<real>('A') -> out;
+	'\n' -> out;
 
 	// character to character
 	as<character>('A') -> out;
+	'\n' -> out;
 
         /* must have a return */ 
         return 0; 
