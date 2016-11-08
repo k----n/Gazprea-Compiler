@@ -700,10 +700,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             int idSize = ctx.Identifier().size();
 
             if (visitType.getType().equals(Type.TYPES.TUPLE) && idSize > 1){
-                for (int i = 0; i < idSize; i++ ){
-                    ST getAt = this.llvmGroup.getInstanceOf("getAt2");
-                    getAt.add("index", i);
-                    this.addCode(getAt.render());
+                ST getAt = this.llvmGroup.getInstanceOf("getAt2");
+                this.addCode(getAt.render());
+                for (int i = idSize - 1; i >= 0; i-- ){
                     ST assign = this.llvmGroup.getInstanceOf("assignVariable");
                     assign.add("name", this.scope.getVariable(ctx.Identifier(i).getText()).getMangledName());
                     this.addCode(assign.render());
