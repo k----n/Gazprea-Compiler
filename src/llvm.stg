@@ -117,7 +117,7 @@ startVector() ::= "call void @_Z15pushStartVectorv()"
 endTuple() ::= "call void @_Z8endTuplev()"
 
 getAt(index) ::= "call void @_Z5getAti(i32 <index>)"
-getAt2(index) ::= "call void @_Z6getAt2i(i32 <index>)"
+getAt2() ::= "call void @_Z6getAt2v()"
 setAt(index) ::= "call void @_Z8setTuplei(i32 <index>)"
 
 addition(typeLetter) ::= "call void @_Z5add_<typeLetter>()"
