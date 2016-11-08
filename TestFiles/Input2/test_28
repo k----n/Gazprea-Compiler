@@ -1,0 +1,22 @@
+procedure i(integer x) returns integer {
+    return x;
+}
+
+/*
+procedure f(tuple(character f, character c, character d) r) returns tuple(character,character,character) {
+    r.1 -> std_output();
+    return ('k','j','l');
+}
+*/
+
+procedure main() returns integer {
+    //tuple(character f, character c, character d) n = ('a', 'b', 'c');
+
+   // n = f(n);
+    
+    integer d = i(3);
+    d -> std_output();
+
+    //n.1 -> std_output();
+    return 0;
+}

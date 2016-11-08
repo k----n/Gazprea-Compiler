@@ -12,8 +12,10 @@ define void @GazFunc_<name>() #3 {
 
 
 >>
+
 functionReturn() ::= "ret void"
 
+unwrap() ::= "call void @_Z7_unwrapv()"
 
 conditionalStart(index) ::= <<
   %.conditional_<index>_start_var1 = call zeroext i1 @_Z6toBoolv()

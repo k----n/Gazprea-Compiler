@@ -627,6 +627,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitReturnStatement(GazpreaParser.ReturnStatementContext ctx) {
+
         this.currentFunction.getArguments().forEach(argument -> {
             if (argument.getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
                 ST push = this.llvmGroup.getInstanceOf("pushVariableValue");
@@ -638,6 +639,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.expression() != null) {
             this.visitExpression(ctx.expression());
         }
+
+        ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+        this.addCode(unwrap.render());
 
         ST line = this.llvmGroup.getInstanceOf("functionReturn");
         this.addCode(line.render());
