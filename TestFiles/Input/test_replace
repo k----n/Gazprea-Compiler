@@ -1,0 +1,260 @@
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
+procedure main() returns integer {
+/*
+    integer x = 1;
+    integer y = 2...2;
+    
+    x,y = (2,4);
+
+    x -> std_output();
+    y->std_output();
+*/
+
+    integer x = 1;
+    integer y = 3;
+    x,y = (y,x);
+
+    x -> std_output();
+    y->std_output();
+
+    return 0;
+}
