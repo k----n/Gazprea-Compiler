@@ -24,44 +24,20 @@ public class Main {
 
 
         if (DEBUG) {
-            ANTLRInputStream input = new ANTLRInputStream("function f() returns integer;\n" +
-                    "function g() returns integer;\n" +
-                    "//function h(integer x) returns integer;\n" +
-                    "//function i(integer x) returns integer;\n" +
-                    "\n" +
-                    "procedure i(integer x) returns integer {\n" +
-                    "    return x;\t \t   \n" +
-                    "}\n" +
-                    "\n" +
+            ANTLRInputStream input = new ANTLRInputStream(
                     "procedure main() returns integer {\n" +
-                    "    const out = std_output();\n" +
-                    "    real y = f();\n" +
-                    "    real z = g();\n" +
-                    "    //real a = h(4);\n" +
-                    "    integer b = i(4);\n" +
-                    "tuple(integer, real r, integer) tup = (1,2.0,2);\n" +
-                    "a = tup.1;\n" +
-                    "\n" +
-                    "    y -> out;\n" +
-                    "    '\\n' -> out;\n" +
-                    "    z -> out;\n" +
-                    "    '\\n' -> out;\n" +
-                    "    //a -> out;\n" +
-                    "    '\\n' -> out;\n" +
-                    "    b -> out;    \n" +
+                    "    null -> std_output();\n" +
+                    "    identity -> std_output();\n" +
                     "    return 0;\n" +
-                    "}\n" +
-                    "\n" +
-                    "function f() returns integer = 12;\n" +
-                    "function g() returns integer = 7;\n" +
-                    "//function h(integer x) returns integer = x + 6;\n" +
-                    "//function i(integer x) returns integer = x;");
+                    "}");
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);
             GazpreaParser parser = new GazpreaParser(tokens);
             ParseTree tree = parser.compilationUnit();
 
-            printTokens(tokens, lex);
+            GazpreaCompiler compiler = new GazpreaCompiler();
+            compiler.visit(tree);
+            //printTokens(tokens, lex);
         } else {
             String testFilePath = args[1];
 

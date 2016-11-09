@@ -10,8 +10,8 @@ void rightArrowOperator() {
 	if (!rhs->isStandardOut()) { printf("RHS value is not stdout\n"); exit(1); }
 	ValueType* type = lhs->getType();
 	switch (type->getType()) {
-		case NullType:		printf("Cannot print NullType\n");		exit(1);
-		case IdentityType:	printf("Cannot print IdentityType\n");	exit(1);
+		case NullType:
+		case IdentityType:
 		case BooleanType:
 		case IntegerType:
 		case RealType:
@@ -22,7 +22,8 @@ void rightArrowOperator() {
 			printValue();
 			break;
 //		case MatrixType:
-		case TupleType:     printf("Cannot print TupleType\n"); exit(1);
+		case TupleType:     printf("Cannot print TupleType\n");     exit(1);
+		case IntervalType:  printf("Cannot print IntervalType\n");  exit(1);
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case StartVector:	printf("Cannot print VectorStart\n");	exit(1);

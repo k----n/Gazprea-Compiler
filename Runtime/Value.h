@@ -73,6 +73,9 @@ public:
 			case TupleType:
 				copy->value = this->tupleValue();
 				break;
+			case IntervalType:
+			    copy->value = this->intervalValue();
+			    break;
 			case Lvalue:
 				// TODO: Retain???
 				break;
@@ -126,7 +129,7 @@ public:
 		*r = *(float*)this->value;
 		return r;
 	}
-	
+
 	char* characterValue() {
 		char* c = new char;
 		if (this->isNull())		{ *c = 0; return c;	}
@@ -142,7 +145,11 @@ public:
 		if (!this->isTuple())	{ printf("Not a tuple value\n"); exit(1); }
 		return ((Vector<Value>*)this->value)->copy();
 	}
-	
+
+	Vector<Value>* intervalValue() const {
+	    //TODO: FILL THIS OUT
+	}
+
 	Value* lvalue() {
 		if (!this->isLvalue()) { printf("Not an lvalue\n"); exit(1); }
 		Value* value = *(Value**)this->value;
@@ -173,6 +180,7 @@ private:
 			case RealType:		delete (float*)  this->value; break;
 			case CharacterType:	delete (char*)	 this->value; break;
 			case TupleType:     ((Vector<Value>*)this->value)->release(); break;
+			case IntervalType:  ((Vector<Value>*)this->value)->release(); break;
 			case StandardIn:
 			case StandardOut:
 			case Lvalue:

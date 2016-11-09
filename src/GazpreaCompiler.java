@@ -16,7 +16,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private Map<String, Function> functions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
-    private Map<String, Tuple> tuples = new HashMap<>();
 
     private List<String> topLevelCode = new ArrayList<>();
 
@@ -26,13 +25,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private int conditionalIndex;
     private int loopIndex;
-    private int breakIndex;
 
     private ArrayList<Type> promoteType = new ArrayList<>();
 
 
     private Deque<Integer> currentLoop = new ArrayDeque<>();
-    private Deque<Integer> currentBreak = new ArrayDeque<>();
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -45,7 +42,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
 
-        breakIndex = 0;
         loopIndex = 0;
         conditionalIndex = 0;
     }
@@ -144,8 +140,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (argument.getType().getType() != Type.TYPES.TUPLE) {
                 ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
                 this.addCode(initLine.render());
-            } else {
-                
             }
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
@@ -271,15 +265,16 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
-        if (ctx.Dot() != null || ctx.RealLiteral() != null) {
+        if (ctx.Dot() != null && ctx.Dot().size() != 0 || ctx.RealLiteral() != null && ctx.RealLiteral().size() != 0) {
             // first get the tuple on the stack
             Type type = this.visitExpression(ctx.expression(0));
 
             // then get the field respective to the tuple on the stack
             String field;
 
-            if (ctx.RealLiteral() != null) {
-                field = parseTupleAccessREAL(ctx.RealLiteral().getText());
+            // TODO: INCORPORATE INTERVALS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if (ctx.RealLiteral() != null && ctx.RealLiteral().size() > 0) {
+                field = parseTupleAccessREAL(ctx.RealLiteral(0).getText());
             } else {
                 field = ctx.Identifier().getText();
             }

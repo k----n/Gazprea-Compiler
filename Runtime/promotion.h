@@ -36,6 +36,7 @@ void promoteTo_b() {
 			newValue = new Value(*charValue != '\0');
 			break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+		case IntervalType: printf("Cannot promote Interval\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -82,6 +83,7 @@ void promoteTo_i() {
 			newValue = new Value((int)*charValue);
 			break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+		case IntervalType: printf("Cannot promote Interval\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -128,6 +130,7 @@ void promoteTo_r() {
 			newValue = new Value((float)*charValue);
 			break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+		case IntervalType: printf("Cannot promote Interval\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -170,6 +173,7 @@ void promoteTo_c() {
 			newValue->retain();
 			break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+	    case IntervalType: printf("Cannot promote Interval\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:

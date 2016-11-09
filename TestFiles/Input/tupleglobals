@@ -1,4 +1,4 @@
- tuple(integer, integer, integer) t1 = (1,2,3);
+const tuple(integer, integer, integer) t1 = (1,2,3);
 const i1 = 3 + 3;
 
 procedure main() returns integer {

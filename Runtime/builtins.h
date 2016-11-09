@@ -18,6 +18,7 @@ void stream_state() {
 		case RealType:
 		case CharacterType:
 		case TupleType:
+		case IntervalType:
 		case StandardOut:
 		case Lvalue:
 		case StartVector:

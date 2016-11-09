@@ -54,14 +54,23 @@ void printCharacter(Value* value) {
 void printValue() {
 	Value* value = stack->pop();
 	ValueType* valueType = value->getType();
+
+	Value *newChar; // only for nulltype and identitytype
 	switch (valueType->getType()) {
-		case NullType:		printf("Cannot print NullType\n");		exit(1);
-		case IdentityType:	printf("Cannot print IdentityType\n");	exit(1);
+		case NullType:
+		    newChar = new Value('\0');
+		    printCharacter(newChar);
+		    break;
+		case IdentityType:
+		    newChar = new Value('\1');
+		    printCharacter(newChar);
+		    break;
 		case BooleanType:	printBoolean(value);					break;
 		case IntegerType:	printInteger(value);					break;
 		case RealType:		printReal(value);						break;
 		case CharacterType:	printCharacter(value);					break;
 		case TupleType:     printf("Cannot print TupleType\n");     exit(1);
+		case IntervalType:  printf("Cannot print IntervalType\n");  exit(1);
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);

@@ -98,9 +98,12 @@ iteratorLoopVariable: Identifier In expression;
 
 // Expressions
 expression
- : '(' expression ')'
- | expression RealLiteral
- | expression Dot Identifier
+ : expression Dot RealLiteral // interval
+ | RealLiteral RealLiteral // interval
+ | RealLiteral Dot expression // interval
+ | expression Dot Dot expression // interval
+ | expression RealLiteral // tuple access
+ | expression Dot Identifier // tuple access
  | literal
  | Identifier
  | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)
@@ -120,6 +123,7 @@ expression
  | expression op=And expression
  | expression op=(Or|Xor) expression
  | <assoc=right> expression op=Concatenation expression
+ | '(' expression ')'
  ;
 
 // Literals
