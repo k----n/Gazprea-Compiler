@@ -3,6 +3,9 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+
 public class Main {
 
     private static Boolean DEBUG = false;
@@ -62,7 +65,18 @@ public class Main {
         } else {
             String testFilePath = args[1];
 
-            ANTLRFileStream input = new ANTLRFileStream(testFilePath);
+            FileInputStream inputStream = new FileInputStream(testFilePath);
+
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            String file = result.toString("UTF-8");
+            file = file.replace("..","$$");
+
+            ANTLRInputStream input = new ANTLRInputStream(file);
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);
             GazpreaParser parser = new GazpreaParser(tokens);

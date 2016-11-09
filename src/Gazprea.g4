@@ -180,7 +180,9 @@ functionCall: functionName '(' (expression (',' expression)*)? ')';
 // ;
 //typeData: '(' (type sizeData? Identifier? (',' type sizeData? Identifier?)*)? ')';
 
-sizeData: '[' IntegerLiteral (',' IntegerLiteral)? ']';
+sizeData: '[' IntegerLiteral (',' IntegerLiteral)* ']'
+        | '[' expression ']'
+        | '[' '*' ']';
 
 functionName
  : Identifier
@@ -188,7 +190,7 @@ functionName
  ;
 
 Assign: '=';
-Interval: '..';
+Interval: '$$';
 Dot: '.';
 Concatenation: '||';
 DotProduct: '**';
@@ -244,6 +246,7 @@ BuiltinType
 BuiltinFunction
  : 'std_input'
  | 'std_output'
+ | 'length'
  ;
 
 // Literals
