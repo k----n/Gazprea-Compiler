@@ -1,0 +1,11 @@
+procedure h() returns integer {
+    if (true) {
+       return 0;
+    } else {
+       return 1;    
+    }	
+}
+
+procedure main() returns integer{
+    return 0;
+}

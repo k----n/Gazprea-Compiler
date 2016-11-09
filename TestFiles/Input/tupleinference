@@ -1,0 +1,19 @@
+procedure printint(const integer x) {
+    x -> std_output();
+}
+
+procedure printtup(tuple(character, integer, real) t) {
+    t.1 -> std_output();
+    t.2 -> std_output();
+    t.3 -> std_output();
+}
+
+procedure main() returns integer {
+    var tup = ('i', 1, 1.2);
+
+    integer x = 3;
+    call printint(x);
+    call printtup(tup);
+
+    return 0;	  
+}

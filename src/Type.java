@@ -93,6 +93,7 @@ public class Type {
             case IDENTITY:  return "identity";
             case OUTPUT_STREAM: return strOUT;
             case INPUT_STREAM: return strIN;
+            case TUPLE:     return strTUPLE;
             default:        return "";
         }
     }

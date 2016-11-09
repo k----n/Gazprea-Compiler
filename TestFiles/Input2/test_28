@@ -10,13 +10,19 @@ procedure f(tuple(character f, character c, character d) r) returns tuple(charac
 */
 
 procedure main() returns integer {
-    //tuple(character f, character c, character d) n = ('a', 'b', 'c');
+   tuple(character f, character c, character d) n = as<(character, character, character)>(68, 69, 70);
 
-   // n = f(n);
+   n.1 -> std_output();
+   n.2 -> std_output();
+   n.3 -> std_output();
+
+//    n = f(n);
     
+    
+
     integer d = i(3);
     d -> std_output();
 
-    //n.1 -> std_output();
+//    n.1 -> std_output();
     return 0;
 }

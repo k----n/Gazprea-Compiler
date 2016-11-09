@@ -62,7 +62,7 @@ breakStatement(index) ::= <<
 tuple_struct(name, fields) ::= <<
 %Gaz_Struct.<name> = type {<fields; separator=",\n">}
 >>
-varInit_Tuple(tuple_statements) ::= <<
+varInit_tuple(tuple_statements) ::= <<
 call void @_Z14pushEmptyTuplev();
 <tuple_statements; separator="\n">
 >>

@@ -141,8 +141,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.addCode(varLine.render());
 
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
-            this.addCode(initLine.render());
+            if (argument.getType().getType() != Type.TYPES.TUPLE) {
+                ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
+                this.addCode(initLine.render());
+            } else {
+                
+            }
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
@@ -640,8 +644,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.visitExpression(ctx.expression());
         }
 
-        ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
-        this.addCode(unwrap.render());
+        if (this.currentFunction.getReturnType().getType() != Type.TYPES.NULL
+            && this.currentFunction.getReturnType().getType() != Type.TYPES.VOID) {
+            ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+            this.addCode(unwrap.render());
+        }
 
         ST line = this.llvmGroup.getInstanceOf("functionReturn");
         this.addCode(line.render());
@@ -701,12 +708,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         } else {
             // TODO check to see if assigning type is valid
             Type visitType = this.visitExpression(ctx.expression());
-            int idSize = ctx.Identifier().size();
 
-            if (visitType.getType().equals(Type.TYPES.TUPLE) && idSize > 1){
+            if (visitType.getType().equals(Type.TYPES.TUPLE) && ctx.Identifier().size() > 1){
                 ST getAt = this.llvmGroup.getInstanceOf("getAt2");
                 this.addCode(getAt.render());
-                for (int i = idSize - 1; i >= 0; i-- ){
+                for (int i = ctx.Identifier().size() - 1; i >= 0; i-- ){
                     ST assign = this.llvmGroup.getInstanceOf("assignVariable");
                     assign.add("name", this.scope.getVariable(ctx.Identifier(i).getText()).getMangledName());
                     this.addCode(assign.render());
@@ -945,15 +951,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitDeclaration(GazpreaParser.DeclarationContext ctx) {
-        // Type does it's best to get the type of the variable
-
         if (ctx.typedef() != null){
             visit(ctx.typedef());
             return  null;
         }
 
         Type declaredType = this.visitType(ctx.type());
-
         String variableName = ctx.Identifier().getText();
 
         // check to see that variable name is not a typedef
@@ -964,11 +967,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 //        String sizeData = this.visitSizeData(ctx.sizeData());
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
-        this.scope.initVariable(variableName, variable);
 
         if (this.currentFunction != null) {
             ST varLine = this.llvmGroup.getInstanceOf("localVariable");
-            varLine.add("name", this.scope.getVariable(variableName).getMangledName());
+            varLine.add("name", variable.getMangledName());
             this.addCode(varLine.render());
         } else {
             this.variables.put(variableName, variable);
@@ -979,36 +981,34 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
-            initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
+            initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
         } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null) {
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
-            initAssign.add("name", this.scope.getVariable(variableName).getMangledName());
+            initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
         }
 
-        // expression portion type
-        Type assignedType;
-
+        // expression type
         if (ctx.expression() != null) {
-            // expression portion is included
-
-            assignedType = this.visitExpression(ctx.expression());
-
-            if (declaredType.getType() == Type.TYPES.NULL) {
+            // expression is included
+            Type assignedType = this.visitExpression(ctx.expression());
+            if (variable.getType().getType() == Type.TYPES.NULL) {
                 variable.setType(assignedType);
             }
         } else {
-            // expression portion is excluded
-            if (declaredType.getType() == Type.TYPES.TUPLE) {
-            } else {
+            if (declaredType.getType() != Type.TYPES.TUPLE) {
+                // expression portion is excluded
                 ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
                 this.addCode(nullLine.render());
             }
         }
 
+        this.scope.initVariable(variableName, variable);
+
         ST line = this.llvmGroup.getInstanceOf("assignVariable");
-        line.add("name", this.scope.getVariable(variableName).getMangledName());
+        line.add("name", variable.getMangledName());
+
         this.addCode(line.render());
 
         return null;
