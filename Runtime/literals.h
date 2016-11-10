@@ -61,6 +61,35 @@ void pushStartVector() {
 	type->release();
 }
 
+void endInterval() {
+	Stack<Value>* elements = new Stack<Value>;
+
+	Value* element = stack->pop();
+	while (!element->isStartVector()) {
+		elements->push(element);
+		element->release();
+		element = stack->pop();
+	}
+	element->release();
+
+	Vector<Value>* intervalValues = new Vector<Value>;
+
+	Value* node = elements->pop();
+	while (node != nullptr) {
+		intervalValues->append(node);
+		node->release();
+		node = elements->popOrNull();
+	}
+
+	ValueType* type = new ValueType(IntervalType);
+	Value* interval = new Value(type, intervalValues);
+	stack->push(interval);
+	type->release();
+	interval->release();
+	elements->release();
+}
+
+
 void endTuple() {
 	Stack<Value>* elements = new Stack<Value>;
 	
@@ -110,7 +139,7 @@ void setTuple(int i) {
 
     int index = ((Vector<Value>*)(*ptr)->value_ptr())->getCount();
 
-		Value* node;
+	Value* node;
     for (int j = 0; j < index; ++j) {
         node = ((Vector<Value>*)(*ptr)->value_ptr())->get(j);
     	tupleValues->append(node);

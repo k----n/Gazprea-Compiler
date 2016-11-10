@@ -102,6 +102,8 @@ public:
 	bool isStandardOut()const { return this->valueType->getType() == StandardOut;	}
 	bool isLvalue()		const { return this->valueType->getType() == Lvalue;		}
 	bool isStartVector()const { return this->valueType->getType() == StartVector; }
+	bool isInterval()   const { return this->valueType->getType() == IntervalType; }
+
 	
 	bool* booleanValue() {
 		bool* b = new bool;
@@ -147,7 +149,10 @@ public:
 	}
 
 	Vector<Value>* intervalValue() const {
-	    //TODO: FILL THIS OUT
+		if (this->isNull())		{ printf("This is a null interval\n"); exit(1); }
+		if (this->isIdentity())	{ printf("This is an identity interval\n"); exit(1); }
+		if (!this->isInterval()){ printf("Not an Interval\n"); exit(1); }
+		return ((Vector<Value>*)this->value)->copy();
 	}
 
 	Value* lvalue() {

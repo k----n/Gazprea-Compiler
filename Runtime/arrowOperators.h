@@ -82,6 +82,7 @@ void leftArrowOperator() {
 		case StandardOut:	printf("Cannot input StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot input StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot input Lvalue\n");		exit(1);
+		case IntervalType:  printf("Cannot input IntervalType\n");  exit(1);
 		case StartVector:	printf("Cannot input StartVector\n");	exit(1);
 	}
 	lvalue->release();

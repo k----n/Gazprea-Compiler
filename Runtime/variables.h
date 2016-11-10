@@ -26,6 +26,7 @@ void assign(void** variable) {
 		int index;
 		Value* innerValue = nullptr;
 		Vector<Value>* tupleValue = nullptr;
+		Vector<Value>* intervalValue = nullptr;
 		ValueType* valueType = (*var)->getType();
 		ValueType* innerValueType = nullptr;
 		Vector<Value>* rvalueVector = nullptr;
@@ -42,7 +43,6 @@ void assign(void** variable) {
 			case TupleType:
 				rType = new ValueType(TupleType);
 			    rvalue = new Value(rType, new Vector<Value>());
-			    rvalue = new Value(rType, new Vector<Value>());
 				tupleValue = (*var)->tupleValue();
                 varSize = tupleValue->getCount();
                 index = 0;
@@ -56,6 +56,7 @@ void assign(void** variable) {
                         case StandardOut:
                         case StandardIn:
                         case Lvalue:
+                        case IntervalType: // TODO ACCOUNT FOR INTERVAL TYPE
 						case StartVector:
                             printf("Tuple cannot contain this type\n");
                             exit(1);
@@ -84,6 +85,45 @@ void assign(void** variable) {
                     ++index;
                 }
 				tupleValue->release();
+				if (innerValueType != nullptr) { innerValueType->release(); }
+				if (innerValue != nullptr) { innerValue->release(); }
+                break;
+			case IntervalType:
+				rType = new ValueType(IntervalType);
+			    rvalue = new Value(rType, new Vector<Value>());
+				intervalValue = (*var)->intervalValue();
+                varSize = intervalValue->getCount();
+                index = 0;
+                while(index < varSize) {
+                    innerValue = intervalValue->get(index);
+					innerValueType = innerValue->getType();
+                    switch(innerValueType->getType()) {
+                        case NullType:
+                        case IdentityType:
+                        case TupleType:
+                        case StandardOut:
+                        case StandardIn:
+                        case Lvalue:
+                        case BooleanType:
+                        case RealType:
+                        case CharacterType:
+                        case IntervalType:
+						case StartVector:
+                            printf("Interval cannot contain this type\n");
+                            exit(1);
+                            break;
+                        case IntegerType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(0));
+							break;
+                    }
+					innerValueType->release();
+					innerValue->release();
+					innerValue = nullptr;
+					innerValueType = nullptr;
+                    ++index;
+                }
+				intervalValue->release();
 				if (innerValueType != nullptr) { innerValueType->release(); }
 				if (innerValue != nullptr) { innerValue->release(); }
                 break;
@@ -118,6 +158,7 @@ void assign(void** variable) {
 		int index;
 		Value* innerValue = nullptr;
 		Vector<Value>* tupleValue = nullptr;
+		Vector<Value>* intervalValue = nullptr;
 		ValueType* valueType = (*var)->getType();
 		ValueType* innerValueType = nullptr;
 		Vector<Value>* rvalueVector = nullptr;
@@ -131,6 +172,41 @@ void assign(void** variable) {
 			case IntegerType:	rvalue = new Value(1);			break;
 			case RealType:		rvalue = new Value(1.0f);		break;
 			case CharacterType:	rvalue = new Value((char)1);	break;
+			case IntervalType:
+				rType = new ValueType(IntervalType);
+			    rvalue = new Value(rType, new Vector<Value>());
+				intervalValue = (*var)->intervalValue();
+                varSize = intervalValue->getCount();
+                index = 0;
+                while(index < varSize) {
+                    innerValue = intervalValue->get(index);
+					innerValueType = innerValue->getType();
+                    switch(innerValueType->getType()) {
+                        case NullType:
+                        case IdentityType:
+                        case TupleType:
+                        case StandardOut:
+                        case StandardIn:
+                        case Lvalue:
+                        case BooleanType:
+                        case RealType:
+                        case CharacterType:
+                        case IntervalType:
+						case StartVector:
+                            printf("Interval cannot contain this type\n");
+                            exit(1);
+                            break;
+                        case IntegerType:
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(1));
+							break;
+                    }
+					innerValueType->release();
+					innerValue->release();
+					innerValue = nullptr;
+					innerValueType = nullptr;
+                    ++index;
+                }
 			case TupleType:
 				rType = new ValueType(TupleType);
 				rvalue = new Value(rType, new Vector<Value>());
@@ -146,6 +222,7 @@ void assign(void** variable) {
 						case TupleType:
 						case StandardOut:
 						case StandardIn:
+						case IntervalType: // TODO ACCOUNT FOR INTERVAL TYPE
 						case Lvalue:
 						case StartVector:
 							printf("Tuple cannot contain this type\n");
