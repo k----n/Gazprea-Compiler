@@ -188,12 +188,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Object visitFunctionBlock(GazpreaParser.FunctionBlockContext ctx) {
         this.currentFunction.define();
         if (ctx.block() != null) {
-            Boolean result = this.visitBlock(ctx.block());
+            this.visitBlock(ctx.block());
 
-            if (result.equals((Boolean)false)) {
-                ST line = this.llvmGroup.getInstanceOf("functionReturn");
-                this.addCode(line.render());
-            }
+            this.currentFunction.getArguments().forEach(argument -> {
+                if (argument.getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
+                    ST push = this.llvmGroup.getInstanceOf("pushVariableValue");
+                    push.add("name", this.scope.getVariable(argument.getName()).getMangledName());
+                    this.addCode(push.render());
+                }
+            });
+
+            ST line = this.llvmGroup.getInstanceOf("functionReturn");
+            this.addCode(line.render());
         }
         if (ctx.expression() != null) {
             this.visitExpression(ctx.expression());
@@ -204,45 +210,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public Boolean visitTranslationalUnit(GazpreaParser.TranslationalUnitContext ctx) {
-        Boolean result = false;
-
-        for (int i = 0; i < ctx.getChildCount(); ++i) {
-            Object obj = visit(ctx.getChild(i));
-
-            if (obj instanceof Boolean) {
-                result = result || ((Boolean)obj);
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public Boolean visitStatement_(GazpreaParser.Statement_Context ctx) {
-        super.visitStatement_(ctx);
-
-        if (ctx.statement() != null && ctx.statement().returnStatement() != null) {
-            return Boolean.TRUE;
-        }
-
-        return Boolean.FALSE;
-    }
-
-
-
-    @Override
-    public Boolean visitBlock(GazpreaParser.BlockContext ctx) {
-        Boolean result = false;
+    public Object visitBlock(GazpreaParser.BlockContext ctx) {
         this.scope.pushScope();
-
         for (int i = 0; i < ctx.translationalUnit().size(); ++i) {
-            result = result || this.visitTranslationalUnit(ctx.translationalUnit(i));
+            this.visitTranslationalUnit(ctx.translationalUnit(i));
         }
-
         this.scope.popScope();
 
-        return result;
+        return null;
     }
 
     @Override

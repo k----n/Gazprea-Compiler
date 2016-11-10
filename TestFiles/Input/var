@@ -1,20 +1,16 @@
-procedure changex(integer x)  {
+procedure changex(var integer x)  {
     x = x + 1;
 }
 
-procedure changet(tuple(integer, integer) t) {
-    t.1 = t.1 + 1;
-    t.1 -> std_output();
-}
+
 
 procedure main() returns integer {
     integer x = 5;
-    tuple (integer, integer) t = (1,1);
 
     call changex(x);    
-    call changet(t);
 
-    t.1 -> std_output();
+    x -> std_output();
+
 
     return 0;
 }
