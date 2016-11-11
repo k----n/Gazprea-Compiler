@@ -115,6 +115,7 @@ pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
 
 startVector() ::= "call void @_Z15pushStartVectorv()"
 endTuple() ::= "call void @_Z8endTuplev()"
+endInterval() ::= "call @_Z11endIntervalv()"
 
 getAt(index) ::= "call void @_Z5getAti(i32 <index>)"
 getAt2() ::= "call void @_Z6getAt2v()"

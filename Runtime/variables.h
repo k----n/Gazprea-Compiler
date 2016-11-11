@@ -56,7 +56,6 @@ void assign(void** variable) {
                         case StandardOut:
                         case StandardIn:
                         case Lvalue:
-                        case IntervalType: // TODO ACCOUNT FOR INTERVAL TYPE
 						case StartVector:
                             printf("Tuple cannot contain this type\n");
                             exit(1);
@@ -64,6 +63,11 @@ void assign(void** variable) {
                         case BooleanType:
 							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
 							rvalueVector->append(new Value(false));
+							break;
+                        case IntervalType: // TODO ACCOUNT FOR INTERVAL TYPE
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(0));
+							rvalueVector->append(new Value(0));
 							break;
                         case IntegerType:
 							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
@@ -222,7 +226,6 @@ void assign(void** variable) {
 						case TupleType:
 						case StandardOut:
 						case StandardIn:
-						case IntervalType: // TODO ACCOUNT FOR INTERVAL TYPE
 						case Lvalue:
 						case StartVector:
 							printf("Tuple cannot contain this type\n");
@@ -231,6 +234,11 @@ void assign(void** variable) {
 						case BooleanType:
 							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
 							rvalueVector->append(new Value(true));
+							break;
+						case IntervalType: // TODO ACCOUNT FOR INTERVAL TYPE
+							rvalueVector = (Vector<Value>*)rvalue->value_ptr();
+							rvalueVector->append(new Value(1));
+							rvalueVector->append(new Value(1));
 							break;
 						case IntegerType:
 							rvalueVector = (Vector<Value>*)rvalue->value_ptr();

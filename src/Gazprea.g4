@@ -99,11 +99,11 @@ iteratorLoopVariable: Identifier In expression;
 // Expressions
 expression
  : expression Dot RealLiteral // interval
- | RealLiteral RealLiteral // interval
- | RealLiteral Dot expression // interval
+ | RealLiteral RealLiteral // interval // TODO: (1.0.2) isn't valid
+ | RealLiteral Dot expression // interval // TODO IS THIS EVEN VALID? intervals must be integers (e.g. 1.0..2) is NOT VALID
  | expression Dot Dot expression // interval
- | expression RealLiteral // tuple access
- | expression Dot Identifier // tuple access
+ | expression RealLiteral // tuple access // TODO (1.0..4.0) isn't valid
+ | expression Dot Identifier // tuple access // TODO (1.002.id) isn't valid
  | literal
  | Identifier
  | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)
@@ -111,7 +111,7 @@ expression
  | filter
  | functionCall
  | expression '[' expression ']'
- | expression op=Interval expression
+ | expression op=Interval expression // TODO: this may never be accessed STILL MAKE FUNCTION FOR IT ANYWAYS
  | <assoc=right> op=(Sign|Not) expression
  | <assoc=right> expression op=Exponentiation expression
  | expression op=DotProduct expression // TODO: NOT SURE ABOUT THIS PRECEDENCE
@@ -194,7 +194,7 @@ functionName
  ;
 
 Assign: '=';
-Interval: '$$';
+Interval: '..';
 Dot: '.';
 Concatenation: '||';
 DotProduct: '**';
@@ -233,7 +233,9 @@ TypeSpecifier
  | 'const'
  ;
 
-TypeType: 'vector';
+TypeType
+: 'vector'
+| 'interval';
 
 BuiltinType
  : 'boolean'

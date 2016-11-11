@@ -1,3 +1,4 @@
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
@@ -240,14 +241,105 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
-        if (ctx.Dot() != null && ctx.Dot().size() != 0 || ctx.RealLiteral() != null && ctx.RealLiteral().size() != 0) {
+        if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(0) == ctx.expression()){
+            // CASE: expression Dot RealLiteral
+            // Interval
+
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            // assume expression will be pushed to stack
+            Type left = this.visitExpression(ctx.expression(0));
+
+            if (!(left.getType().equals(Type.TYPES.INTEGER))){
+                throw new Error("Types must be integer in interval");
+            }
+
+            String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
+            ST right = this.llvmGroup.getInstanceOf("pushInteger");
+            right.add("value", rightInt.replaceAll("_", ""));
+            this.addCode(right.render());
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+        }
+        else if (ctx.RealLiteral().size() == 2){
+            // CASE: RealLiteral RealLiteral
+            // Interval
+
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
+            String rightInt = ctx.RealLiteral(1).getText().replaceAll("\\.","");
+
+            // since we can't visit literal, push left and right to stack here
+            ST left = this.llvmGroup.getInstanceOf("pushInteger");
+            left.add("value", leftInt.replaceAll("_", ""));
+            this.addCode(left.render());
+
+            ST right = this.llvmGroup.getInstanceOf("pushInteger");
+            right.add("value", rightInt.replaceAll("_", ""));
+            this.addCode(right.render());
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+        }
+        else if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(2) == ctx.expression()){
+            // CASE: RealLiteral Dot expression
+            // Interval
+
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
+            ST left = this.llvmGroup.getInstanceOf("pushInteger");
+            left.add("value", leftInt.replaceAll("_", ""));
+            this.addCode(left.render());
+
+            // assume expression will be pushed to stack
+            Type right = this.visitExpression(ctx.expression(0));
+
+            if (!(right.getType().equals(Type.TYPES.INTEGER))){
+                throw new Error("Types must be integer in interval");
+            }
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+        }
+        else if (ctx.expression().size()== 2 && ctx.Dot().size() == 2){
+            // CASE: expression Dot Dot expression
+            // Interval
+
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            // assume expression will be pushed to stack
+            Type left = this.visitExpression(ctx.expression(0));
+            Type right = this.visitExpression(ctx.expression(1));
+
+            if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
+                throw new Error("Types must be integer in interval");
+            }
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+        }
+        else if (ctx.Dot() != null && ctx.Dot().size() != 0 || ctx.RealLiteral() != null && ctx.RealLiteral().size() != 0) {
             // first get the tuple on the stack
             Type type = this.visitExpression(ctx.expression(0));
 
             // then get the field respective to the tuple on the stack
             String field;
 
-            // TODO: INCORPORATE INTERVALS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (ctx.RealLiteral() != null && ctx.RealLiteral().size() > 0) {
                 field = parseTupleAccessREAL(ctx.RealLiteral(0).getText());
             } else {
@@ -343,6 +435,23 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
+        }
+        else if (ctx.expression()!= null && ctx.expression().size() == 2 && ctx.op.getText() == ".."){
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            // assume expression will be pushed to stack
+            Type left = this.visitExpression(ctx.expression(0));
+            Type right =  this.visitExpression(ctx.expression(1));
+
+            if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
+                throw new Error("Types must be ineger in interval");
+            }
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
         }
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
             // CASE: where there is two expressions in the expression statement
@@ -481,14 +590,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
                     return Type.getReturnType(typeLetter);
-                // CASE: interval ..
-                case "..":
-                    // TODO
-                    if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
-                        throw new Error("Types must be ineger in interval");
-                    }
-                return null;
-
             }
         }
         return null;
@@ -946,7 +1047,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.variables.put(variableName, variable);
         }
 
-        if (variable.getType().getType() != Type.TYPES.NULL && variable.getType().getType() != Type.TYPES.TUPLE) {
+        if (variable.getType().getType() != Type.TYPES.NULL && variable.getType().getType() != Type.TYPES.TUPLE && variable.getType().getCollection_type() != null){
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", variable.getMangledName());
+            this.addCode(initAssign.render());
+        }
+        else if (variable.getType().getType() != Type.TYPES.NULL && variable.getType().getType() != Type.TYPES.TUPLE) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
 
@@ -967,10 +1073,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 variable.setType(assignedType);
             }
         } else {
-            if (declaredType.getType() != Type.TYPES.TUPLE) {
+            if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getCollection_type() == null) {
                 // expression portion is excluded
                 ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
                 this.addCode(nullLine.render());
+            }
+            else if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL) {
+                throw new Error("Interval must be defined with an expression");
             }
         }
 
