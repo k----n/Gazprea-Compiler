@@ -1,0 +1,10 @@
+procedure main() returns integer {
+
+    integer interval i = 1..10;
+
+    integer interval v = 2..9;
+
+    integer interval j = i + v;
+
+    return 0;
+}

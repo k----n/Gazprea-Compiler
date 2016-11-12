@@ -115,7 +115,7 @@ pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
 
 startVector() ::= "call void @_Z15pushStartVectorv()"
 endTuple() ::= "call void @_Z8endTuplev()"
-endInterval() ::= "call @_Z11endIntervalv()"
+endInterval() ::= "call void @_Z11endIntervalv()"
 
 getAt(index) ::= "call void @_Z5getAti(i32 <index>)"
 getAt2() ::= "call void @_Z6getAt2v()"
@@ -137,6 +137,8 @@ notequal(typeLetter) ::= "call void @_Z5neq_<typeLetter>()"
 logicalor(typeLetter) ::= "call void @_Z5lor_<typeLetter>()"
 logicalxor(typeLetter) ::= "call void @_Z5lxr_<typeLetter>()"
 logicaland(typeLetter) ::= "call void @_Z5lnd_<typeLetter>()"
+
+addInterval() ::= "call void @_Z12add_Intervalv()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

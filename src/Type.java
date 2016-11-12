@@ -21,14 +21,15 @@ public class Type {
     // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
     // iv = integer, rv = real, bv = boolean -- 'v' is appended because llvm does that
     private static String[/*left*/][/*right*/] RESULT_TABLE =
-            {/*  bool       int         char        real            NULL        IDNTY       TUPLE*/
-    /*bool*/    {"bv",      "void",     "void",     "void",         "bv",       "void",     "void"},
-    /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "void",     "void"},
-    /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
-    /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "void",     "void"},
-    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void"},
-    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void"},
-    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple"},
+            {/*  bool       int         char        real            NULL        IDNTY       TUPLE    INTERVAL*/
+    /*bool*/    {"bv",      "void",     "void",     "void",         "bv",       "void",     "void",  "void"    },
+    /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "void",     "void",  "void"    },
+    /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
+    /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "void",     "void",  "void"    },
+    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void",  "void"    },
+    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
+    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple", "void"    },
+    /*INTERVAL*/{"void",    "void",     "void",     "void",         "void",     "void",     "void",  "interval"},
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
@@ -153,6 +154,9 @@ public class Type {
     }
 
     private static Integer getTypeTableIndex(Type t) {
+        if (t.getCollection_type().equals(COLLECTION_TYPES.INTERVAL)){
+            return 7;
+        }
         switch(t.getType()) {
             case BOOLEAN: return 0;
             case INTEGER: return  1;

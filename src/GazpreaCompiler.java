@@ -248,17 +248,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST startVector = this.llvmGroup.getInstanceOf("startVector");
             this.addCode(startVector.render());
 
+            String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
+            ST right = this.llvmGroup.getInstanceOf("pushInteger");
+            right.add("value", rightInt.replaceAll("_", ""));
+            this.addCode(right.render());
+
             // assume expression will be pushed to stack
             Type left = this.visitExpression(ctx.expression(0));
 
             if (!(left.getType().equals(Type.TYPES.INTEGER))){
                 throw new Error("Types must be integer in interval");
             }
-
-            String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
-            ST right = this.llvmGroup.getInstanceOf("pushInteger");
-            right.add("value", rightInt.replaceAll("_", ""));
-            this.addCode(right.render());
 
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
@@ -269,20 +269,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // CASE: RealLiteral RealLiteral
             // Interval
 
-            ST startVector = this.llvmGroup.getInstanceOf("startVector");
-            this.addCode(startVector.render());
-
             String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
             String rightInt = ctx.RealLiteral(1).getText().replaceAll("\\.","");
 
-            // since we can't visit literal, push left and right to stack here
-            ST left = this.llvmGroup.getInstanceOf("pushInteger");
-            left.add("value", leftInt.replaceAll("_", ""));
-            this.addCode(left.render());
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
 
+            // since we can't visit literal, push left and right to stack here
             ST right = this.llvmGroup.getInstanceOf("pushInteger");
             right.add("value", rightInt.replaceAll("_", ""));
             this.addCode(right.render());
+
+            ST left = this.llvmGroup.getInstanceOf("pushInteger");
+            left.add("value", leftInt.replaceAll("_", ""));
+            this.addCode(left.render());
 
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
@@ -296,17 +296,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST startVector = this.llvmGroup.getInstanceOf("startVector");
             this.addCode(startVector.render());
 
-            String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
-            ST left = this.llvmGroup.getInstanceOf("pushInteger");
-            left.add("value", leftInt.replaceAll("_", ""));
-            this.addCode(left.render());
-
             // assume expression will be pushed to stack
             Type right = this.visitExpression(ctx.expression(0));
 
             if (!(right.getType().equals(Type.TYPES.INTEGER))){
                 throw new Error("Types must be integer in interval");
             }
+
+            String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
+            ST left = this.llvmGroup.getInstanceOf("pushInteger");
+            left.add("value", leftInt.replaceAll("_", ""));
+            this.addCode(left.render());
 
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
@@ -321,8 +321,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(startVector.render());
 
             // assume expression will be pushed to stack
-            Type left = this.visitExpression(ctx.expression(0));
             Type right = this.visitExpression(ctx.expression(1));
+            Type left = this.visitExpression(ctx.expression(0));
 
             if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
                 throw new Error("Types must be integer in interval");
@@ -441,8 +441,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(startVector.render());
 
             // assume expression will be pushed to stack
-            Type left = this.visitExpression(ctx.expression(0));
             Type right =  this.visitExpression(ctx.expression(1));
+            Type left = this.visitExpression(ctx.expression(0));
 
             if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))){
                 throw new Error("Types must be ineger in interval");
@@ -459,13 +459,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             Type right = (Type)visit(ctx.expression(1));
             String typeLetter = Type.getResultFunction(left, right);
 
-            // TODO make sure swapping is right and NULL works
-            for (int i = 0; i < 2; i ++) {
-                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                promoteCall.add("typeLetter", typeLetter);
-                this.addCode(promoteCall.render());
-                ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
-                this.addCode(swapStack.render());
+            if (left.getCollection_type()== null && right.getCollection_type()==null) {
+                for (int i = 0; i < 2; i++) {
+                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                    promoteCall.add("typeLetter", typeLetter);
+                    this.addCode(promoteCall.render());
+                    ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                    this.addCode(swapStack.render());
+                }
             }
 
             String operator = ctx.op.getText();
@@ -549,10 +550,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 return null;
                 // CASE: +
                 case "+":
-                    operatorCall = this.llvmGroup.getInstanceOf("addition");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    // Interval case
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                        operatorCall = this.llvmGroup.getInstanceOf("addInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("addition");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
                 // CASE: -
                 case "-":
                     operatorCall = this.llvmGroup.getInstanceOf("subtraction");
@@ -1192,6 +1201,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.TypeType() != null) {
             switch(ctx.TypeType().getText()){
                 case Type.strINTERVAL:
+                    // create empty vector type
+                    ST startVector = this.llvmGroup.getInstanceOf("startVector");
+                    this.addCode(startVector.render());
+                    ST st = this.llvmGroup.getInstanceOf("varInit_integer");
+                    this.addCode(st.render());
+                    this.addCode(st.render());
+                    ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+                    this.addCode(endInterval.render());
                     typeType = Type.COLLECTION_TYPES.INTERVAL;
                     break;
                 case Type.strVECTOR:

@@ -41,18 +41,7 @@ public class Main {
         } else {
             String testFilePath = args[1];
 
-            FileInputStream inputStream = new FileInputStream(testFilePath);
-
-            ByteArrayOutputStream result = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = inputStream.read(buffer)) != -1) {
-                result.write(buffer, 0, length);
-            }
-            String file = result.toString("UTF-8");
-            file = file.replace("..","$$");
-
-            ANTLRInputStream input = new ANTLRInputStream(file);
+            ANTLRFileStream input = new ANTLRFileStream(testFilePath);
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);
             GazpreaParser parser = new GazpreaParser(tokens);

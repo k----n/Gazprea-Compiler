@@ -62,31 +62,22 @@ void pushStartVector() {
 }
 
 void endInterval() {
-	Stack<Value>* elements = new Stack<Value>;
+    Value * node1 = stack->pop();
+    Value * node2 = stack->pop();
 
-	Value* element = stack->pop();
-	while (!element->isStartVector()) {
-		elements->push(element);
-		element->release();
-		element = stack->pop();
-	}
-	element->release();
+    Vector<Value>* intervalValues = new Vector<Value>;
 
-	Vector<Value>* intervalValues = new Vector<Value>;
+    intervalValues->append(node1);
+    intervalValues->append(node2);
 
-	Value* node = elements->pop();
-	while (node != nullptr) {
-		intervalValues->append(node);
-		node->release();
-		node = elements->popOrNull();
-	}
+    ValueType* type = new ValueType(IntervalType);
 
-	ValueType* type = new ValueType(IntervalType);
-	Value* interval = new Value(type, intervalValues);
-	stack->push(interval);
-	type->release();
-	interval->release();
-	elements->release();
+    Value* interval = new Value(type, intervalValues);
+
+    stack -> push(interval);
+
+    interval -> release();
+    type -> release();
 }
 
 

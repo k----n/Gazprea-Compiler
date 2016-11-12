@@ -68,7 +68,7 @@ notstatement
  : conditional
  | infiniteLoop
  | predicatedLoop
-// | iteratorLoop
+ | iteratorLoop
  ;
 
 declaration: type Identifier sizeData? (Assign expression)?
