@@ -371,7 +371,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // CASE: where there is only one expression in the expression statement
             Type type = this.visitExpression(ctx.expression(0));
             if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("-")) {
-                if (type.getType().equals(Type.TYPES.INTEGER)) {
+                if (type.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    ST operatorCall = this.llvmGroup.getInstanceOf("negInterval");
+                    this.addCode(operatorCall.render());
+                } else if (type.getType().equals(Type.TYPES.INTEGER)) {
                     ST negation = this.llvmGroup.getInstanceOf("negation");
                     negation.add("typeLetter", "iv");
                     this.addCode(negation.render());
@@ -503,18 +506,34 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: ==
                 case "==":
                     // TODO TUPLE
-                    operatorCall = this.llvmGroup.getInstanceOf("equal");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
+                    // Interval case
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                        operatorCall = this.llvmGroup.getInstanceOf("equalInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("equal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
 
                 // CASE: !=
                 case "!=":
                     // TODO TUPLE
-                    operatorCall = this.llvmGroup.getInstanceOf("notequal");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
+                    // Interval case
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
 
                 // CASE: <
                 case "<":
@@ -547,7 +566,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: by
                 case "by":
                     // TODO
-                return null;
+                    String offset = ctx.expression(1).getText();
+                    if (Integer.getInteger(offset) <= 0){
+                        throw new Error("Offset is lower than 1");
+                    }
+                    operatorCall = this.llvmGroup.getInstanceOf("byInterval");
+                    operatorCall.add("value", offset);
+                    this.addCode(operatorCall.render());
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.VECTOR);
                 // CASE: +
                 case "+":
                     // Interval case
@@ -564,10 +590,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                 // CASE: -
                 case "-":
-                    operatorCall = this.llvmGroup.getInstanceOf("subtraction");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                        operatorCall = this.llvmGroup.getInstanceOf("subInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("subtraction");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
                 // CASE: dotproduct
                 case "**":
                     // TODO
@@ -577,16 +610,32 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 return null;
                 // CASE: *
                 case "*":
-                    operatorCall = this.llvmGroup.getInstanceOf("multiplication");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    // Interval case
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                        operatorCall = this.llvmGroup.getInstanceOf("multInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("multiplication");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
                 // CASE: /
                 case "/":
-                    operatorCall = this.llvmGroup.getInstanceOf("division");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    // Interval case
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                        operatorCall = this.llvmGroup.getInstanceOf("divInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("division");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
                 // CASE: %
                 case "%":
                     operatorCall = this.llvmGroup.getInstanceOf("modulus");

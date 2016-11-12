@@ -20,6 +20,7 @@
 #include "logicalor.h"
 #include "logicalxor.h"
 #include "logicaland.h"
+#include "by.h"
 
 // Unwraps Lvalues to their raw value for operations
 void _unwrap() {

@@ -139,6 +139,13 @@ logicalxor(typeLetter) ::= "call void @_Z5lxr_<typeLetter>()"
 logicaland(typeLetter) ::= "call void @_Z5lnd_<typeLetter>()"
 
 addInterval() ::= "call void @_Z12add_Intervalv()"
+subInterval() ::= "call void @_Z12sub_Intervalv()"
+multInterval() ::= "call void @_Z13mult_Intervalv()"
+divInterval() ::= "call void @_Z12div_Intervalv()"
+negInterval() ::= "call void @_Z12neg_Intervalv()"
+equalInterval() ::= "call void @_Z11eq_Intervalv()"
+notequalInterval() ::= "call void @_Z12neq_Intervalv()"
+byInterval(value) ::= "call void @_Z10byIntervali(i32 <value>)"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

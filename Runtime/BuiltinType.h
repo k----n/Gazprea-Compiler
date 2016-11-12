@@ -11,7 +11,7 @@ enum BuiltinType {
 
     TupleType, // a vector with many different types included
     IntervalType, // a vector with only two nodes (lower bound and upper bound)
-    //VectorType, // a vector
+    VectorType, // a vector
     //MatrixType, // a vector of vectors
 
 	StandardOut,
