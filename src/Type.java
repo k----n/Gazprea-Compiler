@@ -6,10 +6,10 @@ public class Type {
     }
 
     public enum COLLECTION_TYPES {
-        NONE, MATRIX, VECTOR, INTERVAL
+        NONE, MATRIX, VECTOR
     }
     public enum TYPES {
-        TUPLE, BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM
+        TUPLE, BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM, INTERVAL
     }
 
     public static final String strBOOLEAN = "boolean", strINTEGER="integer", strREAL="real", strCHARACTER="character", strSTRING="string",
@@ -17,8 +17,6 @@ public class Type {
             strNULL="null", strIDENTITY="identity", strVOID="void", strOUT="output", strIN="input";
 
     // TABLE FOR RESULT OF OPERATIONS
-    // TODO TUPLE NOT IMPLEMENTED
-    // TODO: add rest, only BOOLEAN, CHAR, INT, REAL, TUPLE
     // iv = integer, rv = real, bv = boolean -- 'v' is appended because llvm does that
     private static String[/*left*/][/*right*/] RESULT_TABLE =
             {/*  bool       int         char        real            NULL        IDNTY       TUPLE    INTERVAL*/
@@ -48,7 +46,6 @@ public class Type {
     // special augmentation for tuple types
     private Tuple tupleType = null;
 
-    // TODO: May need a refactor based on how structs (tuples) will be defined in C
     // collection type tuple constructor
     Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, Tuple tupleType) {
         this.specifier = specifier;
@@ -154,9 +151,6 @@ public class Type {
     }
 
     private static Integer getTypeTableIndex(Type t) {
-        if (t.getCollection_type().equals(COLLECTION_TYPES.INTERVAL)){
-            return 7;
-        }
         switch(t.getType()) {
             case BOOLEAN: return 0;
             case INTEGER: return  1;
@@ -165,6 +159,7 @@ public class Type {
             case NULL: return 4;
             case IDENTITY: return 5;
             case TUPLE: return 6;
+            case INTERVAL: return 7;
             default: throw new RuntimeException("Undefined type in table");
         }
     }

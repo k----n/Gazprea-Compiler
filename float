@@ -1,0 +1,11 @@
+procedure main() returns integer {
+    integer y = 3;
+
+    real x = y;
+
+    x = 1.0 + y;
+
+    x -> std_output();
+
+    return 0;
+}

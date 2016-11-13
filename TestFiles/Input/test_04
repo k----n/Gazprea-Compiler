@@ -1,5 +1,7 @@
 procedure main() returns integer {
     integer x;
+    'a' -> std_output();
+    '\n' -> std_output();
     integer y = null;
     integer z = identity;
     x -> std_output();

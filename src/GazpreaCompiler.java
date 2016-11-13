@@ -263,7 +263,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
         }
         else if (ctx.RealLiteral().size() == 2){
             // CASE: RealLiteral RealLiteral
@@ -287,7 +287,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
         }
         else if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(2) == ctx.expression()){
             // CASE: RealLiteral Dot expression
@@ -311,7 +311,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
         }
         else if (ctx.expression().size()== 2 && ctx.Dot().size() == 2){
             // CASE: expression Dot Dot expression
@@ -331,7 +331,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
         }
         else if (ctx.Dot() != null && ctx.Dot().size() != 0 || ctx.RealLiteral() != null && ctx.RealLiteral().size() != 0) {
             // first get the tuple on the stack
@@ -371,7 +371,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // CASE: where there is only one expression in the expression statement
             Type type = this.visitExpression(ctx.expression(0));
             if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("-")) {
-                if (type.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                if (type.getType() == Type.TYPES.INTERVAL){
                     ST operatorCall = this.llvmGroup.getInstanceOf("negInterval");
                     this.addCode(operatorCall.render());
                 } else if (type.getType().equals(Type.TYPES.INTEGER)) {
@@ -454,7 +454,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
         }
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
             // CASE: where there is two expressions in the expression statement
@@ -507,7 +507,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case "==":
                     // TODO TUPLE
                     // Interval case
-                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("equalInterval");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
@@ -523,7 +523,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case "!=":
                     // TODO TUPLE
                     // Interval case
-                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("notequalInterval");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
@@ -577,10 +577,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: +
                 case "+":
                     // Interval case
-                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("addInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("addition");
@@ -590,10 +590,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                 // CASE: -
                 case "-":
-                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("subInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("subtraction");
@@ -611,10 +611,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: *
                 case "*":
                     // Interval case
-                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("multInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("multiplication");
@@ -625,10 +625,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: /
                 case "/":
                     // Interval case
-                    if (right.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL && left.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL){
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("divInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.INTERVAL);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("division");
@@ -1105,19 +1105,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.variables.put(variableName, variable);
         }
 
-        if (variable.getType().getType() != Type.TYPES.NULL && variable.getType().getType() != Type.TYPES.TUPLE && variable.getType().getCollection_type() != null){
-            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
-            initAssign.add("name", variable.getMangledName());
-            this.addCode(initAssign.render());
-        }
-        else if (variable.getType().getType() != Type.TYPES.NULL && variable.getType().getType() != Type.TYPES.TUPLE) {
+        if (variable.getType().getType() != Type.TYPES.NULL
+                && variable.getType().getType() != Type.TYPES.TUPLE
+                && variable.getType().getType() != Type.TYPES.INTERVAL ) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
 
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
-        } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null) {
+        } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
+                || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null) {
             ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
             initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
@@ -1131,13 +1129,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 variable.setType(assignedType);
             }
         } else {
-            if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getCollection_type() == null) {
+            if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getType() != Type.TYPES.INTERVAL) {
                 // expression portion is excluded
                 ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
                 this.addCode(nullLine.render());
-            }
-            else if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getCollection_type() == Type.COLLECTION_TYPES.INTERVAL) {
-                throw new Error("Interval must be defined with an expression");
             }
         }
 
@@ -1202,8 +1197,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitType(GazpreaParser.TypeContext ctx) {
-        Type.TYPES typeName = Type.TYPES.NULL;
 
+        Type.TYPES typeName = Type.TYPES.NULL;
         if (ctx.typeName() != null) {
             String typeNameString = this.visitTypeName(ctx.typeName());
             switch(typeNameString) {
@@ -1231,7 +1226,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
 
         Type.SPECIFIERS specifier = Type.SPECIFIERS.UNDEFINED;
-
         if (ctx.TypeSpecifier() != null) {
             switch (ctx.TypeSpecifier().getText()) {
                 case Type.strVAR:
@@ -1246,7 +1240,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
 
         Type.COLLECTION_TYPES typeType = Type.COLLECTION_TYPES.NONE;
-
         if (ctx.TypeType() != null) {
             switch(ctx.TypeType().getText()){
                 case Type.strINTERVAL:
@@ -1258,7 +1251,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     this.addCode(st.render());
                     ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
                     this.addCode(endInterval.render());
-                    typeType = Type.COLLECTION_TYPES.INTERVAL;
+                    typeName = Type.TYPES.INTERVAL;
                     break;
                 case Type.strVECTOR:
                     typeType = Type.COLLECTION_TYPES.VECTOR;
