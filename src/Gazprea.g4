@@ -99,11 +99,11 @@ iteratorLoopVariable: Identifier In expression;
 // Expressions
 expression
  : expression Dot RealLiteral // interval
- | RealLiteral RealLiteral // interval // TODO: (1.0.2) isn't valid
- | RealLiteral Dot expression // interval // TODO IS THIS EVEN VALID? intervals must be integers (e.g. 1.0..2) is NOT VALID
+ | RealLiteral RealLiteral // interval
+ | RealLiteral Dot expression // interval
  | expression Dot Dot expression // interval
- | expression RealLiteral // tuple access // TODO (1.0..4.0) isn't valid
- | expression Dot Identifier // tuple access // TODO (1.002.id) isn't valid
+ | expression RealLiteral // tuple access
+ | expression Dot Identifier // tuple access
  | literal
  | Identifier
  | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)

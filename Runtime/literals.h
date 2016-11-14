@@ -80,6 +80,33 @@ void endInterval() {
     type -> release();
 }
 
+void endVector() {
+    Stack<Value>* elements = new Stack<Value>;
+
+    Value* element = stack->pop();
+    while (!element->isStartVector()) {
+        elements->push(element);
+        element->release();
+        element = stack->pop();
+    }
+    element->release();
+
+    Vector<Value>* vectorValues = new Vector<Value>;
+
+    Value* node = elements->pop();
+    while (node != nullptr) {
+        vectorValues->append(node);
+        node->release();
+        node = elements->popOrNull();
+    }
+
+    ValueType* type = new ValueType(VectorType);
+    Value* vector = new Value(type, vectorValues);
+    stack->push(vector);
+    type->release();
+    vector->release();
+    elements->release();
+}
 
 void endTuple() {
 	Stack<Value>* elements = new Stack<Value>;

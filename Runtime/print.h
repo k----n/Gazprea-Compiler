@@ -55,6 +55,10 @@ void printValue() {
 	Value* value = stack->pop();
 	ValueType* valueType = value->getType();
 
+    // following two declarations are meant for printing a vector
+    int vectorSize;
+    Value *vectorElement;
+
 	Value *newChar; // only for nulltype and identitytype
 	switch (valueType->getType()) {
 		case NullType:
@@ -71,6 +75,28 @@ void printValue() {
 		case CharacterType:	printCharacter(value);					break;
 		case TupleType:     printf("Cannot print TupleType\n");     exit(1);
 		case IntervalType:  printf("Cannot print IntervalType\n");  exit(1);
+		case VectorType:
+		    vectorSize = value->vectorValue()->getCount();
+		    for (int elem = 0; elem < vectorSize; ++elem) {
+                vectorElement = value->vectorValue()->get(elem);
+                switch (vectorElement->getType()->getType()) {
+                    case IntegerType:
+                        printInteger(vectorElement);
+                        break;
+                    case RealType:
+                        printReal(vectorElement);
+                        break;
+                    case CharacterType:
+                        printCharacter(vectorElement);
+                        break;
+                    case BooleanType:
+                        printBoolean(vectorElement);
+                        break;
+                    default:
+                        printf("Vector element of this type cannot be printed\n"); exit(1);
+                }
+		    }
+		    break;
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);

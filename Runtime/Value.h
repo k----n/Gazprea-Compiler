@@ -71,10 +71,14 @@ public:
 				*(char*)(copy->value) = *(char*)this->value;
 				break;
 			case TupleType:
-				copy->value = this->tupleValue();
+				copy->value = this->tupleValue()->copy();
 				break;
 			case IntervalType:
-			    copy->value = this->intervalValue();
+			    copy->value = this->intervalValue()->copy();
+			    break;
+			case VectorType:
+			// TODO: copy
+			    //copy->value = this->vectorValue();
 			    break;
 			case Lvalue:
 				// TODO: Retain???
@@ -98,11 +102,12 @@ public:
 	bool isReal()		const { return this->valueType->getType() == RealType;	}
 	bool isCharacter()	const { return this->valueType->getType() == CharacterType;}
 	bool isTuple()		const { return this->valueType->getType() == TupleType;   }
+	bool isInterval()   const { return this->valueType->getType() == IntervalType; }
+	bool isVector()     const { return this->valueType->getType() == VectorType; }
 	bool isStandardIn()	const { return this->valueType->getType() == StandardIn;	}
 	bool isStandardOut()const { return this->valueType->getType() == StandardOut;	}
 	bool isLvalue()		const { return this->valueType->getType() == Lvalue;		}
 	bool isStartVector()const { return this->valueType->getType() == StartVector; }
-	bool isInterval()   const { return this->valueType->getType() == IntervalType; }
 
 	
 	bool* booleanValue() {
@@ -155,6 +160,13 @@ public:
 		return ((Vector<Value>*)this->value)->copy();
 	}
 
+    Vector<Value>* vectorValue() const {
+        if (this->isNull())		{ printf("This is a null interval\n"); exit(1); }
+        if (this->isIdentity())	{ printf("This is an identity interval\n"); exit(1); }
+        if (!this->isVector()){ printf("Not a Vector \n"); exit(1); }
+        return ((Vector<Value>*)this->value)->copy();
+    }
+
 	Value* lvalue() {
 		if (!this->isLvalue()) { printf("Not an lvalue\n"); exit(1); }
 		Value* value = *(Value**)this->value;
@@ -186,6 +198,7 @@ private:
 			case CharacterType:	delete (char*)	 this->value; break;
 			case TupleType:     ((Vector<Value>*)this->value)->release(); break;
 			case IntervalType:  ((Vector<Value>*)this->value)->release(); break;
+			case VectorType:    ((Vector<Value>*) this->value)->release(); break;
 			case StandardIn:
 			case StandardOut:
 			case Lvalue:

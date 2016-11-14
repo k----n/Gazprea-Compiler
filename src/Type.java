@@ -46,26 +46,46 @@ public class Type {
     // special augmentation for tuple types
     private Tuple tupleType = null;
 
-    // collection type tuple constructor
-    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, Tuple tupleType) {
+    // special augmentation for vector types
+    private Integer vectorSize = null;
+
+    // special augmentation for Matrix types
+    private Pair<Integer, Integer> matrixDimensions = null;
+
+    // general Type constructor
+    private Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, Tuple tupleType,
+         Integer vectorSize, Pair<Integer, Integer> matrixDimensions) {
         this.specifier = specifier;
         this.type = type;
         this.collection_type = collection_type;
         this.tupleType = tupleType;
+        this.vectorSize = vectorSize;
+        this.matrixDimensions = matrixDimensions;
     }
 
+    // collection Type tuple constructor
     Type(SPECIFIERS specifier, TYPES type, Tuple tupleType) {
-        this(specifier, type, null, tupleType);
+        this(specifier, type, null, tupleType, null, null);
     }
 
-    // collection type variables constructor
+    // vector collection Type constructors
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, Integer vectorSize) {
+        this(specifier, type, collection_type, null, vectorSize, null);
+    }
+
+    // matrix collection Type constructors
+    Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type, Pair<Integer, Integer> matrixDimensions) {
+        this(specifier, type, collection_type, null, null, matrixDimensions);
+    }
+
+    // collection type constructor without need to specify size
     Type(SPECIFIERS specifier, TYPES type, COLLECTION_TYPES collection_type) {
-        this(specifier, type, collection_type, null);
+        this(specifier, type, collection_type, null, null, null);
     }
 
-    // non collection type variables constructor
+    // non collection Type constructor
     Type(SPECIFIERS specifier, TYPES type) {
-        this(specifier, type, null, null);
+        this(specifier, type, null, null, null, null);
     }
 
     public SPECIFIERS getSpecifier() {
@@ -193,5 +213,7 @@ public class Type {
     public Tuple getTupleType() {
         return tupleType;
     }
+    public Integer getVectorSize() { return vectorSize; }
+    public Pair<Integer, Integer> getMatrixDimensions() { return matrixDimensions; }
 
 }

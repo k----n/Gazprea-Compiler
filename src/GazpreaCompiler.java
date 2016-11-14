@@ -263,7 +263,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
         else if (ctx.RealLiteral().size() == 2){
             // CASE: RealLiteral RealLiteral
@@ -287,7 +287,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
         else if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(2) == ctx.expression()){
             // CASE: RealLiteral Dot expression
@@ -311,7 +311,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
         else if (ctx.expression().size()== 2 && ctx.Dot().size() == 2){
             // CASE: expression Dot Dot expression
@@ -331,7 +331,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
         else if (ctx.Dot() != null && ctx.Dot().size() != 0 || ctx.RealLiteral() != null && ctx.RealLiteral().size() != 0) {
             // first get the tuple on the stack
@@ -454,7 +454,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
             this.addCode(endInterval.render());
 
-            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES) null);
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
             // CASE: where there is two expressions in the expression statement
@@ -580,7 +580,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("addInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("addition");
@@ -593,7 +593,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("subInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("subtraction");
@@ -614,7 +614,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("multInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("multiplication");
@@ -628,7 +628,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("divInterval");
                         this.addCode(operatorCall.render());
-                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL, (Type.COLLECTION_TYPES)null);
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("division");
@@ -723,16 +723,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         } else if (ctx.tupleLiteral() != null) {
             return this.visitTupleLiteral(ctx.tupleLiteral());
         } else if (ctx.vectorLiteral() != null) {
-            Type vectorType = this.visitVectorLiteral(ctx.vectorLiteral());
-            retCollectionType = Type.COLLECTION_TYPES.VECTOR;
-            retType = vectorType.getType();
+            return this.visitVectorLiteral(ctx.vectorLiteral());
         }
         if (line != null) {
             this.addCode(line.render());
         }
 
-        // TODO: literals are considered constant types
-        return new Type(Type.SPECIFIERS.CONST, retType, retCollectionType);
+        return new Type(Type.SPECIFIERS.VAR, retType, retCollectionType);
     }
 
     @Override
@@ -753,9 +750,45 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
-        // TODO: Implement this function
-        // return super.visitVectorLiteral(ctx);
-        return new Type(null, null, null, null);
+        Type.TYPES type = Type.TYPES.NULL;
+        Integer size = ctx.expression().size();
+
+        ST startVector = this.llvmGroup.getInstanceOf("startVector");
+        this.addCode(startVector.render());
+
+        // we are only concerned about implicitly promotable types i.e. integers, reals, nulls, identity
+        // NOTE: a vector of nulls and identities will be returned as TYPES.NULL
+        HashMap<Type.TYPES, Integer> elementTypeCounts = new HashMap<>();
+        elementTypeCounts.put(Type.TYPES.REAL, 0);
+        elementTypeCounts.put(Type.TYPES.INTEGER, 0);
+
+        ArrayList<Type> typesOfElements = new ArrayList<>();
+
+        for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+            Type exprType = this.visitExpression(ctx.expression(expr));
+            if (exprType.getType() != Type.TYPES.REAL
+                    && exprType.getType() != Type.TYPES.INTEGER
+                    && exprType.getType() != Type.TYPES.IDENTITY
+                    && exprType.getType() != Type.TYPES.NULL) {
+                type = exprType.getType();
+            } else if (exprType.getType() == Type.TYPES.INTEGER) {
+                elementTypeCounts.put(Type.TYPES.INTEGER, elementTypeCounts.get(Type.TYPES.INTEGER) + 1);
+            } else if (exprType.getType() == Type.TYPES.REAL) {
+                elementTypeCounts.put(Type.TYPES.REAL, elementTypeCounts.get(Type.TYPES.INTEGER) + 1);
+            }
+        }
+        ST endVector = this.llvmGroup.getInstanceOf("endVector");
+        this.addCode(endVector.render());
+
+        // process the implicit promotion possibilities
+        if (elementTypeCounts.get(Type.TYPES.INTEGER) > 0 && elementTypeCounts.get(Type.TYPES.REAL) > 0) {
+            type = Type.TYPES.REAL;
+        }
+
+        // now we cast the vector!
+        // TODO: CAST THE VECTOR
+
+        return new Type(Type.SPECIFIERS.VAR, type, Type.COLLECTION_TYPES.VECTOR, size);
     }
 
     @Override
