@@ -2,8 +2,6 @@ procedure changex(var integer x)  {
     x = x + 1;
 }
 
-
-
 procedure main() returns integer {
     integer x = 5;
 

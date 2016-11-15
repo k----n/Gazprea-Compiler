@@ -9,6 +9,7 @@ void rightArrowOperator() {
 	Value* lhs = stack->pop();
 	if (!rhs->isStandardOut()) { printf("RHS value is not stdout\n"); exit(1); }
 	ValueType* type = lhs->getType();
+
 	switch (type->getType()) {
 		case NullType:
 		case IdentityType:

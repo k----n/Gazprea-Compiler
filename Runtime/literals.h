@@ -138,18 +138,19 @@ void endTuple() {
 }
 
 void setTuple(int i) {
-    Value *value1 = stack->pop();
+    _unwrap();
+    Value* value1 = stack->pop()->copy();
     Value* value = stack->pop(); // this is the tuple
 
-    	if (!value->isLvalue()) {
-    		printf("Not an lvalue");
-    		exit(1);
-    	}
-    	Value** ptr = value->lvalue_ptr();
-    	if (!(*ptr)->isTuple()) {
-    		printf("NOT A VECTOR OR TUPLE\n");
-    		exit(1);
-    	}
+    if (!value->isLvalue()) {
+        printf("Not an lvalue");
+        exit(1);
+    }
+    Value** ptr = value->lvalue_ptr();
+    if (!(*ptr)->isTuple()) {
+        printf("NOT A VECTOR OR TUPLE\n");
+        exit(1);
+    }
 
     ((Vector<Value>*)(*ptr)->value_ptr())->set(i, value1);
 

@@ -83,6 +83,7 @@ assignTupleField(index) ::= <<
 call void @_Z8setTuplei(i32 <index>)
 >>
 
+// TODO: NOTE MAY HAVE TO MAKE TUPLE FIELD ASSIGN BY VAR
 assignTupleField2(index) ::= <<
 call void @_Z16assignTupleFieldv()
 >>
@@ -94,6 +95,7 @@ call void @_Z15getValueAtTuplei(i32 <index>)
 pushVariable(name) ::= "call void @_Z4pushPPv(i8** <name>)"
 pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
 assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"
+assignByVar(name) ::= "call void @_Z10assignCopyPPv(i8** <name>)"
 
 varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"
 varInit_output() ::= "call void @_Z10std_outputv()"
