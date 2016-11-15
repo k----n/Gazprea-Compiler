@@ -6,7 +6,7 @@ public class Type {
     }
 
     public enum COLLECTION_TYPES {
-        NONE, MATRIX, VECTOR
+        MATRIX, VECTOR
     }
     public enum TYPES {
         TUPLE, BOOLEAN, INTEGER, REAL, CHARACTER, STRING, NULL, IDENTITY, VOID, OUTPUT_STREAM, INPUT_STREAM, INTERVAL

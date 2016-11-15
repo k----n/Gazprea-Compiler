@@ -1272,7 +1272,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
 
-        Type.COLLECTION_TYPES typeType = Type.COLLECTION_TYPES.NONE;
+        Type.COLLECTION_TYPES typeType = null;
         if (ctx.TypeType() != null) {
             switch(ctx.TypeType().getText()){
                 case Type.strINTERVAL:
