@@ -1,10 +1,18 @@
 procedure main() returns integer {
     // interval loop
-    
-    /* This will print 123 */ 
-    loop i in 1..3 { 
-        i -> out; 
-    }
+
+
+
+loop i in 1..3 { 
+	69 -> std_output();    
+	'\n' -> std_output();    
+} 
+
+loop i in 1..3{ 
+	69 -> std_output();    
+	'\n' -> std_output();    
+} 
+
 
     return 0;
 }

@@ -1024,25 +1024,40 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return null;
     }
 
-    // TODO UNROLL THE LOOP, USE A DEQUE
-
-
     private Deque<Integer> currentIterator = new ArrayDeque<>();
     @Override public Type visitIteratorLoop(GazpreaParser.IteratorLoopContext ctx) {
         Integer loopSize = ctx.iteratorLoopVariables().iteratorLoopVariable().size();
 
+        this.scope.pushScope();
+        // initialize id's of iterators
+        for (int i = 0; i < loopSize; i++){
+            String variableName = ctx.iteratorLoopVariables().iteratorLoopVariable(i).Identifier().getText();
+
+            Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER));
+
+            if (this.currentFunction != null) {
+                ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+                varLine.add("name", variable.getMangledName());
+                this.addCode(varLine.render());
+            } else {
+                this.variables.put(variableName, variable);
+            }
+
+            this.scope.initVariable(variableName, variable);
+
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
+            this.currentFunction.addLine((initLine.render()));
+
+        }
+
         // go through everything except for innermost
-        for (int i = 0; i < loopSize - 2; i++){
+        for (int i = 0; i < loopSize - 1; i++){
             Integer loopIndex = this.visitIteratorLoopVariable(ctx.iteratorLoopVariables().iteratorLoopVariable(loopSize - 1));
             currentIterator.addFirst(loopIndex);
         }
 
         // render innermost loop code
         Integer loopIndex = this.visitIteratorLoopVariable(ctx.iteratorLoopVariables().iteratorLoopVariable(loopSize - 1));
-        this.visitTranslationalUnit(ctx.translationalUnit());
-        ST loopConditional = this.llvmGroup.getInstanceOf("loopConditional");
-        loopConditional.add("index", loopIndex);
-        this.currentFunction.addLine(loopConditional.render());
 
         this.visitTranslationalUnit(ctx.translationalUnit());
 
@@ -1054,8 +1069,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         loopConditionalEnd.add("index", loopIndex);
         this.currentFunction.addLine(loopConditionalEnd.render());
 
+        this.scope.popScope();
         // go through everything except for innermost
-        for (int i = 0; i < loopSize -2; i++){
+        for (int i = 0; i < loopSize - 1; i++){
             Integer index = currentIterator.removeFirst();
             ST endLoop1 = this.llvmGroup.getInstanceOf("loopEnd");
             endLoop1.add("index", index);
@@ -1065,6 +1081,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             loopConditionalEnd1.add("index", index);
             this.currentFunction.addLine(loopConditionalEnd1.render());
         }
+
+        currentIterator.clear();
 
         return null;
 
@@ -1077,20 +1095,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         // do declaration here
         String variableName = ctx.Identifier().getText();
+        //System.out.println(this.scope.getVariable(variableName).getMangledName());
 
         // initialize as integer type but could be cast to whatever is inside vector
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER));
-
-        if (this.currentFunction != null) {
-            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
-            varLine.add("name", variable.getMangledName());
-            this.addCode(varLine.render());
-        } else {
-            this.variables.put(variableName, variable);
-        }
-
-        ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
-        this.currentFunction.addLine((initLine.render()));
 
         ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
         initAssign.add("name", variable.getMangledName());
@@ -1098,8 +1106,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
         this.currentFunction.addLine((nullLine.render()));
-
-        this.scope.initVariable(variableName, variable);
 
         ST line = this.llvmGroup.getInstanceOf("assignVariable");
         line.add("name", variable.getMangledName());
@@ -1116,13 +1122,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         loopBegin.add("index", myLoopIndex);
         this.currentFunction.addLine(loopBegin.render());
 
-        // call function to set index of iterating through loop
         // where the magic should happen
-        // if vector get first element, make new vector one element shorter
+        // get vector size
+        // if size > 1, get first element, make new vector one element shorter
         // need to push to stack (in order of): new vector, i value, i value
+        // else if vector size is one element: push startvector, i value, i value
         // two i values because one for assigning and one for checking conditional
 
-        this.scope.initVariable(variableName, variable);
+        ST shrink = this.llvmGroup.getInstanceOf("shrinkIterateVector");
+        this.currentFunction.addLine(shrink.render());
 
         ST assignIterator = this.llvmGroup.getInstanceOf("assignVariable");
         assignIterator.add("name", variable.getMangledName());
