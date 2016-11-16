@@ -168,7 +168,9 @@ equalInterval() ::= "call void @_Z11eq_Intervalv()"
 notequalInterval() ::= "call void @_Z12neq_Intervalv()"
 byInterval(value) ::= "call void @_Z10byIntervali(i32 <value>)"
 
-notEqualNull() ::="call void void @_Z8neq_nullv()"
+notEqualNull() ::="call void @_Z8neq_nullv()"
+
+shrinkIterateVector() ::="call void @_Z19shrinkIterateVectorv()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

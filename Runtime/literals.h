@@ -61,6 +61,48 @@ void pushStartVector() {
 	type->release();
 }
 
+void shrinkIterateVector() {
+    _unwrap();
+    Value* value = stack->pop(); // this is the vector
+    if (!(value->isVector())) {
+        // possibly risky, just push back on false and return
+        if (value->isStartVector()){
+            pushStartVector();
+            return;
+        }
+
+        printf("NOT A VECTOR\n");
+        exit(1);
+    }
+
+    Vector<Value>* values = value->vectorValue();
+
+    int size = values -> getCount();
+
+    if (size == 1){
+        pushStartVector();
+        Value * element = values -> get(0);
+        stack -> push(element);
+        stack -> push(element);
+    }
+    else {
+        Value * element = values -> get(0);
+        Vector<Value>* smallerValues = new Vector<Value>;
+        Value* node;
+        for (int i = 1; i < size; i++){
+            node = values -> get(i);
+            smallerValues->append(node);
+        }
+
+        ValueType* newType = new ValueType(VectorType);
+        Value* newValue = new Value(newType, smallerValues);
+
+        stack -> push(newValue);
+        stack -> push(element);
+        stack -> push(element);
+    }
+}
+
 void endInterval() {
     Value * node1 = stack->pop();
     Value * node2 = stack->pop();

@@ -73,7 +73,9 @@ void neq_null() {
     _unwrap();
     Value* element = stack->pop();
     if (!element->isStartVector()){
+        stack -> push(new Value(true));
+    }
+    else {
         stack -> push(new Value(false));
     }
-    stack -> push(new Value(true));
 }

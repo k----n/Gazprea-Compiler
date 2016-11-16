@@ -202,6 +202,7 @@ void promoteTo_vector() {
 	ValueType* newType = nullptr;
 	ValueType* type = value->getType();
 	Vector<Value>* intervalValues = nullptr;
+	Value* node = nullptr;
 	int start = 0;
 	int end = 0;
 	switch (type->getType()) {
@@ -216,7 +217,6 @@ void promoteTo_vector() {
 
             vectorValues = new Vector<Value>;
 
-	        Value* node;
             for (int i = start; i <= end; i++){
                 node = new Value(i);
                 vectorValues->append(node);
