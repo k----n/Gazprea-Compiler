@@ -29,6 +29,7 @@ class Function {
     }
     boolean isProcedure() { return this.procedure; }
 
+    void setArguments(List<Argument> arguments) { this.arguments = arguments; }
     List<Argument> getArguments() { return this.arguments; }
     void addLine(String line) {
         this.lines.add(line);

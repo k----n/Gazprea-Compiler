@@ -1,4 +1,3 @@
-import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
@@ -6,7 +5,6 @@ import org.stringtemplate.v4.STGroupFile;
 
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
@@ -127,11 +125,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         List<Argument> argumentList = this.visitArgumentList(argumentListContext);
         Type returnType = this.visitReturnType(returnTypeContext);
 
-        this.currentFunction = new Function(name, argumentList, returnType);
+        this.currentFunction = new Function(name, null, returnType);
         if (isProcedure) { this.currentFunction.setProcedure(); }
 
-        argumentList.forEach(argument -> {
+        for (int arg = 0; arg < argumentListContext.argument().size(); ++arg) {
+            Argument argument = this.visitArgument(argumentListContext.argument(arg));
+
             Variable var = new Variable(argument.getName(), this.mangleVariableName(argument.getName()), argument.getType());
+
             this.scope.initVariable(argument.getName(), var);
 
             ST varLine = this.llvmGroup.getInstanceOf("localVariable");
@@ -150,7 +151,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST varAssign = this.llvmGroup.getInstanceOf("assignVariable");
             varAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.addCode(varAssign.render());
-        });
+        }
+
+        this.currentFunction.setArguments(argumentList);
 
         if (functionBlockContext != null) {
             this.visitFunctionBlock(functionBlockContext);
@@ -1438,7 +1441,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     private String mangleVariableName(String name) {
-        String mangledName = "GazVar_" + name + "_" + this.scope.count();
+        String mangledName = "GazVar_" + name + "_" + this.scope.uniqueScopeId();
         if (currentFunction != null) {
             mangledName = "%" + mangledName;
         } else {

@@ -1,16 +1,21 @@
 import java.util.*;
 
 class Scope<T> {
-    private List<Map<String, T>> scopes = new ArrayList<>();
+    private List<Pair<Long, Map<String, T>>> scopes = new ArrayList<>();
 
-    Scope() { this.pushScope(); }
+    static private Long uniqueScopeId = 0L;
+
+    Scope() {
+        this.pushScope();
+    }
 
     private Map<String, T> lastScope() {
-        return this.scopes.get(this.scopes.size() - 1);
+        return this.scopes.get(this.scopes.size() - 1).right();
     }
 
     void pushScope() {
-        this.scopes.add(new HashMap<>());
+        this.scopes.add(new Pair<Long, Map<String, T>>(uniqueScopeId, new HashMap<>()));
+        ++uniqueScopeId;
     }
 
     void popScope() {
@@ -25,17 +30,17 @@ class Scope<T> {
     }
 
     T getVariable(String variableName) {
-        List<Map<String, T>> scopesCopy = new ArrayList<>(this.scopes);
+        List<Pair<Long, Map<String, T>>> scopesCopy = new ArrayList<>(this.scopes);
         Collections.reverse(scopesCopy);
-        for (Map<String, T> scope : scopesCopy) {
-            if (scope.get(variableName) != null) {
-                return scope.get(variableName);
+        for (Pair<Long, Map<String, T>> scope : scopesCopy) {
+            if (scope.right().get(variableName) != null) {
+                return scope.right().get(variableName);
             }
         }
         return null;
     }
 
-    Integer count() {
-        return this.scopes.size();
+    Long uniqueScopeId() {
+        return this.scopes.get(this.scopes.size() - 1).left();
     }
 }
