@@ -67,3 +67,13 @@ void neq_Interval(){
     interval1 -> release();
     interval2 -> release();
 }
+
+// THIS ONLY CHECKS IF THE VALUE FROM STACK IS NOT A STARTVECTOR
+void neq_null() {
+    _unwrap();
+    Value* element = stack->pop();
+    if (!element->isStartVector()){
+        stack -> push(new Value(false));
+    }
+    stack -> push(new Value(true));
+}

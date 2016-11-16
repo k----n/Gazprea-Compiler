@@ -1,0 +1,10 @@
+procedure main() returns integer {
+    // interval loop
+    
+    /* This will print 123 */ 
+    loop i in 1..3 { 
+        i -> out; 
+    }
+
+    return 0;
+}
