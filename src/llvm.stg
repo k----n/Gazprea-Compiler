@@ -92,10 +92,22 @@ getTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 >>
 
-pushVariable(name) ::= "call void @_Z4pushPPv(i8** <name>)"
-pushVariableValue(name) ::= "call void @_Z17pushVariableValuePPv(i8** <name>)"
-assignVariable(name) ::= "call void @_Z6assignPPv(i8** <name>)"
-assignByVar(name) ::= "call void @_Z10assignCopyPPv(i8** <name>)"
+pushVariable(name) ::= <<
+; push variable
+call void @_Z4pushPPv(i8** <name>)
+>>
+pushVariableValue(name) ::= <<
+; push variable value
+call void @_Z17pushVariableValuePPv(i8** <name>)
+>>
+assignVariable(name) ::= <<
+; assign byref
+call void @_Z6assignPPv(i8** <name>)
+>>
+assignByVar(name) ::= <<
+; assign byvar
+call void @_Z10assignCopyPPv(i8** <name>)
+>>
 
 varInit_integer() ::= "call void @_Z22varInitPushNullIntegerv()"
 varInit_output() ::= "call void @_Z10std_outputv()"
@@ -115,8 +127,14 @@ pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
 pushReal(value) ::= "call void @_Z8pushRealf(float <value>)"
 pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
 
-startVector() ::= "call void @_Z15pushStartVectorv()"
-endTuple() ::= "call void @_Z8endTuplev()"
+startVector() ::= <<
+; starting of a vector
+call void @_Z15pushStartVectorv()
+>>
+endTuple() ::= <<
+call void @_Z8endTuplev()
+; ending of a vector
+>>
 endInterval() ::= "call void @_Z11endIntervalv()"
 
 getAt(index) ::= "call void @_Z5getAti(i32 <index>)"

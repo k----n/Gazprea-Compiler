@@ -6,6 +6,7 @@ procedure main() returns integer {
     x = 1.0 + y;
 
     x -> std_output();
+    y -> std_output();
 
     return 0;
 }

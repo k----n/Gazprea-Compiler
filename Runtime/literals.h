@@ -83,6 +83,7 @@ void endInterval() {
 void endVector() {
     Stack<Value>* elements = new Stack<Value>;
 
+    _unwrap();
     Value* element = stack->pop();
     while (!element->isStartVector()) {
         elements->push(element);
@@ -110,9 +111,11 @@ void endVector() {
 
 void endTuple() {
 	Stack<Value>* elements = new Stack<Value>;
-	
+
+    _unwrap();
 	Value* element = stack->pop();
 	while (!element->isStartVector()) {
+        _unwrap();
 		elements->push(element);
 		element->release();
 		element = stack->pop();
@@ -138,7 +141,6 @@ void endTuple() {
 }
 
 void setTuple(int i) {
-    _unwrap();
     Value* value1 = stack->pop()->copy();
     Value* value = stack->pop(); // this is the tuple
 

@@ -48,6 +48,7 @@ public:
 	
 	virtual Value* copy() const {
 		Value* copy = new Value(this->valueType, this->value);
+
 		switch (this->valueType->getType()) {
 			case NullType:
 			case IdentityType:
@@ -87,6 +88,7 @@ public:
 				// TODO: Retain???
 				break;
 		}
+
 		return copy;
 	}
 	
@@ -195,9 +197,16 @@ private:
 			case BooleanType:	delete (bool*)   this->value; break;
 			case IntegerType:	delete (int*)    this->value; break;
 			case RealType:		delete (float*)  this->value; break;
-			case CharacterType:	delete (char*)	 this->value; break;
-			case TupleType:     ((Vector<Value>*)this->value)->release(); break;
-			case IntervalType:  ((Vector<Value>*)this->value)->release(); break;
+			case CharacterType:
+				//printf("char was released: %c", *(this->characterValue()));
+			    delete (char*)	 this->value; break;
+			case TupleType:
+			    //printf("tuple was released\n");
+			    ((Vector<Value>*)this->value)->release();
+			    break;
+			case IntervalType:
+			    //printf("interval was released\n");
+			    ((Vector<Value>*)this->value)->release(); break;
 			case VectorType:    ((Vector<Value>*) this->value)->release(); break;
 			case StandardIn:
 			case StandardOut:
