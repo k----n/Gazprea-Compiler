@@ -105,6 +105,7 @@ varInit_character() ::= "call void @_Z24varInitPushNullCharacterv()"
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
 
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
+promoteToVector() ::= "call void @_Z16promoteTo_vectorv()"
 
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
@@ -146,6 +147,8 @@ negInterval() ::= "call void @_Z12neg_Intervalv()"
 equalInterval() ::= "call void @_Z11eq_Intervalv()"
 notequalInterval() ::= "call void @_Z12neq_Intervalv()"
 byInterval(value) ::= "call void @_Z10byIntervali(i32 <value>)"
+
+notEqualNull() ::="call void void @_Z8neq_nullv()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

@@ -78,7 +78,7 @@ public:
 			    break;
 			case VectorType:
 			// TODO: copy
-			    //copy->value = this->vectorValue();
+			    //copy->value = this->vectorValue()->copy();
 			    break;
 			case Lvalue:
 				// TODO: Retain???
