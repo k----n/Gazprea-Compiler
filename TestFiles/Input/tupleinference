@@ -11,15 +11,34 @@ procedure printtup(tuple(character, integer, real) t) {
 procedure main() returns integer {
     var tup = ('i', 1, 1.2);
     tuple(character, integer, real) tup2 = ('j', 2, 2.4);
+/*    
+    var tup3 = tup;
 
     tup.1 -> std_output();
     tup.2 -> std_output();
     tup.3 -> std_output();
 
+    tup3.1 = 'a';
+
+    tup.1 -> std_output();
+    tup3.1 -> std_output();
+    tup3.2 -> std_output();
+    tup3.3 -> std_output();
+*/    
     integer x = 3;
     call printint(tup.2);
     call printint(x);
+
+    '\n' -> std_output();
+    tup.2 -> std_output();
+    '\n' -> std_output();
+
     call printtup(tup);
+    
+    '\n' -> std_output();
+    tup.1 -> std_output();
+    '\n' -> std_output();
+
     call printtup(tup2);
 
     return 0;	  
