@@ -830,7 +830,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             } else {
                 field = ctx.Identifier(1).getText();
             }
-
+/*
             // first get the tuple on the stack
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
             Variable variable = this.scope.getVariable(varName);
@@ -844,17 +844,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
             getTupleField.add("index", fieldNumber - 1);
             this.addCode(getTupleField.render());
-
+*/
             // TODO fix this tuple assignment
             // first get the tuple on the stack
-            line = this.llvmGroup.getInstanceOf("pushVariable");
-            variable = this.scope.getVariable(varName);
+            ST line = this.llvmGroup.getInstanceOf("pushVariable");
+            Variable variable = this.scope.getVariable(varName);
             line.add("name", variable.getMangledName());
             this.addCode(line.render());
 
             // then get the field respective to the tuple on the stack
-            tupleType = variable.getType().getTupleType();
-            fieldNumber = tupleType.getFieldNumber(field);
+            Tuple tupleType = variable.getType().getTupleType();
+            Integer fieldNumber = tupleType.getFieldNumber(field);
 
             Type visitType = this.visitExpression(ctx.expression()); // push assigning value to stack
 
@@ -862,7 +862,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             assignTupleField.add("index", fieldNumber - 1);
             this.addCode(assignTupleField.render());
 
-            ST assign = this.llvmGroup.getInstanceOf("assignVariable");
+            ST assign = this.llvmGroup.getInstanceOf("assignByVar");
             assign.add("name", variable.getMangledName());
             this.addCode(assign.render());
 
@@ -875,14 +875,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 ST getAt = this.llvmGroup.getInstanceOf("getAt2");
                 this.addCode(getAt.render());
                 for (int i = ctx.Identifier().size() - 1; i >= 0; i-- ){
-                    ST assign = this.llvmGroup.getInstanceOf("assignVariable");
+                    ST assign = this.llvmGroup.getInstanceOf("assignByVar");
                     assign.add("name", this.scope.getVariable(ctx.Identifier(i).getText()).getMangledName());
                     this.addCode(assign.render());
                 }
                 return null;
             }
 
-            ST assign = this.llvmGroup.getInstanceOf("assignVariable");
+            ST assign = this.llvmGroup.getInstanceOf("assignByVar");
             assign.add("name", this.scope.getVariable(ctx.Identifier(0).getText()).getMangledName());
             this.addCode(assign.render());
         }
@@ -1258,12 +1258,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
 
-            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
             initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
         } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
                 || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null) {
-            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
             initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
         }
@@ -1285,7 +1285,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         this.scope.initVariable(variableName, variable);
 
-        ST line = this.llvmGroup.getInstanceOf("assignVariable");
+        ST line = this.llvmGroup.getInstanceOf("assignByVar");
         line.add("name", variable.getMangledName());
 
         this.addCode(line.render());

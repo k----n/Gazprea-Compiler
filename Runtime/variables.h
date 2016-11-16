@@ -14,10 +14,11 @@ void pushVariableValue(void** variable) {
 	value->release();
 }
 
+
 void assign(void** variable) {
 	Value** var = (Value**)variable;
 	Value* rvalue = stack->pop();
-	
+
 	// Transform the rvalue to the default value when using `null`
 	if (rvalue->isNull()) {
 		rvalue->release();
@@ -291,4 +292,13 @@ void assign(void** variable) {
 	} else {
 		*var = rvalue;
 	}
+}
+
+void assignCopy(void** variable) {
+    _unwrap();
+    Value *rvalue = stack->pop();
+    Value *copy = rvalue->copy();
+    stack->push(copy);
+    copy->release();
+    assign(variable);
 }
