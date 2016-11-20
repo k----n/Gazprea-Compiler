@@ -1148,11 +1148,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.currentFunction.addLine((initLine.render()));
 
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", variable.getMangledName());
+            this.currentFunction.addLine((initAssign.render()));
         }
 
         // go through everything except for innermost
         for (int i = 0; i < loopSize - 1; i++){
-            Integer loopIndex = this.visitIteratorLoopVariable(ctx.iteratorLoopVariables().iteratorLoopVariable(loopSize - 1));
+            Integer loopIndex = this.visitIteratorLoopVariable(ctx.iteratorLoopVariables().iteratorLoopVariable(i));
             currentIterator.addFirst(loopIndex);
         }
 
@@ -1182,8 +1185,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.currentFunction.addLine(loopConditionalEnd1.render());
         }
 
-        currentIterator.clear();
-
         return null;
 
     }
@@ -1195,22 +1196,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         // do declaration here
         String variableName = ctx.Identifier().getText();
-        //System.out.println(this.scope.getVariable(variableName).getMangledName());
 
-        // initialize as integer type but could be cast to whatever is inside vector
-        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER));
-
-        ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
-        initAssign.add("name", variable.getMangledName());
-        this.currentFunction.addLine((initAssign.render()));
-
-        ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
-        this.currentFunction.addLine((nullLine.render()));
-
-        ST line = this.llvmGroup.getInstanceOf("assignVariable");
-        line.add("name", variable.getMangledName());
-
-        this.currentFunction.addLine((line.render()));
+        Variable variable = this.scope.getVariable(variableName);
 
         this.visitExpression(ctx.expression()); // push the expression to stack and call function to iterate through it
 

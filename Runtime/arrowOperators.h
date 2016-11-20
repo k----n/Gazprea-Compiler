@@ -18,7 +18,7 @@ void rightArrowOperator() {
 		case RealType:
 		case CharacterType:
 //		case IntervalType:
-//		case VectorType:
+		case VectorType:
 			stack->push(lhs);
 			printValue();
 			break;
@@ -84,6 +84,7 @@ void leftArrowOperator() {
 		case StandardIn:	printf("Cannot input StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot input Lvalue\n");		exit(1);
 		case IntervalType:  printf("Cannot input IntervalType\n");  exit(1);
+		case VectorType:    printf("Cannot input VectorType\n");    exit(1);
 		case StartVector:	printf("Cannot input StartVector\n");	exit(1);
 	}
 	lvalue->release();
