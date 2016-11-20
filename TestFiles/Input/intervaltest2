@@ -1,0 +1,36 @@
+function intie(integer interval one, integer interval two) returns integer interval {
+    if (one == two) {
+       return one;
+    }
+
+    integer interval x = (1+1)..(2+1);
+
+    return x;
+}
+
+procedure main() returns integer {
+    integer interval soln = 2..3;
+
+    integer interval lob1 = 1..10;
+    integer interval lob2 = -(lob1);
+    integer interval lob3 = lob1;
+    integer interval lob4 = 1..10;
+
+    if (intie(lob1, lob2) == lob1) {
+       'g' -> std_output();
+       if (intie(lob1, lob3) == soln) {
+       	  'g' -> std_output();
+	  if (intie(lob1, lob4) == 2..3) {
+	     'g' -> std_output();
+	  } else {
+	    'b' -> std_output();
+	  }
+       } else {
+       	 'b' -> std_output();
+       }
+    } else {
+      'b' -> std_output();
+    }
+
+    return 0;
+}

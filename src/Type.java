@@ -27,7 +27,7 @@ public class Type {
     /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void",  "void"    },
     /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
     /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple", "void"    },
-    /*INTERVAL*/{"void",    "void",     "void",     "void",         "void",     "void",     "void",  "interval"},
+    /*INTERVAL*/{"void",    "void",     "void",     "void",         "void",     "void",     "void",  "lv"},
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
@@ -144,24 +144,53 @@ public class Type {
             return false;
         }
 
-        Type type = (Type) obj;
+        Type otherType = (Type) obj;
 
-        if (this.type == null && type.getType() == null) {
+        if (this.type != null && this.type.equals(otherType.getType())) {
             // continue
-        } else if (this.type == null || type.getType() == null) {
-            return false;
-        } else if (this.type.equals(type.getType())) {
+        } else if (this.type == otherType.getType()) {
             // continue
         } else {
             return false;
         }
 
 
-        if (this.collection_type == null && type.getCollection_type() == null) {
+        if (this.collection_type != null && this.collection_type.equals(otherType.getCollection_type())) {
             // continue
-        } else if (this.collection_type == null || type.getCollection_type() == null) {
+        } else if (this.collection_type == otherType.getCollection_type()) {
+            // continue
+        } else {
             return false;
-        } else if (this.collection_type.equals(type.getCollection_type())) {
+        }
+
+        return true;
+    }
+
+    // returns true if [this] Type can be implicitly promoted to Type obj
+    public boolean looseEquals(Object obj) {
+        if (! (obj instanceof Type)) {
+            return false;
+        }
+
+        Type otherType = (Type) obj;
+
+        if (this.type != null
+            && (    this.type.equals(otherType.getType())
+                || (   this.type.equals(TYPES.INTEGER)
+                    && otherType.getType() != null
+                    && otherType.getType().equals(TYPES.REAL))
+                )
+            ) {
+            // continue
+        } else if (this.getType() == otherType.getType()) {
+            // continue
+        } else {
+            return false;
+        }
+
+        if (this.collection_type != null && this.collection_type.equals(otherType.getCollection_type())) {
+            // continue
+        } else if (this.collection_type == otherType.getCollection_type()) {
             // continue
         } else {
             return false;

@@ -13,7 +13,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private final String BUILT_INS[] = {"std_output", "std_input", "stream_state"};
 
-    private Map<String, Function> functions = new HashMap<>();
+    private Map<String, List<Function>> functions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
 
     private List<String> topLevelCode = new ArrayList<>();
@@ -61,6 +61,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 })
                 .collect(Collectors.toList());
 
+        List<String> functionIR = new ArrayList<String>();
+        for (Map.Entry<String, List<Function>> entry : functions.entrySet()) {
+            List<Function> funcs = entry.getValue();
+            for (int f = 0; f < funcs.size(); ++f) {
+                ST functionLines = this.llvmGroup.getInstanceOf("function");
+                functionLines.add("name", this.getFunctionLLVMName(funcs.get(f)));
+                functionLines.add("code", funcs.get(f).render());
+                functionIR.add(functionLines.render());
+            }
+        }
+
+        /*
         List<String> functionIR = this.functions
                 .entrySet()
                 .stream()
@@ -71,6 +83,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     return functionLines.render();
                 })
                 .collect(Collectors.toList());
+        */
 
         ST program = this.runtimeGroup.getInstanceOf("runtime");
         program.add("variables", globalVariables);
@@ -113,18 +126,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     private void createFunctionOrProcedure(String name, boolean isProcedure, GazpreaParser.ArgumentListContext argumentListContext, GazpreaParser.ReturnTypeContext returnTypeContext, GazpreaParser.FunctionBlockContext functionBlockContext) {
-        if (this.functions.get(name) != null) {
-            if (this.functions.get(name).isDefined() || functionBlockContext == null) {
-                System.err.println("Illegal duplicate definition of function " + name);
-                System.exit(1);
-            }
-        }
 
         this.scope.pushScope();
 
         List<Argument> argumentList = this.visitArgumentList(argumentListContext);
         Type returnType = this.visitReturnType(returnTypeContext);
 
+        // argument list of current function is set a little ways down
         this.currentFunction = new Function(name, null, returnType);
         if (isProcedure) { this.currentFunction.setProcedure(); }
 
@@ -139,7 +147,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             varLine.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.addCode(varLine.render());
 
-            if (argument.getType().getType() != Type.TYPES.TUPLE) {
+            if (argument.getType().getType() != Type.TYPES.TUPLE &&
+                    argument.getType().getType() != Type.TYPES.INTERVAL) {
                 ST initLine = this.llvmGroup.getInstanceOf("varInit_" + argument.getType().getTypeLLVMString());
                 this.addCode(initLine.render());
             }
@@ -152,18 +161,94 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             varAssign.add("name", this.scope.getVariable(argument.getName()).getMangledName());
             this.addCode(varAssign.render());
         }
-
         this.currentFunction.setArguments(argumentList);
+
 
         if (functionBlockContext != null) {
             this.visitFunctionBlock(functionBlockContext);
         }
 
         this.scope.popScope();
-
-        this.functions.put(name, this.currentFunction);
+        this.addRedefineFunction(this.currentFunction);
         this.currentFunction = null;
-        this.functionNameMappings.put(name, "GazFunc_" + name);
+    }
+
+    // gets the obfuscated name of the function
+    private String getFunctionLLVMName(Function function) {
+        // special case is main with no arguments
+        if (function.getName().equals("main") && function.getArguments().size() == 0) {
+            return "GazFunc_main";
+        }
+
+        List<Function> nameSakes = this.functions.get(function.getName());
+
+        for (int f = 0; f < nameSakes.size(); ++f) {
+            if (Function.strictEquals(nameSakes.get(f), function)) {
+                return "GazFunc_" + function.getName() + "." + Integer.toString(f);
+            }
+        }
+
+        throw new RuntimeException("getFunctionLLVMName: Function not defined");
+    }
+
+    // gets the function already declared if it exists
+    // otherwise returns null
+    private Function getReferringFunction(Function function) {
+        List<Function> nameSakes = this.functions.get(function.getName());
+
+
+
+        for (Function sake : nameSakes) {
+            if (Function.strictEquals(sake, function)) {
+                return sake;
+            }
+        }
+
+        throw new RuntimeException("getReferringFunction: Function not defined");
+    }
+
+    // gets the function related to the function call if it exists
+    // otherwise throws error
+    private Function getReferringFunction(String name, List<Argument> arguments) {
+        List<Function> possibilities = this.functions.get(name);
+
+        for (Function poss : possibilities) {
+            if (Function.looseEquals(arguments, poss)) {
+                return poss;
+            }
+        }
+
+        throw new RuntimeException("getReferringFunction: Function not defined");
+    }
+
+    // this for redefining prototypes with their function definition or
+    //    adding it to the functions mapping if it isn't already there
+    private Void addRedefineFunction(Function function) {
+        List<Function> nameSakes = this.functions.get(function.getName());
+
+        if (nameSakes == null) {
+            List<Function> newFunctions = new ArrayList<>();
+            newFunctions.add(function);
+            this.functions.put(function.getName(), newFunctions);
+            return null;
+        }
+
+        boolean repeat = false;
+        for (int f = 0; f < nameSakes.size(); ++f) {
+            if (Function.strictEquals(nameSakes.get(f), function)) {
+                nameSakes.set(f, this.currentFunction);
+                repeat = true;
+                break;
+            }
+        }
+
+        if (!repeat) {
+            nameSakes.add(function);
+        }
+
+        this.functions.put(function.getName(), nameSakes);
+
+        return null;
     }
 
     @Override
@@ -823,7 +908,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Object visitAssignment(GazpreaParser.AssignmentContext ctx) {
-        // tuple asssignment vs. regular assignment
+        // tuple assignment vs. regular assignment
         if (ctx.RealLiteral() != null || ctx.Dot() != null) {
             String varName = ctx.Identifier(0).getText();
             String field;
@@ -894,25 +979,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitFunctionCall(GazpreaParser.FunctionCallContext ctx) {
-        List<GazpreaParser.ExpressionContext> arguments = ctx.expression();
-        Collections.reverse(arguments);
-        arguments.forEach(this::visitExpression);
-
         String functionName = this.visitFunctionName(ctx.functionName());
 
-        ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
+        if (Arrays.asList(BUILT_INS).contains(functionName)) {
+            // Special case for built in functions
+            ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
 
-        String mangledFunctionName = this.functionNameMappings.get(functionName);
-        functionCall.add("name", mangledFunctionName);
-        this.addCode(functionCall.render());
+            functionCall.add("name", this.functionNameMappings.get(functionName));
+            this.addCode(functionCall.render());
 
-        if (!Arrays.asList(BUILT_INS).contains(functionName)) {
-            // For non built in functions
-            Function function = this.functions.get(functionName);
-            return function.getReturnType();
-        } else {
-            // For built in functions
             switch(functionName) {
+                case "length":
+                    // TODO: IMPLEMENT length()
+                    break;
                 case "std_output":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.OUTPUT_STREAM);
                 case "std_input":
@@ -923,25 +1002,36 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.VOID);
             }
         }
-    }
 
-    @Override
-    public Object visitProcedureCall(GazpreaParser.ProcedureCallContext ctx) {
-        this.visitFunctionCall(ctx.functionCall());
+        List<GazpreaParser.ExpressionContext> arguments = ctx.expression();
+        Collections.reverse(arguments);
+        List<Argument> callArgumentValues = new ArrayList<>();
 
-        String functionName = this.visitFunctionName(ctx.functionCall().functionName());
-        Function function = this.functions.get(functionName);
-        List<Argument> arguments = function.getArguments();
+        for (GazpreaParser.ExpressionContext argValue : arguments) {
+            Type argType = this.visitExpression(argValue);
+            Argument arg = new Argument(argType, null);
+            callArgumentValues.add(arg);
+        }
+
+        ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
+
+        Function refFunction = getReferringFunction(functionName, callArgumentValues);
+        List<Argument> refFunctionArgs = refFunction.getArguments();
+
+        String mangledFunctionName = this.getFunctionLLVMName(refFunction);
+        functionCall.add("name", mangledFunctionName);
+        this.addCode(functionCall.render());
+
         List<String> varNames = ctx
-                .functionCall()
                 .expression()
                 .stream()
                 .map(this::getVariableFromExpression)
                 .collect(Collectors.toList());
+
         Collections.reverse(arguments);
         Collections.reverse(varNames);
 
-        zip.zip(arguments, varNames, null, null).forEach(pair -> {
+        zip.zip(refFunctionArgs, varNames, null, null).forEach(pair -> {
             if (pair.left().getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
                 ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
                 postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
@@ -949,7 +1039,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         });
 
-        return null;
+
+        return refFunction.getReturnType();
+
+    }
+
+    @Override
+    public Type visitProcedureCall(GazpreaParser.ProcedureCallContext ctx) {
+        return this.visitFunctionCall(ctx.functionCall());
     }
 
     @Override
@@ -1374,12 +1471,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;
                 default:
-                    if (typedefs.containsKey(typeNameString)){
-                        typeName = typedefs.get(typeNameString).getType();
-                    }
+                if (typedefs.containsKey(typeNameString)){
+                    typeName = typedefs.get(typeNameString).getType();
+                }
                     else {
-                        throw (new RuntimeException("Type name does not exist" + typeNameString));
-                    }
+                    throw (new RuntimeException("Type name does not exist" + typeNameString));
+                }
             }
         }
 
@@ -1387,19 +1484,25 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.TypeSpecifier() != null) {
             switch (ctx.TypeSpecifier().getText()) {
                 case Type.strVAR:
-                    specifier = Type.SPECIFIERS.VAR;
-                    break;
+                specifier = Type.SPECIFIERS.VAR;
+                break;
                 case Type.strCONST:
-                    specifier= Type.SPECIFIERS.CONST;
-                    break;
+                specifier= Type.SPECIFIERS.CONST;
+                break;
                 default:
-                    throw(new RuntimeException("Specifier does not exist"));
+                throw(new RuntimeException("Specifier does not exist"));
             }
         }
 
         Type.COLLECTION_TYPES typeType = null;
         if (ctx.TypeType() != null) {
             switch(ctx.TypeType().getText()){
+                case Type.strVECTOR:
+                typeType = Type.COLLECTION_TYPES.VECTOR;
+                break;
+                case Type.strMATRIX:
+                typeType = Type.COLLECTION_TYPES.MATRIX;
+                break;
                 case Type.strINTERVAL:
                     // create empty vector type
                     ST startVector = this.llvmGroup.getInstanceOf("startVector");
@@ -1410,12 +1513,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
                     this.addCode(endInterval.render());
                     typeName = Type.TYPES.INTERVAL;
-                    break;
-                case Type.strVECTOR:
-                    typeType = Type.COLLECTION_TYPES.VECTOR;
-                    break;
-                case Type.strMATRIX:
-                    typeType = Type.COLLECTION_TYPES.MATRIX;
                     break;
                 default:
                     throw(new RuntimeException("Type type does not exist"));

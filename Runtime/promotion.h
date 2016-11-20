@@ -193,6 +193,30 @@ void promoteTo_c() {
 	value->release();
 }
 
+// promotion of interval
+void promoteTo_l() {
+    Value* value = stack->pop();
+    ValueType* type = value->getType();
+
+    switch (type->getType()) {
+	    case IntervalType:
+	        stack->push(value);
+	        break;
+        case NullType: printf("Cannot promote NullType\n"); exit(1);
+		case IdentityType: printf("Cannot promote IdentityType\n"); exit(1);
+		case BooleanType: printf("Cannot promote BooleanType\n"); exit(1);
+		case IntegerType: printf("Cannot promote IntegerType\n"); exit(1);
+		case RealType: printf("Cannot promote real\n"); exit(1);
+		case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
+		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+	    case VectorType: printf("Cannot promote Vector\n"); exit(1);
+		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
+		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
+		case Lvalue: printf("Cannot promote Lvalue\n"); exit(1);
+		case StartVector: printf("Cannot promote StartVector\n"); exit(1);
+    }
+}
+
 void promoteTo_vector() {
 	Value* value = stack->pop();
 	Value* newValue = nullptr;

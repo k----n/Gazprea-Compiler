@@ -98,10 +98,10 @@ iteratorLoopVariable: Identifier In expression;
 
 // Expressions
 expression
- : expression Dot RealLiteral // interval
+ : expression Dot Dot expression // interval
+ | expression Dot RealLiteral // interval
  | RealLiteral RealLiteral // interval
  | RealLiteral Dot expression // interval
- | expression Dot Dot expression // interval
  | expression RealLiteral // tuple access
  | expression Dot Identifier // tuple access
  | literal

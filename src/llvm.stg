@@ -6,7 +6,7 @@ store i8* null, i8** <name>, align 8
 
 functionCall(name) ::= "call void @<name>()"
 function(name, code) ::= <<
-define void @GazFunc_<name>() #3 {
+define void @<name>() #3 {
   <code :{ line | <line><\n>}>
 }
 

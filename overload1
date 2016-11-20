@@ -1,0 +1,19 @@
+procedure f1(integer x, integer y) {
+    x -> std_output();
+    y -> std_output();
+}
+
+procedure f1(integer x) {
+    x -> std_output();
+}
+
+function f1() returns character = 'c';
+
+procedure main() returns integer{
+    integer x;    
+    call f1(3, 3);
+    call f1(2);
+    x = f1();
+    x -> std_output();
+    return 0;
+}

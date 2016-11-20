@@ -1,0 +1,23 @@
+function x() returns integer {
+    return 3;
+}
+
+function x(character a) returns character {
+     return 'a';
+}
+
+function x(real a) returns character {
+     return 'r';
+}
+
+procedure main() returns integer{
+    character s;
+    s = x(3.3);
+    s->std_output();
+    s = x(3);
+    s->std_output();
+    s = x('a');   
+    s->std_output();
+
+    return 0;
+}
