@@ -1,0 +1,11 @@
+procedure f() {
+    integer x;
+    5 -> std_output();
+    x <- std_input();
+    call f();
+}
+
+procedure main() returns integer {
+    call f();
+    return 0;
+}

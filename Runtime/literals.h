@@ -122,19 +122,23 @@ void endInterval() {
     type -> release();
 }
 
+
 void endVector() {
     Stack<Value>* elements = new Stack<Value>;
 
     _unwrap();
     Value* element = stack->pop();
+
+    int size = 0;
     while (!element->isStartVector()) {
         elements->push(element);
         element->release();
         element = stack->pop();
+        ++size;
     }
     element->release();
 
-    Vector<Value>* vectorValues = new Vector<Value>;
+    Vector<Value>* vectorValues = new Vector<Value>();
 
     Value* node = elements->pop();
     while (node != nullptr) {
@@ -144,6 +148,7 @@ void endVector() {
     }
 
     ValueType* type = new ValueType(VectorType);
+	type->setVectorSize(size);
     Value* vector = new Value(type, vectorValues);
     stack->push(vector);
     type->release();
@@ -151,11 +156,41 @@ void endVector() {
     elements->release();
 }
 
-void endTuple() {
-	Stack<Value>* elements = new Stack<Value>;
+void setVectorSize(int strict_size) {
+    Value *vector = stack->pop();
+    vector->getType()->setVectorSize(strict_size);
+    stack->push(vector);
+}
 
+void setVectorContainedType(char type) {
+    Value *vector = stack->pop();
+
+    switch (type) {
+        case 'r':
+            vector->getType()->setContainedType(RealType);
+            break;
+        case 'b':
+            vector->getType()->setContainedType(BooleanType);
+            break;
+        case 'i':
+            vector->getType()->setContainedType(IntegerType);
+            break;
+        case 'c':
+            vector->getType()->setContainedType(CharacterType);
+            break;
+        default:
+            throw "Vector cannot be of this char type";
+    }
+
+    stack->push(vector);
+}
+
+void endTuple() {
     _unwrap();
+
+	Stack<Value>* elements = new Stack<Value>;
 	Value* element = stack->pop();
+
 	while (!element->isStartVector()) {
         _unwrap();
 		elements->push(element);
@@ -165,7 +200,6 @@ void endTuple() {
 	element->release();
 	
 	Vector<Value>* tupleValues = new Vector<Value>;
-	
 	Value* node = elements->pop();
 	while (node != nullptr) {
 		tupleValues->append(node);

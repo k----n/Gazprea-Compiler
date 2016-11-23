@@ -13,7 +13,6 @@ public:
 		this->count = 0;
 		this->firstNode = nullptr;
 	}
-	
 	virtual Vector* copy() const {
 		Vector* copy = new Vector();
 		for (int i = 0; i < this->count; ++i) {
@@ -75,7 +74,6 @@ public:
 	Value* getLvalue(int index) const;
 	
 	int getCount() const { return this->count; }
-	
 	~Vector() {
 		VectorNode* node = this->firstNode;
 		while (node != nullptr) {

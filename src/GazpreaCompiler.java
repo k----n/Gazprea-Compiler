@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.System.exit;
+
 class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private STGroup runtimeGroup;
     private STGroup llvmGroup;
@@ -162,6 +164,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(varAssign.render());
         }
         this.currentFunction.setArguments(argumentList);
+        this.addRedefineFunction(this.currentFunction);
 
 
         if (functionBlockContext != null) {
@@ -169,7 +172,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
 
         this.scope.popScope();
-        this.addRedefineFunction(this.currentFunction);
         this.currentFunction = null;
     }
 
@@ -182,13 +184,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         List<Function> nameSakes = this.functions.get(function.getName());
 
+        if (nameSakes == null) {
+            throw new RuntimeException("getFunctionLLVMName: Function not defined");
+        }
+
         for (int f = 0; f < nameSakes.size(); ++f) {
             if (Function.strictEquals(nameSakes.get(f), function)) {
                 return "GazFunc_" + function.getName() + "." + Integer.toString(f);
             }
         }
 
-        throw new RuntimeException("getFunctionLLVMName: Function not defined");
+        return null;
     }
 
     // gets the function already declared if it exists
@@ -196,7 +202,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Function getReferringFunction(Function function) {
         List<Function> nameSakes = this.functions.get(function.getName());
 
-
+        if (nameSakes == null) {
+            throw new RuntimeException("getReferringFunction: Function not defined");
+        }
 
         for (Function sake : nameSakes) {
             if (Function.strictEquals(sake, function)) {
@@ -204,7 +212,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
 
-        throw new RuntimeException("getReferringFunction: Function not defined");
+        return null;
     }
 
     // gets the function related to the function call if it exists
@@ -212,13 +220,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Function getReferringFunction(String name, List<Argument> arguments) {
         List<Function> possibilities = this.functions.get(name);
 
+        if (possibilities == null) {
+            throw new RuntimeException("getReferringFunction: Function not defined: " + name);
+        }
+
         for (Function poss : possibilities) {
             if (Function.looseEquals(arguments, poss)) {
                 return poss;
             }
         }
 
-        throw new RuntimeException("getReferringFunction: Function not defined");
+        return null;
     }
 
     // this for redefining prototypes with their function definition or
