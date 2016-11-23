@@ -497,7 +497,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
                     return newType;
                 }
-                // TODO tuple case
+                // TODO tuple case, NEED TO POP PREVIOUS EXPRESSION OFF STACK
                 Tuple tupleType = new Tuple();
 
                 ST startVector = this.llvmGroup.getInstanceOf("startVector");
@@ -838,7 +838,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
-        Type.TYPES type = Type.TYPES.NULL;
         Integer size = ctx.expression().size();
 
         ST startVector = this.llvmGroup.getInstanceOf("startVector");
@@ -849,34 +848,40 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         HashMap<Type.TYPES, Integer> elementTypeCounts = new HashMap<>();
         elementTypeCounts.put(Type.TYPES.REAL, 0);
         elementTypeCounts.put(Type.TYPES.INTEGER, 0);
+        elementTypeCounts.put(Type.TYPES.BOOLEAN, 0);
+        elementTypeCounts.put(Type.TYPES.CHARACTER, 0);
+        elementTypeCounts.put(Type.TYPES.NULL, 0);
 
-        ArrayList<Type> typesOfElements = new ArrayList<>();
-
-        for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+        for (int expr = 0; expr < size; ++expr) {
             Type exprType = this.visitExpression(ctx.expression(expr));
-            if (exprType.getType() != Type.TYPES.REAL
-                    && exprType.getType() != Type.TYPES.INTEGER
-                    && exprType.getType() != Type.TYPES.IDENTITY
-                    && exprType.getType() != Type.TYPES.NULL) {
-                type = exprType.getType();
-            } else if (exprType.getType() == Type.TYPES.INTEGER) {
-                elementTypeCounts.put(Type.TYPES.INTEGER, elementTypeCounts.get(Type.TYPES.INTEGER) + 1);
-            } else if (exprType.getType() == Type.TYPES.REAL) {
-                elementTypeCounts.put(Type.TYPES.REAL, elementTypeCounts.get(Type.TYPES.INTEGER) + 1);
+            if (elementTypeCounts.get(exprType.getType())!= null) {
+                elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
+            }
+            else {
+                elementTypeCounts.put(Type.TYPES.NULL, elementTypeCounts.get(Type.TYPES.NULL) + 1);
             }
         }
         ST endVector = this.llvmGroup.getInstanceOf("endVector");
         this.addCode(endVector.render());
 
-        // process the implicit promotion possibilities
-        if (elementTypeCounts.get(Type.TYPES.INTEGER) > 0 && elementTypeCounts.get(Type.TYPES.REAL) > 0) {
-            type = Type.TYPES.REAL;
-        }
+        Type type = new Type(Type.SPECIFIERS.VAR, Collections.max(elementTypeCounts.keySet()));
 
         // now we cast the vector!
-        // TODO: CAST THE VECTOR
+        // TODO: POP VECTOR WE JUST CREATED OFF STACK SOMEHOW (OR NOT)
 
-        return new Type(Type.SPECIFIERS.VAR, type, Type.COLLECTION_TYPES.VECTOR, size);
+        this.addCode(startVector.render());
+
+        for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+            Type exprType = this.visitExpression(ctx.expression(expr));
+            String typeLetter = Type.getCastingFunction(exprType, type);
+            ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+            promoteCall.add("typeLetter", typeLetter);
+            this.addCode(promoteCall.render());
+        }
+
+        this.addCode(endVector.render());
+
+        return new Type(Type.SPECIFIERS.VAR, type.getType(), Type.COLLECTION_TYPES.VECTOR, size);
     }
 
     @Override
@@ -1335,7 +1340,29 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             throw new Error("Cannot use type names");
         }
 
-//        String sizeData = this.visitSizeData(ctx.sizeData());
+        if (ctx.sizeData() != null) {
+            // must be vector
+            declaredType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
+            String sizeData = this.visitSizeData(ctx.sizeData());
+
+            // create empty vector type
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            ST st = this.llvmGroup.getInstanceOf("varInit_" + declaredType.getTypeLLVMString());
+            if (!(sizeData.equals("*"))){
+                Integer size = Integer.valueOf(sizeData);
+                for (int i = 0; i < size; i++) {
+                    this.addCode(st.render());
+                }
+            }
+            else {
+                this.addCode(st.render());
+            }
+
+            ST endVector = this.llvmGroup.getInstanceOf("endVector");
+            this.addCode(endVector.render());
+        }
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
 
@@ -1349,7 +1376,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         if (variable.getType().getType() != Type.TYPES.NULL
                 && variable.getType().getType() != Type.TYPES.TUPLE
-                && variable.getType().getType() != Type.TYPES.INTERVAL ) {
+                && variable.getType().getType() != Type.TYPES.INTERVAL
+                && variable.getType().getCollection_type() != Type.COLLECTION_TYPES.VECTOR) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
 
@@ -1357,7 +1385,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());
         } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
-                || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null) {
+                || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null
+                || variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR && ctx.expression() != null) {
             ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
             initAssign.add("name", variable.getMangledName());
             this.addCode(initAssign.render());

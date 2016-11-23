@@ -137,6 +137,8 @@ call void @_Z8endTuplev()
 ; ending of a vector
 >>
 endInterval() ::= "call void @_Z11endIntervalv()"
+endVector() ::= "call void @_Z9endVectorv()"
+
 
 getAt(index) ::= "call void @_Z5getAti(i32 <index>)"
 getAt2() ::= "call void @_Z6getAt2v()"
