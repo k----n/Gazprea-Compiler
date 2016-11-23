@@ -137,6 +137,8 @@ call void @_Z8endTuplev()
 ; ending of a vector
 >>
 endInterval() ::= "call void @_Z11endIntervalv()"
+endVector() ::= "call void @_Z9endVectorv()"
+
 
 endVector() ::= "call void @_Z9endVectorv()"
 setVectorSize(value) ::= "call void @_Z13setVectorSizei(i32 <value>)"
