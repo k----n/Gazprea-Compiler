@@ -850,15 +850,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         elementTypeCounts.put(Type.TYPES.INTEGER, 0);
         elementTypeCounts.put(Type.TYPES.BOOLEAN, 0);
         elementTypeCounts.put(Type.TYPES.CHARACTER, 0);
-        elementTypeCounts.put(Type.TYPES.NULL, 0);
 
         for (int expr = 0; expr < size; ++expr) {
             Type exprType = this.visitExpression(ctx.expression(expr));
             if (elementTypeCounts.get(exprType.getType())!= null) {
                 elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
-            }
-            else {
-                elementTypeCounts.put(Type.TYPES.NULL, elementTypeCounts.get(Type.TYPES.NULL) + 1);
             }
         }
         ST endVector = this.llvmGroup.getInstanceOf("endVector");
