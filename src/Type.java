@@ -31,11 +31,12 @@ public class Type {
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
-            {/*  bool           int             char                 real */
-    /*bool*/    {"bv",          "iv",           "cv",                "rv"  },
-    /*int*/     {"bv",          "iv",           "cv",                "rv"  },
-    /*char*/    {"bv",          "iv",           "cv",                "rv"  },
-    /*real*/    {"void",        "iv",           "void",              "rv"  },
+            {/*  bool           int             char                 real      null*/
+    /*bool*/    {"bv",          "iv",           "cv",                "rv",   "void"},
+    /*int*/     {"bv",          "iv",           "cv",                "rv",   "void"},
+    /*char*/    {"bv",          "iv",           "cv",                "rv",   "void"},
+    /*real*/    {"void",        "iv",           "void",              "rv",   "void"},
+    /*null*/    {"bv",          "iv",           "cv",                "rv",   "void"},
             };
 
 
