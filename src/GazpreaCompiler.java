@@ -7,8 +7,6 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.System.exit;
-
 class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private STGroup runtimeGroup;
     private STGroup llvmGroup;
@@ -28,7 +26,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private int loopIndex;
 
     private ArrayList<Type> promoteType = new ArrayList<>();
-
 
     private Deque<Integer> currentLoop = new ArrayDeque<>();
 
@@ -1566,7 +1563,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public String visitSizeData(GazpreaParser.SizeDataContext ctx) {
-        return ctx.getText(); // for now, just return this text
+        // Matrix size data
+        if (ctx.expression().size() + ctx.Asteriks().size() > 0) {
+
+        } else {
+            if (ctx.expression().size() > 0) {
+                this.visitExpression(ctx.expression(0));
+            } else {
+                // it is an asteriks and therefore we must push a
+                //   -1 for size vector size
+            }
+        }
+
+        return null;
     }
 
     private String mangleVariableName(String name) {

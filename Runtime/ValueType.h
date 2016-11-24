@@ -7,12 +7,25 @@ class ValueType : public Object {
 public:
 	ValueType(BuiltinType type) : super(TypeValueType) {
 		this->builtinType = type;
-		has_vector_size = false;
-		has_matrix_size = false;
+		this->has_vector_size = false;
+		this->has_matrix_size = false;
+		this->has_contained_type = false;
 	}
-		
+
+	ValueType(BuiltinType thisType, BuiltinType containedType, bool has_vector_size,
+	    bool has_matrix_size, bool has_contained_type, int vector_size, int matrix_size) : super(TypeValueType) {
+	    this->builtinType = thisType;
+	    this->containedType = containedType;
+	    this->has_vector_size = has_vector_size;
+	    this->has_matrix_size = has_matrix_size;
+	    this->has_contained_type = containedType;
+	    this->vector_size = vector_size;
+	    this->matrix_size = matrix_size;
+	}
+
 	virtual ValueType* copy() const {
-		return new ValueType(this->builtinType);
+		return new ValueType(this->builtinType, this->containedType, this->has_vector_size,
+		    this->has_matrix_size, this->has_contained_type, this->vector_size, this->matrix_size);
 	}
 	
 	BuiltinType getType() { return this->builtinType; }
@@ -37,6 +50,20 @@ public:
 
 	void setContainedType(BuiltinType type) {
 	    this->containedType = type;
+	    this->has_contained_type = true;
+	}
+
+	BuiltinType getContainedType(BuiltinType type) {
+	// todo: judge if matrices are vector types
+	    if (this->builtinType != VectorType) {
+            throw "not a vector type";
+        }
+
+	    if (this->has_contained_type) {
+	        return this->containedType;
+	    } else {
+	        return NullType;
+	    }
 	}
 
 	int getVectorSize(int size) {
@@ -52,6 +79,7 @@ public:
 	}
 
 	int getMatrixSize(int size) {
+	// TODO: Judge if matrices are vectors
 	    if (this->builtinType != VectorType) {
             throw "not a vector type";
         }
@@ -68,6 +96,7 @@ private:
 	BuiltinType builtinType;
 
 	// for container objects: matrix and vector
+	bool has_contained_type;
 	BuiltinType containedType;
 	int vector_size;
 	bool has_vector_size;

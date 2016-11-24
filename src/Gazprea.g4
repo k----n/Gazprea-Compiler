@@ -115,7 +115,7 @@ expression
  | <assoc=right> op=(Sign|Not) expression
  | <assoc=right> expression op=Exponentiation expression
  | expression op=DotProduct expression // TODO: NOT SURE ABOUT THIS PRECEDENCE
- | expression op=(Multiplication|Division|Modulus) expression
+ | expression op=(Asteriks|Division|Modulus) expression
  | expression op=Sign expression
  | expression op=By expression
  | expression op=(LessThan|LessThanOrEqual|GreaterThan|GreaterThanOrEqual) expression
@@ -184,9 +184,9 @@ functionCall: functionName '(' (expression (',' expression)*)? ')';
 // ;
 //typeData: '(' (type sizeData? Identifier? (',' type sizeData? Identifier?)*)? ')';
 
-sizeData: '[' IntegerLiteral (',' IntegerLiteral)* ']'
-        | '[' expression ']'
-        | '[' '*' ']';
+sizeData: '[' (expression | Asteriks) ']'
+        | '[' (Asteriks | expression) ',' (Asteriks | expression) ']' // matrix size data
+        ;
 
 functionName
  : Identifier
@@ -204,7 +204,7 @@ LessThan: '<';
 GreaterThan: '>';
 LessThanOrEqual: '<=';
 GreaterThanOrEqual: '>=';
-Multiplication: '*';
+Asteriks: '*';
 Division: '/';
 Modulus: '%';
 Exponentiation: '^';

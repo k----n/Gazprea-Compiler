@@ -217,6 +217,33 @@ void promoteTo_l() {
     }
 }
 
+// use this for vector promotion and declaration
+void pushVectorValueType(int size, char charType) {
+    ValueType *type = new ValueType(VectorType);
+    type->setVectorSize(size);
+    switch(charType) {
+        case 'r':
+            type->setContainedType(RealType);
+            break;
+        case 'i':
+            type->setContainedType(IntegerType);
+            break;
+        case 'c':
+            type->setContainedType(CharacterType);
+            break;
+        case 'b':
+            type->setContainedType(BooleanType);
+            break;
+        default:
+            throw "cannot make vector with containing type specified";
+    }
+
+  	Value* value = new Value(type, nullptr);
+    stack->push(value);
+}
+
+// requires a reference Vector (e.g. pushVectorValueType) on stack to compare
+// the dimensions and type to
 void promoteTo_vector() {
 	Value* value = stack->pop();
 	Value* newValue = nullptr;
