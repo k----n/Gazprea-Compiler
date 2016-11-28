@@ -140,7 +140,7 @@ void endVector() {
 
     Vector<Value>* vectorValues = new Vector<Value>();
 
-    Value* node = elements->pop();
+    Value* node = elements->popOrNull();
     while (node != nullptr) {
         vectorValues->append(node);
         node->release();
@@ -156,10 +156,67 @@ void endVector() {
     elements->release();
 }
 
-void setVectorSize(int strict_size) {
+void setVectorSize() {
+    _unwrap();
+    Value *valSizeData = stack->pop();
+    int *size_data = valSizeData->integerValue();
     Value *vector = stack->pop();
-    vector->getType()->setVectorSize(strict_size);
+    vector->getType()->setVectorSize(*size_data);
     stack->push(vector);
+}
+
+void padVectorToStrictSize() {
+    _unwrap();
+    Value *vectorValue = stack->pop();
+    if (! vectorValue->isVector()) {
+        throw "we require a vector for padVectorToStrictSize";
+    }
+    Vector<Value> *vector = vectorValue->vectorValue();
+    ValueType *valueType = vectorValue->getType();
+
+    int current_size = vector->getCount();
+
+    int goal_size;
+    if (valueType->hasVectorSize()) {
+        goal_size = valueType->getVectorSize();
+    } else {
+        /* TODO: handle case where there is no goal size
+            perhaps return is sufficient*/
+        stack->push(vectorValue);
+        return;
+    }
+
+    BuiltinType containedType;
+    if (valueType->hasContainedType()) {
+        containedType = valueType->getContainedType();
+    } else {
+        containedType = NullType;
+    }
+
+    for (int s = current_size; s < goal_size; ++s) {
+        Value *toPush;
+
+        switch (containedType) {
+            case BooleanType:
+                toPush = new Value((bool)0);
+            case CharacterType:
+                toPush = new Value((char)0);
+            case IntegerType:
+                toPush = new Value((int)0);
+            case RealType:
+                toPush = new Value((float)0.0);
+            case IdentityType:
+                toPush = new Value(new ValueType(IdentityType), nullptr);
+            case NullType:
+            	toPush = new Value(new ValueType(NullType), nullptr);
+            default:
+                throw "contained type invalid";
+        }
+
+        vector->append(toPush);
+    }
+
+    stack->push(vectorValue);
 }
 
 void setVectorContainedType(char type) {
@@ -177,6 +234,12 @@ void setVectorContainedType(char type) {
             break;
         case 'c':
             vector->getType()->setContainedType(CharacterType);
+            break;
+        case 'n':
+            vector->getType()->setContainedType(NullType);
+            break;
+        case 'd':
+            vector->getType()->setContainedType(IdentityType);
             break;
         default:
             throw "Vector cannot be of this char type";

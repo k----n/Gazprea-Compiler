@@ -30,15 +30,22 @@ public:
 	
 	BuiltinType getType() { return this->builtinType; }
 
+    bool hasVectorSize() {
+        return has_vector_size;
+    }
 	void setVectorSize(int size) {
 	    if (this->builtinType != VectorType) {
             throw "not a vector type";
         }
 
 	    this->vector_size = size;
+
 	    this->has_vector_size = true;
 	}
 
+    bool hasMatrixSize() {
+        return has_matrix_size;
+    }
 	void setMatrixSize(int size) {
 	    if (this->builtinType != VectorType) {
             throw "not a vector type";
@@ -48,12 +55,15 @@ public:
 	    this->has_matrix_size = true;
 	}
 
+    bool hasContainedType() {
+        return has_contained_type;
+    }
 	void setContainedType(BuiltinType type) {
 	    this->containedType = type;
 	    this->has_contained_type = true;
 	}
 
-	BuiltinType getContainedType(BuiltinType type) {
+	BuiltinType getContainedType() {
 	// todo: judge if matrices are vector types
 	    if (this->builtinType != VectorType) {
             throw "not a vector type";
@@ -66,7 +76,7 @@ public:
 	    }
 	}
 
-	int getVectorSize(int size) {
+	int getVectorSize() {
 	    if (this->builtinType != VectorType) {
 	        throw "not a vector type";
 	    }
@@ -78,7 +88,7 @@ public:
 	    }
 	}
 
-	int getMatrixSize(int size) {
+	int getMatrixSize() {
 	// TODO: Judge if matrices are vectors
 	    if (this->builtinType != VectorType) {
             throw "not a vector type";

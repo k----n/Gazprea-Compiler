@@ -859,17 +859,28 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         elementTypeCounts.put(Type.TYPES.INTEGER, 0);
         elementTypeCounts.put(Type.TYPES.BOOLEAN, 0);
         elementTypeCounts.put(Type.TYPES.CHARACTER, 0);
+        elementTypeCounts.put(Type.TYPES.NULL, 0);
+        elementTypeCounts.put(Type.TYPES.IDENTITY, 0);
 
         for (int expr = 0; expr < size; ++expr) {
             Type exprType = this.visitExpression(ctx.expression(expr));
-            if (elementTypeCounts.get(exprType.getType())!= null) {
+            //if (elementTypeCounts.get(exprType.getType())!= null) {
                 elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
-            }
+            //}
         }
         ST endVector = this.llvmGroup.getInstanceOf("endVector");
         this.addCode(endVector.render());
 
-        Type type = new Type(Type.SPECIFIERS.VAR, Collections.max(elementTypeCounts.keySet()));
+        Type.TYPES highestRankType = Type.TYPES.NULL;
+        Type.TYPES ranking[] = {Type.TYPES.REAL, Type.TYPES.INTEGER, Type.TYPES.BOOLEAN, Type.TYPES.CHARACTER, Type.TYPES.NULL, Type.TYPES.IDENTITY};
+        for (int r = 0; r < ranking.length; ++r) {
+            if (elementTypeCounts.get(ranking[r]) > 0) {
+                highestRankType = ranking[r];
+                break;
+            }
+        }
+
+        Type type = new Type(Type.SPECIFIERS.VAR, highestRankType);
 
         // now we cast the vector!
         // TODO: POP VECTOR WE JUST CREATED OFF STACK SOMEHOW (OR NOT)
@@ -1348,25 +1359,45 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.sizeData() != null) {
             // must be vector
             declaredType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
-            String sizeData = this.visitSizeData(ctx.sizeData());
 
             // create empty vector type
             ST startVector = this.llvmGroup.getInstanceOf("startVector");
             this.addCode(startVector.render());
-
-            ST st = this.llvmGroup.getInstanceOf("varInit_" + declaredType.getTypeLLVMString());
-            if (!(sizeData.equals("*"))){
-                Integer size = Integer.valueOf(sizeData);
-                for (int i = 0; i < size; i++) {
-                    this.addCode(st.render());
-                }
-            }
-            else {
-                this.addCode(st.render());
-            }
-
             ST endVector = this.llvmGroup.getInstanceOf("endVector");
             this.addCode(endVector.render());
+
+            // get the size data on the stack
+            this.visitSizeData(ctx.sizeData());
+
+            // assign the size data to the vector
+            ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
+            this.addCode(setSizeData.render());
+
+            // assign the contained type to the vector
+            ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
+            int value = 'n';
+            if(declaredType.getType() != Type.TYPES.NULL) {
+                switch (declaredType.getType()) {
+                    case BOOLEAN:
+                        value = 'b';
+                        break;
+                    case CHARACTER:
+                        value = 'c';
+                        break;
+                    case INTEGER:
+                        value = 'i';
+                        break;
+                    case REAL:
+                        value = 'r';
+                        break;
+                    default:
+                        throw new RuntimeException("Vector does not support this type");
+                }
+            }
+            setVectorContainedType.add("value", value);
+            this.addCode(setVectorContainedType.render());
+
+
         }
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), declaredType);
@@ -1405,7 +1436,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 variable.setType(assignedType);
             }
         } else {
-            if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getType() != Type.TYPES.INTERVAL) {
+            if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getType() != Type.TYPES.INTERVAL
+                    && declaredType.getCollection_type() != Type.COLLECTION_TYPES.VECTOR) {
                 // expression portion is excluded
                 ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
                 this.addCode(nullLine.render());
@@ -1562,16 +1594,22 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     @Override
-    public String visitSizeData(GazpreaParser.SizeDataContext ctx) {
+    // This function pushes the size onto the stack and assigns to the vector on the stack
+    public Void visitSizeData(GazpreaParser.SizeDataContext ctx) {
         // Matrix size data
-        if (ctx.expression().size() + ctx.Asteriks().size() > 0) {
+        if (ctx.expression().size() + ctx.Asteriks().size() > 1) {
 
+
+
+
+        // Vector size data
         } else {
             if (ctx.expression().size() > 0) {
                 this.visitExpression(ctx.expression(0));
             } else {
-                // it is an asteriks and therefore we must push a
-                //   -1 for size vector size
+                ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
+                pushInt.add("value", -1);
+                this.addCode(pushInt.render());
             }
         }
 
