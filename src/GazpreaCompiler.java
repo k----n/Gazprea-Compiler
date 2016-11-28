@@ -28,6 +28,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private ArrayList<Type> promoteType = new ArrayList<>();
 
     private Deque<Integer> currentLoop = new ArrayDeque<>();
+    private Deque<Integer> currentIterator = new ArrayDeque<>();
+
+    private Tuple tupleDetails = new Tuple();
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -832,15 +835,30 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
         Tuple tupleType = new Tuple();
-
+        
         ST startVector = this.llvmGroup.getInstanceOf("startVector");
         this.addCode(startVector.render());
-        for (int e = 0; e < ctx.expression().size(); ++e) {
-            Type exprType = this.visitExpression(ctx.expression(e));
-            tupleType.addField("" + (e+1), exprType);
+        if (tupleDetails!= null) {
+            for (int e = 0; e < ctx.expression().size(); ++e) {
+                Type exprType = this.visitExpression(ctx.expression(e));
+
+                tupleType.addField("" + (e + 1), exprType);
+            }
+        }
+        else {
+            for (int e = 0; e < ctx.expression().size(); ++e) {
+                Type exprType = this.visitExpression(ctx.expression(e));
+                String typeLetter = Type.getCastingFunction(exprType, tupleDetails.getTypeOfField(e));
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
+                tupleType.addField("" + (e + 1), tupleDetails.getTypeOfField(e));
+            }
         }
         ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
         this.addCode(endTuple.render());
+
+        tupleDetails = null;
 
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
@@ -1145,7 +1163,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return null;
     }
 
-    private Deque<Integer> currentIterator = new ArrayDeque<>();
     @Override public Type visitIteratorLoop(GazpreaParser.IteratorLoopContext ctx) {
         Integer loopSize = ctx.iteratorLoopVariables().iteratorLoopVariable().size();
 
@@ -1507,6 +1524,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitType(GazpreaParser.TypeContext ctx) {
 
         Type.TYPES typeName = Type.TYPES.NULL;
+        tupleDetails = null;
         if (ctx.typeName() != null) {
             String typeNameString = this.visitTypeName(ctx.typeName());
             switch(typeNameString) {
@@ -1519,7 +1537,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case Type.strREAL:
                     typeName = Type.TYPES.REAL; break;
                 case Type.strTUPLE:
-                    return this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+                    Type type = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+                    tupleDetails = type.getTupleType();
+                    return type;
                 case Type.strSTRING:
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;
