@@ -562,7 +562,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             Type right = (Type)visit(ctx.expression(1));
             String typeLetter = Type.getResultFunction(left, right);
 
-            if (left.getCollection_type()== null && right.getCollection_type()==null) {
+            if (left.getCollection_type()== null && right.getCollection_type()==null && !(typeLetter.equals("skip"))) {
                 for (int i = 0; i < 2; i++) {
                     ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                     promoteCall.add("typeLetter", typeLetter);
@@ -665,15 +665,26 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
                 // CASE: by
                 case "by":
-                    // TODO
-                    String offset = ctx.expression(1).getText();
-                    if (Integer.getInteger(offset) <= 0){
-                        throw new Error("Offset is lower than 1");
+                    // TODO make sure proper type is returned
+                    if (left.getType().equals(Type.TYPES.INTERVAL)) {
+                        String offset = ctx.expression(1).getText();
+                        if (Integer.valueOf(offset) <= 0) {
+                            throw new Error("Offset is lower than 1");
+                        }
+                        operatorCall = this.llvmGroup.getInstanceOf("byInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.VECTOR);
                     }
-                    operatorCall = this.llvmGroup.getInstanceOf("byInterval");
-                    operatorCall.add("value", offset);
-                    this.addCode(operatorCall.render());
-                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.VECTOR);
+                    else {
+                        // vector case
+                        String offset = ctx.expression(1).getText();
+                        if (Integer.valueOf(offset) <= 0) {
+                            throw new Error("Offset is lower than 1");
+                        }
+                        operatorCall = this.llvmGroup.getInstanceOf("byVector");
+                        this.addCode(operatorCall.render());
+                    }
+                    return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
                 // CASE: +
                 case "+":
                     // Interval case
@@ -1440,9 +1451,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
                 || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null
                 || variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR && ctx.expression() != null) {
-            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
-            initAssign.add("name", variable.getMangledName());
-            this.addCode(initAssign.render());
+            // TODO look over this, currently causing pop empty stack PARASH?
+//            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
+//            initAssign.add("name", variable.getMangledName());
+//            this.addCode(initAssign.render());
         }
 
         // expression type

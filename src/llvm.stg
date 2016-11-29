@@ -170,7 +170,10 @@ divInterval() ::= "call void @_Z12div_Intervalv()"
 negInterval() ::= "call void @_Z12neg_Intervalv()"
 equalInterval() ::= "call void @_Z11eq_Intervalv()"
 notequalInterval() ::= "call void @_Z12neq_Intervalv()"
-byInterval(value) ::= "call void @_Z10byIntervali(i32 <value>)"
+byInterval() ::= "call void @_Z10byIntervalv()"
+
+byVector() ::= "call void @_Z8byVectorv()"
+
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
 

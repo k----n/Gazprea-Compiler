@@ -1,0 +1,26 @@
+procedure main() returns integer {
+     var vector x = 1..2 by 1;
+     x -> std_output();
+
+     (x by 2) -> std_output();
+
+
+     '\n' -> std_output();
+
+integer vector v = 1..5 by 1; /* [1, 2, 3, 4, 5] */ 
+integer vector u = v by 1; /* [1, 2, 3, 4, 5] */ 
+integer vector w = v by 2; /* [1, 3, 5] */ 
+integer vector l = v by 3; /* [1, 4] */
+
+	v -> std_output();
+     '\n' -> std_output();
+	u -> std_output();
+     '\n' -> std_output();
+	w -> std_output();
+     '\n' -> std_output();
+	l -> std_output();
+     '\n' -> std_output();
+
+    return 0;
+	
+}

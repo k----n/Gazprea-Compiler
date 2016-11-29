@@ -2,9 +2,11 @@
 
 #include "declarations.h"
 
-void byInterval(int index) {
+void byInterval() {
     // TODO LOOK OVER THIS
     // VALUE POPPED IS LVALUE so must unwrap
+    LOAD(int, index, integerValue)
+
     _unwrap();
     Value* interval1 = stack->pop();
 
@@ -37,6 +39,43 @@ void byInterval(int index) {
     stack -> push(vector);
 
     interval1 -> release();
+    vector -> release();
+    type -> release();
+}
+
+void byVector() {
+    // TODO LOOK OVER THIS
+    // VALUE POPPED IS LVALUE so must unwrap
+    LOAD(int, index, integerValue)
+
+    _unwrap();
+    Value* vector1 = stack->pop();
+
+    if (!(vector1)->isVector()) {
+        printf("NOT A VECTOR\n");
+        exit(1);
+    }
+
+    int i = index - 1;
+
+    int end = vector1->vectorValue()->getCount();
+
+    Vector<Value>* vectorValues = new Vector<Value>;
+
+    Value * node;
+    while (i < end){
+        node = vector1->vectorValue()->get(i);
+        vectorValues->append(node);
+        i+=index;
+    }
+
+    ValueType* type = new ValueType(VectorType);
+
+    Value* vector = new Value(type, vectorValues);
+
+    stack -> push(vector);
+
+    vector1 -> release();
     vector -> release();
     type -> release();
 }

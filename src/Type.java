@@ -27,7 +27,7 @@ public class Type {
     /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void",  "void"    },
     /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
     /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple", "void"    },
-    /*INTERVAL*/{"void",    "void",     "void",     "void",         "void",     "void",     "void",  "lv"},
+    /*INTERVAL*/{"void",    "skip",     "void",     "void",         "void",     "void",     "void",  "lv"      },
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
