@@ -18,14 +18,14 @@ void concat_vect(){
 
             int size = value1->vectorValue()->getCount();
 
+            // add scalar
+            vectorValues->append(value2);
+
 	        Value* node;
             for (int i = 0; i < size; i++){
                 node = value1->vectorValue()->get(i);
                 vectorValues->append(node);
             }
-
-            // add scalar
-            vectorValues->append(value2);
 
             ValueType* newType = new ValueType(VectorType);
             Value* newValue = new Value(newType, vectorValues);
@@ -41,8 +41,6 @@ void concat_vect(){
         // add vector to vector
         int size1 = value1->vectorValue()->getCount();
         int size2 = value2->vectorValue()->getCount();
-
-        printf("MADE IT HERE BITCHES");
 
         Value* node;
         for (int i = 0; i < size1; i++){
@@ -68,15 +66,15 @@ void concat_vect(){
             exit(1);
         }
 
-        // add scalar to vector
-        vectorValues->append(value1);
-
         int size2 = value2->vectorValue()->getCount();
         Value* node;
         for (int i = 0; i < size2; i++){
             node = value2->vectorValue()->get(i);
             vectorValues->append(node);
         }
+
+        // add scalar to vector
+        vectorValues->append(value1);
 
         ValueType* newType = new ValueType(VectorType);
         Value* newValue = new Value(newType, vectorValues);
