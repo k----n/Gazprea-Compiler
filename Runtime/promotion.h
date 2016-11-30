@@ -67,7 +67,6 @@ void promoteTo_b() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
-    newType -> release();
 }
 
 void promoteTo_i() {
@@ -132,7 +131,6 @@ void promoteTo_i() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
-	newType -> release();
 }
 
 void promoteTo_r() {
@@ -197,7 +195,6 @@ void promoteTo_r() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
-    newType -> release();
 }
 
 void promoteTo_c() {
@@ -258,7 +255,6 @@ void promoteTo_c() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
-    newType -> release();
 }
 
 // promotion of interval
@@ -377,7 +373,6 @@ void promoteTo_v() {
 	type->release();
 	stack->push(newValue);
 	newValue->release();
-	newType -> release();
 	value->release();
 }
 
