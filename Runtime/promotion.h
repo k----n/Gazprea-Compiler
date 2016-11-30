@@ -15,6 +15,10 @@ void promoteTo_b() {
 	int* intValue = nullptr;
 	char* charValue = nullptr;
 	ValueType* type = value->getType();
+    ValueType* newType = nullptr;
+    Value* node = nullptr;
+    int size = 0;
+    Vector<Value>* vectorValues = nullptr;
 	switch (type->getType()) {
 		case NullType:
 			newValue = new Value(false);
@@ -35,9 +39,21 @@ void promoteTo_b() {
 			charValue = value->characterValue();
 			newValue = new Value(*charValue != '\0');
 			break;
+        case VectorType:
+            size = value->vectorValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->vectorValue()->get(i);
+                stack->push(node);
+                promoteTo_b();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
 		case IntervalType: printf("Cannot promote Interval\n"); exit(1);
-		case VectorType: printf("Cannot promote Vector\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -51,6 +67,7 @@ void promoteTo_b() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
+    newType -> release();
 }
 
 void promoteTo_i() {
@@ -60,6 +77,10 @@ void promoteTo_i() {
 	float* realValue = nullptr;
 	char* charValue = nullptr;
 	ValueType* type = value->getType();
+    ValueType* newType = nullptr;
+    Value* node = nullptr;
+    int size = 0;
+    Vector<Value>* vectorValues = nullptr;
 	switch (type->getType()) {
 		case NullType:
 			newValue = new Value(0);
@@ -83,9 +104,21 @@ void promoteTo_i() {
 			charValue = value->characterValue();
 			newValue = new Value((int)*charValue);
 			break;
+        case VectorType:
+            size = value->vectorValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->vectorValue()->get(i);
+                stack->push(node);
+                promoteTo_i();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
 		case IntervalType: printf("Cannot promote Interval\n"); exit(1);
-		case VectorType: printf("Cannot promote Vector\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -99,6 +132,7 @@ void promoteTo_i() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
+	newType -> release();
 }
 
 void promoteTo_r() {
@@ -108,6 +142,10 @@ void promoteTo_r() {
 	int* intValue = nullptr;
 	char* charValue = nullptr;
 	ValueType* type = value->getType();
+	ValueType* newType = nullptr;
+	Value* node = nullptr;
+	int size = 0;
+	Vector<Value>* vectorValues = nullptr;
 	switch (type->getType()) {
 		case NullType:
 			newValue = new Value(0.0f);
@@ -131,9 +169,21 @@ void promoteTo_r() {
 			charValue = value->characterValue();
 			newValue = new Value((float)*charValue);
 			break;
+        case VectorType:
+            size = value->vectorValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->vectorValue()->get(i);
+                stack->push(node);
+                promoteTo_r();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
 		case IntervalType: printf("Cannot promote Interval\n"); exit(1);
-		case VectorType: printf("Cannot promote Vector\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -147,6 +197,7 @@ void promoteTo_r() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
+    newType -> release();
 }
 
 void promoteTo_c() {
@@ -155,6 +206,10 @@ void promoteTo_c() {
 	bool* boolValue = nullptr;
 	int* intValue = nullptr;
 	ValueType* type = value->getType();
+    ValueType* newType = nullptr;
+    Value* node = nullptr;
+    int size = 0;
+    Vector<Value>* vectorValues = nullptr;
 	switch (type->getType()) {
 		case NullType:
 			newValue = new Value('\0');
@@ -175,9 +230,21 @@ void promoteTo_c() {
 			newValue = value;
 			newValue->retain();
 			break;
+        case VectorType:
+            size = value->vectorValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->vectorValue()->get(i);
+                stack->push(node);
+                promoteTo_c();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
 	    case IntervalType: printf("Cannot promote Interval\n"); exit(1);
-	    case VectorType: printf("Cannot promote Vector\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -191,17 +258,19 @@ void promoteTo_c() {
 	stack->push(newValue);
 	newValue->release();
 	value->release();
+    newType -> release();
 }
 
 // promotion of interval
 void promoteTo_l() {
     Value* value = stack->pop();
     ValueType* type = value->getType();
-
+	Value* newValue = nullptr;
     switch (type->getType()) {
 	    case IntervalType:
-	        stack->push(value);
-	        break;
+			newValue = value;
+			newValue->retain();
+			break;
         case NullType: printf("Cannot promote NullType\n"); exit(1);
 		case IdentityType: printf("Cannot promote IdentityType\n"); exit(1);
 		case BooleanType: printf("Cannot promote BooleanType\n"); exit(1);
@@ -212,9 +281,17 @@ void promoteTo_l() {
 	    case VectorType: printf("Cannot promote Vector\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
-		case Lvalue: printf("Cannot promote Lvalue\n"); exit(1);
+		case Lvalue:
+            newValue = value->lvalue();
+            stack->push(newValue);
+            newValue->release();
+            return promoteTo_l();
 		case StartVector: printf("Cannot promote StartVector\n"); exit(1);
     }
+    type->release();
+    stack->push(newValue);
+    newValue->release();
+    value->release();
 }
 
 // use this for vector promotion and declaration
@@ -244,7 +321,7 @@ void pushVectorValueType(int size, char charType) {
 
 // requires a reference Vector (e.g. pushVectorValueType) on stack to compare
 // the dimensions and type to
-void promoteTo_vector() {
+void promoteTo_v() {
 	Value* value = stack->pop();
 	Value* newValue = nullptr;
 	bool* boolValue = nullptr;
@@ -281,12 +358,12 @@ void promoteTo_vector() {
 			newValue = value;
 			newValue->retain();
 			break;
-		case NullType:
-		case IdentityType:
-		case BooleanType:
-		case IntegerType:
+		case BooleanType: printf("Cannot promote BooleanType\n"); exit(1);
+		case IntegerType: printf("Cannot promote IntegerType\n"); exit(1);
 		case RealType: printf("Cannot promote real\n"); exit(1);
-		case CharacterType:
+		case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
+        case NullType: printf("Cannot promote NullType\n"); exit(1);
+		case IdentityType: printf("Cannot promote IdentityType\n"); exit(1);
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
@@ -294,12 +371,13 @@ void promoteTo_vector() {
 			newValue = value->lvalue();
 			stack->push(newValue);
 			newValue->release();
-			return promoteTo_c();
+			return promoteTo_v();
 		case StartVector: printf("Cannot promote StartVector\n"); exit(1);
 	}
 	type->release();
 	stack->push(newValue);
 	newValue->release();
+	newType -> release();
 	value->release();
 }
 

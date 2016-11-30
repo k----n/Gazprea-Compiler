@@ -131,6 +131,7 @@ void endVector() {
 
     int size = 0;
     while (!element->isStartVector()) {
+        _unwrap();
         elements->push(element);
         element->release();
         element = stack->pop();

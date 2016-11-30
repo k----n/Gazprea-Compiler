@@ -21,6 +21,8 @@
 #include "logicalxor.h"
 #include "logicaland.h"
 #include "by.h"
+#include "concat.h"
+#include "dotproduct.h"
 
 // Unwraps Lvalues to their raw value for operations
 void _unwrap() {
@@ -42,4 +44,8 @@ bool toBool() {
 	delete returnValuePtr;
 	value->release();
 	return returnValue;
+}
+
+void popStack() {
+    stack->pop();
 }

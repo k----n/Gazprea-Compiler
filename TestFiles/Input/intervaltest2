@@ -16,6 +16,9 @@ procedure main() returns integer {
     integer interval lob3 = lob1;
     integer interval lob4 = 1..10;
 
+    (intie(lob1, lob2) == lob1) -> std_output();
+
+/*
     if (intie(lob1, lob2) == lob1) {
        'g' -> std_output();
        if (intie(lob1, lob3) == soln) {
@@ -31,6 +34,7 @@ procedure main() returns integer {
     } else {
       'b' -> std_output();
     }
+*/
 
     return 0;
 }

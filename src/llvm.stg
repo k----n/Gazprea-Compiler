@@ -117,9 +117,9 @@ varInit_real() ::= "call void @_Z19varInitPushNullRealv()"
 varInit_character() ::= "call void @_Z24varInitPushNullCharacterv()"
 
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
+popStack() ::= "call void @_Z8popStackv()"
 
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
-promoteToVector() ::= "call void @_Z16promoteTo_vectorv()"
 
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
@@ -173,6 +173,8 @@ notequalInterval() ::= "call void @_Z12neq_Intervalv()"
 byInterval() ::= "call void @_Z10byIntervalv()"
 
 byVector() ::= "call void @_Z8byVectorv()"
+concatVector() ::="call void @_Z11concat_vectv()"
+dotProduct() ::="call void @_Z10dotProductv()"
 
 
 notEqualNull() ::="call void @_Z8neq_nullv()"

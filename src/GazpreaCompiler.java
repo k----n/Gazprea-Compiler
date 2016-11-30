@@ -30,7 +30,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Deque<Integer> currentLoop = new ArrayDeque<>();
     private Deque<Integer> currentIterator = new ArrayDeque<>();
 
-    private Tuple tupleDetails = new Tuple();
+    private Tuple tupleDetails = null;
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -510,24 +510,35 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     return newType;
                 }
                 // TODO tuple case, NEED TO POP PREVIOUS EXPRESSION OFF STACK
-                Tuple tupleType = new Tuple();
+                else if (type.getType().equals(Type.TYPES.TUPLE)) {
+                    // pop stack first
+                    ST popStack = this.llvmGroup.getInstanceOf("popStack");
+                    this.addCode(popStack.render());
 
-                ST startVector = this.llvmGroup.getInstanceOf("startVector");
-                this.addCode(startVector.render());
-                for (int e = 0; e < ctx.tupleTypeDetails().tupleTypeAtom().size(); ++e){
-                    Type exprType = visitType(visitTupleTypeAtom(ctx.tupleTypeDetails().tupleTypeAtom().get(e)).left());
-                    String typeLetter = Type.getCastingFunction(promoteType.get(e), exprType);
-                    visitExpression(ctx.expression(0).literal().tupleLiteral().expression(e));
-                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                    promoteCall.add("typeLetter", typeLetter);
-                    this.addCode(promoteCall.render());
-                    exprType = Type.getReturnType(typeLetter);
-                    tupleType.addField("" + (e+1), exprType);
+                    Tuple tupleType = new Tuple();
+
+                    ST startVector = this.llvmGroup.getInstanceOf("startVector");
+                    this.addCode(startVector.render());
+                    for (int e = 0; e < ctx.tupleTypeDetails().tupleTypeAtom().size(); ++e) {
+                        Type exprType = visitType(visitTupleTypeAtom(ctx.tupleTypeDetails().tupleTypeAtom().get(e)).left());
+                        String typeLetter = Type.getCastingFunction(promoteType.get(e), exprType);
+                        visitExpression(ctx.expression(0).literal().tupleLiteral().expression(e));
+                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                        promoteCall.add("typeLetter", typeLetter);
+                        this.addCode(promoteCall.render());
+                        exprType = Type.getReturnType(typeLetter);
+                        tupleType.addField("" + (e + 1), exprType);
+                    }
+                    ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
+                    this.addCode(endTuple.render());
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
                 }
-                ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
-                this.addCode(endTuple.render());
-                return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
+                else if (type.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)){
 
+                }
+                else{
+                    throw new Error("Cannot cast type");
+                }
             }
         }
         else if (ctx.generator() != null) {
@@ -562,7 +573,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             Type right = (Type)visit(ctx.expression(1));
             String typeLetter = Type.getResultFunction(left, right);
 
-            if (left.getCollection_type()== null && right.getCollection_type()==null && !(typeLetter.equals("skip"))) {
+            if (!(typeLetter.equals("skip")) || typeLetter.equals("tuple")) {
                 for (int i = 0; i < 2; i++) {
                     ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                     promoteCall.add("typeLetter", typeLetter);
@@ -582,7 +593,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: concat
                 case "||":
                     // TODO
-                return null;
+                    operatorCall = this.llvmGroup.getInstanceOf("concatVector");
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                 // CASE: OR
                 case "or":
                     operatorCall = this.llvmGroup.getInstanceOf("logicalor");
@@ -715,10 +728,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: dotproduct
                 case "**":
                     // TODO
-                    if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))){
+                    if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))) {
                         throw new Error("Types must be vectors");
                     }
-                return null;
+                    operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
                 // CASE: *
                 case "*":
                     // Interval case
@@ -846,10 +861,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
         Tuple tupleType = new Tuple();
-        
+
         ST startVector = this.llvmGroup.getInstanceOf("startVector");
         this.addCode(startVector.render());
-        if (tupleDetails!= null) {
+        if (tupleDetails== null) {
             for (int e = 0; e < ctx.expression().size(); ++e) {
                 Type exprType = this.visitExpression(ctx.expression(e));
 
@@ -912,7 +927,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         Type type = new Type(Type.SPECIFIERS.VAR, highestRankType);
 
         // now we cast the vector!
-        // TODO: POP VECTOR WE JUST CREATED OFF STACK SOMEHOW (OR NOT)
+        // pop stack first
+        ST popStack = this.llvmGroup.getInstanceOf("popStack");
+        this.addCode(popStack.render());
 
         this.addCode(startVector.render());
 
@@ -1251,8 +1268,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.visitExpression(ctx.expression()); // push the expression to stack and call function to iterate through it
 
         // convert to vector
-        ST promote = this.llvmGroup.getInstanceOf("promoteToVector");
-        this.currentFunction.addLine((promote.render()));
+        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+        promoteCall.add("typeLetter", "vv");
+        this.currentFunction.addLine((promoteCall.render()));
 
         ST loopBegin = this.llvmGroup.getInstanceOf("loopStart");
         loopBegin.add("index", myLoopIndex);

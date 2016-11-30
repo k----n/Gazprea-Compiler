@@ -138,6 +138,26 @@ public class Type {
         return new Type(Type.SPECIFIERS.CONST, retType);
     }
 
+    public static Type getReturnType(String type, Type.COLLECTION_TYPES collection_type) {
+        TYPES retType;
+        switch(type) {
+            case "iv":
+                retType = TYPES.INTEGER;
+                break;
+            case "rv":
+                retType = TYPES.REAL;
+                break;
+            case "bv":
+                retType = TYPES.BOOLEAN;
+                break;
+            case "cv":
+                retType = TYPES.CHARACTER;
+                break;
+            default: return null;
+        }
+        return new Type(Type.SPECIFIERS.VAR, retType, collection_type);
+    }
+
     @Override
     // compares types by 2 main components
     // TODO: consider doing tuple types comparison as well
