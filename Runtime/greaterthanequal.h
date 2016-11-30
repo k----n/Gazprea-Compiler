@@ -13,3 +13,7 @@ void geq_r() {
 	LOAD(float, lhs, realValue)
 	VALUE_OP(lhs >= rhs)
 }
+
+void geq_v() {
+
+}

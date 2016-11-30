@@ -17,6 +17,48 @@ void neg_r() {
 	VALUE_OP(-lhs)
 }
 
+void neg_v() {
+    _unwrap();
+    Value* value = stack->pop();
+
+    if (!(value)->isVector()) {
+        printf("NOT A VECTOR; CANNOT NEGATE\n");
+        exit(1);
+    }
+
+    int size = value->vectorValue()->getCount();
+
+    Value* node = value->vectorValue()->get(0);
+    Vector<Value>* vectorValues = new Vector<Value>;
+
+    if (node->isInteger()){
+        for (int i = 0; i < size; i++){
+            node = new Value(-*(value->vectorValue()->get(i)->integerValue()));
+            vectorValues->append(node);
+        }
+    } else if (node->isReal()){
+        for (int i = 0; i < size; i++){
+            node = new Value(-*(value->vectorValue()->get(i)->realValue()));
+            vectorValues->append(node);
+        }
+    } else if (node->isBoolean()){
+        for (int i = 0; i < size; i++){
+            node = new Value(!*(value->vectorValue()->get(i)->booleanValue()));
+            vectorValues->append(node);
+        }
+    }
+    else {
+        printf("CANNOT NEGATE THIS TYPE\n");
+        exit(1);
+    }
+
+    ValueType* newType = new ValueType(VectorType);
+    Value* newValue = new Value(newType, vectorValues);
+    stack->push(newValue);
+    newValue->release();
+    newType -> release();
+}
+
 void neg_Interval(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();

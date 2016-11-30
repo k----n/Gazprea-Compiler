@@ -20,6 +20,9 @@ void neq_r() {
 	VALUE_OP(lhs != rhs)
 }
 
+void neq_v() {
+}
+
 void neq_Interval(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();

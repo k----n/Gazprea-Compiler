@@ -7,3 +7,7 @@ void lnd_b() {
 	LOAD(bool, lhs, booleanValue)
 	VALUE_OP(lhs && rhs)
 }
+
+void lnd_v() {
+
+}

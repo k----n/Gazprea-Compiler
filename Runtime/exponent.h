@@ -3,6 +3,8 @@
 #include "notAllowedImports.h"
 #include "declarations.h"
 
+// TODO fix not allowed imports
+
 void exp_i() {
 	LOAD(int, rhs, integerValue)
 	LOAD(int, lhs, integerValue)
@@ -13,4 +15,8 @@ void exp_r() {
 	LOAD(float, rhs, realValue)
 	LOAD(float, lhs, realValue)
 	VALUE_OP(powf(lhs, rhs))
+}
+
+void exp_v() {
+    // TODO
 }

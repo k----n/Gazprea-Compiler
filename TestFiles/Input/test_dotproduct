@@ -10,7 +10,11 @@ procedure main() returns integer {
 
     real vector y = [6.9, 2.7];
 
+    real vector z = [2.2 , 3.0, 4.0];
+
     (x ** y) -> std_output();
+
+    (z ** v) -> std_output();
 
     return 0;
 }

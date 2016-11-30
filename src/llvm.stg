@@ -175,7 +175,12 @@ byInterval() ::= "call void @_Z10byIntervalv()"
 byVector() ::= "call void @_Z8byVectorv()"
 concatVector() ::="call void @_Z11concat_vectv()"
 dotProduct() ::="call void @_Z10dotProductv()"
-
+addVector() ::="call void @_Z5add_vv()"
+divVector() ::="call void @_Z5div_vv()"
+subVector() ::="call void @_Z5sub_vv()"
+multVector() ::="call void @_Z5mul_vv()"
+modVector() ::="call void @_Z5mod_vv()"
+negVector() ::="call void @_Z5neg_vv()"
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
 

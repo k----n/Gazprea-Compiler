@@ -7,3 +7,7 @@ void lxr_b() {
 	LOAD(bool, lhs, booleanValue)
 	VALUE_OP((lhs ^ rhs) != 0)
 }
+
+void lxr_v() {
+
+}

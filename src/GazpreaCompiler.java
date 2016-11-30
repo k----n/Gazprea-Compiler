@@ -474,6 +474,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 if (type.getType() == Type.TYPES.INTERVAL){
                     ST operatorCall = this.llvmGroup.getInstanceOf("negInterval");
                     this.addCode(operatorCall.render());
+                } else if (type.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) {
+                    ST operatorCall = this.llvmGroup.getInstanceOf("negVector");
+                    this.addCode(operatorCall.render());
                 } else if (type.getType().equals(Type.TYPES.INTEGER)) {
                     ST negation = this.llvmGroup.getInstanceOf("negation");
                     negation.add("typeLetter", "iv");
@@ -706,6 +709,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("addVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("addition");
                         operatorCall.add("typeLetter", typeLetter);
@@ -718,6 +727,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("subInterval");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("subVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("subtraction");
@@ -742,6 +757,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("multVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("multiplication");
                         operatorCall.add("typeLetter", typeLetter);
@@ -756,6 +777,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
                     }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("divVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("division");
                         operatorCall.add("typeLetter", typeLetter);
@@ -764,10 +791,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                 // CASE: %
                 case "%":
-                    operatorCall = this.llvmGroup.getInstanceOf("modulus");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("modVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
                 // CASE: ^
                 case "^":
                     operatorCall = this.llvmGroup.getInstanceOf("exponentiation");

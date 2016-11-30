@@ -13,3 +13,7 @@ void leq_r() {
 	LOAD(float, lhs, realValue)
 	VALUE_OP(lhs <= rhs)
 }
+
+void leq_v() {
+
+}

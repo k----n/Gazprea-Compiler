@@ -7,3 +7,7 @@ void lor_b() {
 	LOAD(bool, lhs, booleanValue)
 	VALUE_OP(lhs || rhs)
 }
+
+void lor_v() {
+
+}

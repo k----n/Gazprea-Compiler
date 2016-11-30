@@ -13,3 +13,7 @@ void lt__r() {
 	LOAD(float, lhs, realValue)
 	VALUE_OP(lhs < rhs)
 }
+
+void lt__v() {
+
+}

@@ -13,3 +13,6 @@ void gt__r() {
 	LOAD(float, lhs, realValue)
 	VALUE_OP(lhs > rhs)
 }
+
+void gt__() {
+}

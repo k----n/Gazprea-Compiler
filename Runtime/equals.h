@@ -20,6 +20,9 @@ void eq__r() {
 	VALUE_OP(lhs == rhs)
 }
 
+void eq__v() {
+}
+
 void eq_Interval(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();
