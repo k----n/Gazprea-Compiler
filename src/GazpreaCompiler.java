@@ -492,9 +492,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 return type;
             }
             else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("not")) {
-                ST negation = this.llvmGroup.getInstanceOf("negation");
-                negation.add("typeLetter", "bv");
-                this.addCode(negation.render());
+                if (type.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)){
+                    ST negation = this.llvmGroup.getInstanceOf("negVector");
+                    this.addCode(negation.render());
+                }
+                else {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "bv");
+                    this.addCode(negation.render());
+                }
                 return type;
             }
             else if (ctx.As() == null) {
@@ -535,9 +541,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
                     this.addCode(endTuple.render());
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
-                }
-                else if (type.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)){
-
                 }
                 else{
                     throw new Error("Cannot cast type");
@@ -804,6 +807,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                 // CASE: ^
                 case "^":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("expVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
                     operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
                     operatorCall.add("typeLetter", typeLetter);
                     this.addCode(operatorCall.render());
@@ -1496,18 +1504,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 && variable.getType().getCollection_type() != Type.COLLECTION_TYPES.VECTOR) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
-
-            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
-            initAssign.add("name", variable.getMangledName());
-            this.addCode(initAssign.render());
-        } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
-                || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null
-                || variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR && ctx.expression() != null) {
-            // TODO look over this, currently causing pop empty stack PARASH?
+        }
 //            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
 //            initAssign.add("name", variable.getMangledName());
 //            this.addCode(initAssign.render());
-        }
+//        } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
+//                || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null
+//                || variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR && ctx.expression() != null) {
+//            // TODO look over this, currently causing pop empty stack PARASH?
+////            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
+////            initAssign.add("name", variable.getMangledName());
+////            this.addCode(initAssign.render());
+//        }
 
         // expression type
         if (ctx.expression() != null) {
@@ -1516,6 +1524,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (variable.getType().getType() == Type.TYPES.NULL) {
                 variable.setType(assignedType);
             }
+            if (assignedType.getType().equals(Type.TYPES.INTERVAL) && variable.getType().getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)){
+                // convert to vector
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", "vv");
+                this.currentFunction.addLine((promoteCall.render()));
+            }
+            if (variable.getType().getType() != Type.TYPES.NULL) {
+                String typeLetter = Type.getCastingFunction(variable.getType(), variable.getType());
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
+            }
+
         } else {
             if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getType() != Type.TYPES.INTERVAL
                     && declaredType.getCollection_type() != Type.COLLECTION_TYPES.VECTOR) {

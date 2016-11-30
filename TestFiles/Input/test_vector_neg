@@ -6,5 +6,8 @@ procedure main() returns integer{
     (-[1.2,1.2,1.2]) -> std_output();
     '\n' -> std_output();
 
+    (not [true, true, true]) -> std_output();
+    '\n' -> std_output();
+
 return 0;
 }

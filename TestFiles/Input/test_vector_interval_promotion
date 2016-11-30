@@ -1,0 +1,17 @@
+procedure main() returns integer{
+
+
+    real vector i = 1..2;
+
+    integer vector j = 1..2;
+
+    var v = j + 1;
+
+    v -> std_output();
+
+    i -> std_output();
+
+    j -> std_output();
+
+return 0;
+}

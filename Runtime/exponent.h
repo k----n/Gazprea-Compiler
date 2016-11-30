@@ -19,4 +19,6 @@ void exp_r() {
 
 void exp_v() {
     // TODO
+    printf("EXPONETIATION OF VECTORS NOT IMPLEMENTED YET\n");
+    exit(1);
 }
