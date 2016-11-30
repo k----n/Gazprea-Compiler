@@ -1,0 +1,16 @@
+procedure main() returns integer {
+
+    integer vector i = 1..3 by 1;
+
+    integer vector v = 2..4 by 1;
+
+    (i ** v) -> std_output();
+
+    real vector x = [1.5, 2.3];
+
+    real vector y = [6.9, 2.7];
+
+    (x ** y) -> std_output();
+
+    return 0;
+}
