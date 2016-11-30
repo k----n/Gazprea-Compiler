@@ -56,7 +56,7 @@ void byVector() {
         exit(1);
     }
 
-    int i = index - 1;
+    int i = 0;
 
     int end = vector1->vectorValue()->getCount();
 

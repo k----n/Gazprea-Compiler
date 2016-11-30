@@ -9,14 +9,14 @@ void concat_vect(){
     _unwrap();
     Value* value2 = stack->pop();
 
-    Vector<Value>* vectorValues = new Vector<Value>;
-
     if ((value1)->isVector()) {
         // CASE: vector || (scalar or vector)
         if (value2->isBoolean() || value2->isInteger() || value2->isReal() || value2->isCharacter()){
             // add scalar to vector
 
             int size = value1->vectorValue()->getCount();
+
+            Vector<Value>* vectorValues = new Vector<Value>;
 
             // add scalar
             vectorValues->append(value2);
@@ -38,17 +38,20 @@ void concat_vect(){
             printf("Concatenating incompatible types\n");
             exit(1);
         }
+
+        Vector<Value>* vectorValues = new Vector<Value>;
+
         // add vector to vector
         int size1 = value1->vectorValue()->getCount();
         int size2 = value2->vectorValue()->getCount();
 
         Value* node;
-        for (int i = 0; i < size1; i++){
-            node = value1->vectorValue()->get(i);
-            vectorValues->append(node);
-        }
         for (int i = 0; i < size2; i++){
             node = value2->vectorValue()->get(i);
+            vectorValues->append(node);
+        }
+        for (int i = 0; i < size1; i++){
+            node = value1->vectorValue()->get(i);
             vectorValues->append(node);
         }
 
@@ -65,6 +68,8 @@ void concat_vect(){
             printf("Concatenating incompatible types\n");
             exit(1);
         }
+
+        Vector<Value>* vectorValues = new Vector<Value>;
 
         int size2 = value2->vectorValue()->getCount();
         Value* node;
