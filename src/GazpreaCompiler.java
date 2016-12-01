@@ -30,7 +30,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Deque<Integer> currentLoop = new ArrayDeque<>();
     private Deque<Integer> currentIterator = new ArrayDeque<>();
 
-    private Tuple tupleDetails = null;
+    private ArrayList<Type> tupleDetails = null;
 
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
@@ -916,11 +916,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else {
             for (int e = 0; e < ctx.expression().size(); ++e) {
                 Type exprType = this.visitExpression(ctx.expression(e));
-                String typeLetter = Type.getCastingFunction(exprType, tupleDetails.getTypeOfField(e));
+                String typeLetter = Type.getCastingFunction(exprType, tupleDetails.get(e));
                 ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                 promoteCall.add("typeLetter", typeLetter);
                 this.addCode(promoteCall.render());
-                tupleType.addField("" + (e + 1), tupleDetails.getTypeOfField(e));
+                tupleType.addField("" + (e + 1), tupleDetails.get(e));
             }
         }
         ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
@@ -1623,7 +1623,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     typeName = Type.TYPES.REAL; break;
                 case Type.strTUPLE:
                     Type type = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
-                    tupleDetails = type.getTupleType();
+                    tupleDetails = promoteType;
                     return type;
                 case Type.strSTRING:
                     // TODO: Consider purging string type by converting to vector char type
