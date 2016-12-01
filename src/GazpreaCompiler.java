@@ -556,7 +556,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
         }
-        else if (ctx.expression()!= null && ctx.expression().size() == 2 && ctx.op.getText() == ".."){
+        else if (ctx.expression()!= null && ctx.expression().size() == 2 && ctx.op != null && ctx.op.getText() == ".."){
             ST startVector = this.llvmGroup.getInstanceOf("startVector");
             this.addCode(startVector.render());
 
@@ -577,21 +577,39 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // CASE: where there is two expressions in the expression statement
             Type left = (Type)visit(ctx.expression(0));
             Type right = (Type)visit(ctx.expression(1));
-            String typeLetter = Type.getResultFunction(left, right);
-
-            if (!(typeLetter.equals("skip")) || typeLetter.equals("tuple")) {
-                for (int i = 0; i < 2; i++) {
-                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                    promoteCall.add("typeLetter", typeLetter);
-                    this.addCode(promoteCall.render());
-                    ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
-                    this.addCode(swapStack.render());
+            String operator = null;
+            String typeLetter = null;
+            if (ctx.op != null){
+                operator = ctx.op.getText();
+                typeLetter = Type.getResultFunction(left, right);
+                if (!(typeLetter.equals("skip")) || typeLetter.equals("tuple")) {
+                    for (int i = 0; i < 2; i++) {
+                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                        promoteCall.add("typeLetter", typeLetter);
+                        this.addCode(promoteCall.render());
+                        ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                        this.addCode(swapStack.render());
+                    }
                 }
             }
-
-            String operator = ctx.op.getText();
             if (operator == null){
                 // TODO INDEXING OR MATRIX
+                if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    ST operatorCall = this.llvmGroup.getInstanceOf("indexVector");
+                    this.addCode(operatorCall.render());
+                    if(right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL){
+                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    else {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType());
+                    }
+                }
+                else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+
+                }
+                else {
+                    throw new Error("Cannot index:" + left.getCollection_type().toString());
+                }
                 return null;
             }
             ST operatorCall;

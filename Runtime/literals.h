@@ -107,6 +107,8 @@ void endInterval() {
     Value * node1 = stack->pop();
     Value * node2 = stack->pop();
 
+    stack->pop(); // pop one more time for start vector
+
     Vector<Value>* intervalValues = new Vector<Value>;
 
     intervalValues->append(node1);

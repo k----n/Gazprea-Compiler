@@ -191,6 +191,7 @@ lessthanVector() ::= "call void @_Z5lt__vv()"
 greaterthanVector() ::= "call void @_Z5gt__vv()"
 lessthanequalVector() ::= "call void @_Z5leq_vv()"
 greaterthanequalVector() ::= "call void @_Z5geq_vv()"
+indexVector() ::= "call void @_Z11indexVectorv()"
 
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
