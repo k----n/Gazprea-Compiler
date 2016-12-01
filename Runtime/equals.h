@@ -60,14 +60,7 @@ void eq__v() {
                 status = false;
             }
         }
-    } else if (node->isCharacter()){
-        for (int i = 0; i < size2; i++){
-            if (*(value2->vectorValue()->get(i)->characterValue()) != *(value1->vectorValue()->get(i)->characterValue())){
-                status = false;
-            }
-        }
-    }
-    else {
+    } else {
         printf("CANNOT EQUATE THIS TYPE\n");
         exit(1);
     }

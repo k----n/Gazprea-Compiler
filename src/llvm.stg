@@ -184,6 +184,10 @@ negVector() ::="call void @_Z5neg_vv()"
 expVector() ::="call void @_Z5exp_vv()"
 equalVector() ::= "call void @_Z5eq__vv()"
 notequalVector() ::= "call void @_Z5neq_vv()"
+logicalorVector() ::= "call void @_Z5lor_vv()"
+logicalxorVector() ::= "call void @_Z5lxr_vv()"
+logicalandVector() ::= "call void @_Z5lnd_vv()"
+
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
 

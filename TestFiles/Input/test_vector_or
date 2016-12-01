@@ -1,0 +1,27 @@
+procedure main() returns integer{
+
+    ([true,true,true] or true) -> std_output();
+    '\n' -> std_output();
+    ([false,false,false] or true) -> std_output();
+    '\n' -> std_output();
+    ([false,false,false] or false) -> std_output();
+    '\n' -> std_output();
+
+    ([false,false,false] or [false,false,false]) -> std_output();
+    '\n' -> std_output();
+    ([true,true,true] or [false,false,false]) -> std_output();
+    '\n' -> std_output();
+    ([true,false,true] or [false,false,false]) -> std_output();
+    '\n' -> std_output();
+
+
+
+    (true or [true,true,true]) -> std_output();
+    '\n' -> std_output();
+    (true or [false,false,false]) -> std_output();
+    '\n' -> std_output();
+    (false or [false,false,false]) -> std_output();
+    '\n' -> std_output();
+
+    return 0;
+}

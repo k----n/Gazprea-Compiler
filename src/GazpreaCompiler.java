@@ -604,24 +604,41 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                 // CASE: OR
                 case "or":
-                    operatorCall = this.llvmGroup.getInstanceOf("logicalor");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalorVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    else {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: XOR
                 case "xor":
-                    operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
-
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalxorVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: AND
                 case "and":
-                    operatorCall = this.llvmGroup.getInstanceOf("logicaland");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
-
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalandVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: ==
                 case "==":
                     // TODO TUPLE

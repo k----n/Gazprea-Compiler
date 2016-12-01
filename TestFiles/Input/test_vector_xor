@@ -1,0 +1,27 @@
+procedure main() returns integer{
+
+    ([true,true,true] xor true) -> std_output();
+    '\n' -> std_output();
+    ([false,false,false] xor true) -> std_output();
+    '\n' -> std_output();
+    ([false,false,false] xor false) -> std_output();
+    '\n' -> std_output();
+
+    ([false,false,false] xor [false,false,false]) -> std_output();
+    '\n' -> std_output();
+    ([true,true,true] xor [false,false,false]) -> std_output();
+    '\n' -> std_output();
+    ([true,false,true] xor [false,false,false]) -> std_output();
+    '\n' -> std_output();
+
+
+
+    (true xor [true,true,true]) -> std_output();
+    '\n' -> std_output();
+    (true xor [false,false,false]) -> std_output();
+    '\n' -> std_output();
+    (false xor [false,false,false]) -> std_output();
+    '\n' -> std_output();
+
+    return 0;
+}
