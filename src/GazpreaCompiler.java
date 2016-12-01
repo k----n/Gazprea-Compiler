@@ -474,7 +474,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 if (type.getType() == Type.TYPES.INTERVAL){
                     ST operatorCall = this.llvmGroup.getInstanceOf("negInterval");
                     this.addCode(operatorCall.render());
-                } else if (type.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) {
+                } else if (type.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                     ST operatorCall = this.llvmGroup.getInstanceOf("negVector");
                     this.addCode(operatorCall.render());
                 } else if (type.getType().equals(Type.TYPES.INTEGER)) {
@@ -492,7 +492,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 return type;
             }
             else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("not")) {
-                if (type.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)){
+                if (type.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
                     ST negation = this.llvmGroup.getInstanceOf("negVector");
                     this.addCode(negation.render());
                 }
@@ -1500,22 +1500,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         if (variable.getType().getType() != Type.TYPES.NULL
                 && variable.getType().getType() != Type.TYPES.TUPLE
-                && variable.getType().getType() != Type.TYPES.INTERVAL
-                && variable.getType().getCollection_type() != Type.COLLECTION_TYPES.VECTOR) {
+                && variable.getType().getType() != Type.TYPES.INTERVAL) {
             ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
             this.addCode(initLine.render());
+
+            ST line = this.llvmGroup.getInstanceOf("assignByVar");
+            line.add("name", variable.getMangledName());
+            this.addCode(line.render());
+        } else if ((variable.getType().getType() == Type.TYPES.TUPLE)
+                || (variable.getType().getType() == Type.TYPES.INTERVAL)) {
+            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
+            initAssign.add("name", variable.getMangledName());
+            this.addCode(initAssign.render());
         }
-//            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
-//            initAssign.add("name", variable.getMangledName());
-//            this.addCode(initAssign.render());
-//        } else if (variable.getType().getType() == Type.TYPES.TUPLE && ctx.expression() != null
-//                || variable.getType().getType() == Type.TYPES.INTERVAL && ctx.expression() != null
-//                || variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR && ctx.expression() != null) {
-//            // TODO look over this, currently causing pop empty stack PARASH?
-////            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
-////            initAssign.add("name", variable.getMangledName());
-////            this.addCode(initAssign.render());
-//        }
 
         // expression type
         if (ctx.expression() != null) {
@@ -1529,17 +1526,21 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                 promoteCall.add("typeLetter", "vv");
                 this.currentFunction.addLine((promoteCall.render()));
-            }
-            if (variable.getType().getType() != Type.TYPES.NULL) {
-                String typeLetter = Type.getCastingFunction(variable.getType(), variable.getType());
-                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                promoteCall.add("typeLetter", typeLetter);
-                this.addCode(promoteCall.render());
-            }
 
-        } else {
-            if (declaredType.getType() != Type.TYPES.TUPLE && declaredType.getType() != Type.TYPES.INTERVAL
-                    && declaredType.getCollection_type() != Type.COLLECTION_TYPES.VECTOR) {
+                if (variable.getType().getType() != Type.TYPES.NULL
+                        && variable.getType().getType() != Type.TYPES.INTERVAL) {
+                    String typeLetter = Type.getResultFunction(variable.getType(), variable.getType());
+                    ST promote = this.llvmGroup.getInstanceOf("promoteTo");
+                    promote.add("typeLetter", typeLetter);
+                    this.addCode(promote.render());
+                }
+            }
+            ST line = this.llvmGroup.getInstanceOf("assignByVar");
+            line.add("name", variable.getMangledName());
+            this.addCode(line.render());
+
+        } else if (ctx.expression() == null) {
+            if (declaredType.getType() == null) {
                 // expression portion is excluded
                 ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
                 this.addCode(nullLine.render());
@@ -1547,11 +1548,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
 
         this.scope.initVariable(variableName, variable);
-
-        ST line = this.llvmGroup.getInstanceOf("assignByVar");
-        line.add("name", variable.getMangledName());
-
-        this.addCode(line.render());
 
         return null;
     }
