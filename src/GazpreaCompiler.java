@@ -685,32 +685,52 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
                 // CASE: <
                 case "<":
-                    operatorCall = this.llvmGroup.getInstanceOf("lessthan");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
-
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: <=
                 case "<=":
-                    operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
-
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanequalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: >
                 case ">":
-                    operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
-
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: >=
                 case ">=":
-                    operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
-                    operatorCall.add("typeLetter", typeLetter);
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType("bv");
-
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanequalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
                 // CASE: by
                 case "by":
                     // TODO make sure proper type is returned
