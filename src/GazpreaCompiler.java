@@ -631,6 +631,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
                     }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("equalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("equal");
                         operatorCall.add("typeLetter", typeLetter);
@@ -646,6 +652,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("notequalInterval");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                     }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("notequal");

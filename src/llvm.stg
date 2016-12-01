@@ -182,6 +182,8 @@ multVector() ::="call void @_Z5mul_vv()"
 modVector() ::="call void @_Z5mod_vv()"
 negVector() ::="call void @_Z5neg_vv()"
 expVector() ::="call void @_Z5exp_vv()"
+equalVector() ::= "call void @_Z5eq__vv()"
+notequalVector() ::= "call void @_Z5neq_vv()"
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
 

@@ -1,0 +1,20 @@
+procedure main() returns integer{
+
+    ([1,2,3] != [1,1,1]) -> std_output();
+    '\n' -> std_output();
+    ([1,2,3] != [1,2,3]) -> std_output();
+    '\n' -> std_output();
+
+    ([1.2,2.2,3.2] != [1,1,1]) -> std_output();
+    '\n' -> std_output();
+    ([1.69,2.69,3.69] != [1.69,2.69,3.69]) -> std_output();
+    '\n' -> std_output();
+
+
+    (['a','b','c'] != ['b','b','c']) -> std_output();
+    '\n' -> std_output();
+    (['a','b','c'] != ['a','b','c']) -> std_output();
+    '\n' -> std_output();
+
+    return 0;
+}

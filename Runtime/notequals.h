@@ -21,6 +21,8 @@ void neq_r() {
 }
 
 void neq_v() {
+    eq__v();
+    neg_b();
 }
 
 void neq_Interval(){

@@ -21,6 +21,60 @@ void eq__r() {
 }
 
 void eq__v() {
+    _unwrap();
+    Value* value1 = stack->pop();
+    _unwrap();
+    Value* value2 = stack->pop();
+
+    if (!(value1)->isVector() || !(value2)->isVector()) {
+        printf("Incompatible Equality Types\n");
+        exit(1);
+    }
+
+    bool status = true;
+
+    int size1 = value1->vectorValue()->getCount();
+    int size2 = value2->vectorValue()->getCount();
+
+    if (size1 != size2){
+        printf("Two vectors must be the same length\n");
+        exit(1);
+    }
+
+    Value* node = value2->vectorValue()->get(0);
+    if (node->isInteger()){
+        for (int i = 0; i < size2; i++){
+            if (*(value2->vectorValue()->get(i)->integerValue()) != *(value1->vectorValue()->get(i)->integerValue())){
+                status = false;
+            }
+        }
+    } else if (node->isReal()){
+        for (int i = 0; i < size2; i++){
+            if (*(value2->vectorValue()->get(i)->realValue()) != *(value1->vectorValue()->get(i)->realValue())){
+                status = false;
+            }
+        }
+    } else if (node->isBoolean()){
+        for (int i = 0; i < size2; i++){
+            if (*(value2->vectorValue()->get(i)->booleanValue()) != *(value1->vectorValue()->get(i)->booleanValue())){
+                status = false;
+            }
+        }
+    } else if (node->isCharacter()){
+        for (int i = 0; i < size2; i++){
+            if (*(value2->vectorValue()->get(i)->characterValue()) != *(value1->vectorValue()->get(i)->characterValue())){
+                status = false;
+            }
+        }
+    }
+    else {
+        printf("CANNOT EQUATE THIS TYPE\n");
+        exit(1);
+    }
+
+    Value* result = new Value(status);
+    stack -> push(result);
+
 }
 
 void eq_Interval(){

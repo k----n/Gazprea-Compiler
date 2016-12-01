@@ -22,7 +22,7 @@ public class Type {
             {/*  bool       int         char        real            NULL        IDNTY       TUPLE    INTERVAL*/
     /*bool*/    {"bv",      "void",     "void",     "void",         "bv",       "void",     "void",  "void"    },
     /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "void",     "void",  "void"    },
-    /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
+    /*char*/    {"void",    "void",     "cv",       "void",         "void",     "void",     "void",  "void"    },
     /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "void",     "void",  "void"    },
     /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void",  "void"    },
     /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
