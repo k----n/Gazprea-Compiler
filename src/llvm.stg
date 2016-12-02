@@ -193,6 +193,8 @@ lessthanequalVector() ::= "call void @_Z5leq_vv()"
 greaterthanequalVector() ::= "call void @_Z5geq_vv()"
 indexVector() ::= "call void @_Z11indexVectorv()"
 
+equalTuple() ::= "call void @_Z8eq_tuplev()"
+notequalTuple() ::= "call void @_Z9neq_tuplev()"
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
 

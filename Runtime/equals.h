@@ -27,7 +27,7 @@ void eq__v() {
     Value* value2 = stack->pop();
 
     if (!(value1)->isVector() || !(value2)->isVector()) {
-        printf("Incompatible Equality Types\n");
+        printf("Incompatible Vector Equality Types\n");
         exit(1);
     }
 
@@ -67,7 +67,6 @@ void eq__v() {
 
     Value* result = new Value(status);
     stack -> push(result);
-
 }
 
 void eq_Interval(){
@@ -116,4 +115,80 @@ void eq_Interval(){
 
     interval1 -> release();
     interval2 -> release();
+}
+
+void eq_tuple(){
+    _unwrap();
+    Value* value1 = stack->pop();
+    _unwrap();
+    Value* value2 = stack->pop();
+
+    if (!(value1)->isTuple() || !(value2)->isTuple()) {
+        printf("Incompatible Tuple Equality Types\n");
+        exit(1);
+    }
+
+    int size1 = value1->tupleValue()->getCount();
+    int size2 = value2->tupleValue()->getCount();
+
+    if (size1 != size2){
+        printf("Two tuples must be the same length\n");
+        exit(1);
+    }
+
+    bool status = true;
+
+   for (int i = 0; i < size2; i++){
+
+        Value* t1 = value2->tupleValue()->get(i);
+        Value* t2 = value1->tupleValue()->get(i);
+
+        ValueType* type = t1->getType();
+        if (type->getType() != t2->getType()->getType()) {
+            status = false;
+            break;
+        }
+        else {
+            // dive in deeeper
+            stack->push(t1);
+            stack->push(t2);
+            Value * r;
+            switch(type->getType()){
+                case IntervalType:
+                    eq_Interval();
+                    break;
+                case BooleanType:
+                    eq__b();
+                    break;
+                case IntegerType:
+                    eq__i();
+                    break;
+                case RealType:
+                    eq__r();
+                    break;
+                case VectorType:
+                    eq__v();
+                    break;
+                case CharacterType:
+                case NullType:
+                case IdentityType:
+                case StandardOut:
+                case StandardIn:
+                case Lvalue:
+                case TupleType:
+                case StartVector:
+                    printf("Type cannot be compared in tuple\n"); exit(1);
+            }
+            r = stack->pop();
+            if (!(r->booleanValue())){
+                status = false;
+                break;
+            }
+        }
+    }
+
+    Value* booleanV = new Value(status);
+
+    stack -> push(booleanV);
+
 }

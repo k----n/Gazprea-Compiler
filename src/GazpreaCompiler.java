@@ -582,7 +582,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (ctx.op != null){
                 operator = ctx.op.getText();
                 typeLetter = Type.getResultFunction(left, right);
-                if (!(typeLetter.equals("skip")) || typeLetter.equals("tuple")) {
+                if (!(typeLetter.equals("skip")) && !typeLetter.equals("tuple")) {
                     for (int i = 0; i < 2; i++) {
                         ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                         promoteCall.add("typeLetter", typeLetter);
@@ -666,6 +666,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
                     }
+                    // Tuple Case
+                    else if (left.getType() == Type.TYPES.TUPLE && right.getType() == Type.TYPES.TUPLE){
+                        operatorCall = this.llvmGroup.getInstanceOf("equalTuple");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
                     // Vector case
                     else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
                         operatorCall = this.llvmGroup.getInstanceOf("equalVector");
@@ -685,6 +691,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     // Interval case
                     if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("notequalInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Tuple Case
+                    else if (left.getType() == Type.TYPES.TUPLE && right.getType() == Type.TYPES.TUPLE){
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalTuple");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
                     }
