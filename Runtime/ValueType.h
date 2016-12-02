@@ -10,6 +10,9 @@ public:
 		this->has_vector_size = false;
 		this->has_matrix_size = false;
 		this->has_contained_type = false;
+		this->vector_size = -1;
+		this->matrix_size = -1;
+		this->containedType = NullType;
 	}
 
 	ValueType(BuiltinType thisType, BuiltinType containedType, bool has_vector_size,

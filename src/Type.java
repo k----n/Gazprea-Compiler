@@ -24,8 +24,8 @@ public class Type {
     /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "void",     "void",  "void"    },
     /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
     /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "void",     "void",  "void"    },
-    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "void",     "void",     "void",  "void"    },
-    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
+    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "nv",       "void",     "void",  "void"    },
+    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "dv",       "void",  "void"    },
     /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple", "void"    },
     /*INTERVAL*/{"void",    "skip",     "void",     "void",         "void",     "void",     "void",  "lv"      },
             };
@@ -36,8 +36,8 @@ public class Type {
     /*int*/     {"bv",          "iv",           "cv",                "rv",   "void",    "void"},
     /*char*/    {"bv",          "iv",           "cv",                "rv",   "void",    "void"},
     /*real*/    {"void",        "iv",           "void",              "rv",   "void",    "void"},
-    /*null*/    {"bv",          "iv",           "cv",                "rv",   "void",    "void"},
-    /*idty */   {"bv",          "iv",           "cv",                "rv",   "void",    "void"},
+    /*null*/    {"bv",          "iv",           "cv",                "rv",   "nv",      "void"},
+    /*idty */   {"bv",          "iv",           "cv",                "rv",   "void",    "dv"},
             };
 
 
@@ -198,7 +198,9 @@ public class Type {
 
         if (this.type != null
             && (    this.type.equals(otherType.getType())
-                || (   this.type.equals(TYPES.INTEGER)
+                || ( this.type.equals(TYPES.NULL) )
+                || ( this.type.equals(TYPES.IDENTITY) )
+                || ( this.type.equals(TYPES.INTEGER)
                     && otherType.getType() != null
                     && otherType.getType().equals(TYPES.REAL))
                 )
@@ -255,7 +257,7 @@ public class Type {
         String result = CASTING_TABLE[fromIndex][toIndex];
 
         if (result.equals("void")){
-            throw new Error("Cannot cast to this type");
+            throw new Error("Cannot cast to this type " + from.getType().toString() + " to " + to.getType().toString());
         }
 
         return result;
@@ -264,6 +266,7 @@ public class Type {
     public void setCollection_type(COLLECTION_TYPES collection_type) {
         this.collection_type = collection_type;
     }
+    public void setType(TYPES type) { this.type = type; }
 
     public Tuple getTupleType() {
         return tupleType;

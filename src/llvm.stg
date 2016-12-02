@@ -121,12 +121,15 @@ popStack() ::= "call void @_Z8popStackv()"
 
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
 
+promoteVector(value) ::= "call void @_Z13promoteVectorc(i8 <value>)"
+
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
 pushInteger(value) ::= "call void @_Z11pushIntegeri(i32 <value>)"
 pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
 pushReal(value) ::= "call void @_Z8pushRealf(float <value>)"
-pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
+pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 <value>)"
+pushNullVector(value) ::= "call void @_Z14pushNullVectorc(i8 <value>)"
 
 startVector() ::= <<
 ; starting of a vector
@@ -192,6 +195,8 @@ greaterthanVector() ::= "call void @_Z5gt__vv()"
 lessthanequalVector() ::= "call void @_Z5leq_vv()"
 greaterthanequalVector() ::= "call void @_Z5geq_vv()"
 
+matchVectorSizes() ::= "call void @_Z16matchVectorSizesv()"
+matchVectorTypes() ::= "call void @_Z16matchVectorTypesv()"
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
 

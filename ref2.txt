@@ -1,0 +1,17 @@
+procedure main() returns integer {
+    integer vector x[2] = [1,2];
+    integer vector y = [1,2];
+    var z = [1,2];
+    integer s[2] = [1,2];
+    integer t[2] = [null, null];
+
+    //x -> std_output();
+    //y -> std_output();
+    z -> std_output();
+    //s -> std_output();
+    [null, 1] -> std_output();
+    [identity, identity, 1] -> std_output();
+    t -> std_output();
+
+    return 0;
+}

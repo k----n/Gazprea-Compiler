@@ -315,6 +315,115 @@ void pushVectorValueType(int size, char charType) {
     stack->push(value);
 }
 
+// null promotion
+void promoteTo_n() {
+    Value *value = stack->pop();
+    ValueType *type = value->getType();
+    Value *newValue = nullptr;
+    switch(type->getType()) {
+        case IntervalType: printf("Cannot promote IntervalType\n"); exit(1);
+        case NullType:
+            newValue = value;
+            newValue->retain();
+            break;
+        case IdentityType: printf("Cannot promote IdentityType\n"); exit(1);
+        case BooleanType: printf("Cannot promote BooleanType\n"); exit(1);
+        case IntegerType: printf("Cannot promote IntegerType\n"); exit(1);
+        case RealType: printf("Cannot promote real\n"); exit(1);
+        case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
+        case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+        case VectorType: printf("Cannot promote Vector\n"); exit(1);
+        case StandardOut: printf("Cannot promote stdout\n"); exit(1);
+        case StandardIn: printf("Cannot promote stdin\n"); exit(1);
+        case Lvalue:
+            newValue = value->lvalue();
+            stack->push(newValue);
+            newValue->release();
+            return promoteTo_l();
+       	case StartVector: printf("Cannot promote StartVector\n"); exit(1);
+    }
+
+    type->release();
+    stack->push(newValue);
+    newValue->release();
+    value->release();
+}
+
+// identity promotion
+void promoteTo_d() {
+    Value *value = stack->pop();
+    ValueType *type = value->getType();
+    Value *newValue = nullptr;
+    switch(type->getType()) {
+        case IntervalType: printf("Cannot promote IntervalType\n"); exit(1);
+        case NullType: printf("Cannot promote NullType\n"); exit(1);
+        case IdentityType:
+            newValue = value;
+            newValue->retain();
+            break;
+        case BooleanType: printf("Cannot promote BooleanType\n"); exit(1);
+        case IntegerType: printf("Cannot promote IntegerType\n"); exit(1);
+        case RealType: printf("Cannot promote real\n"); exit(1);
+        case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
+        case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+        case VectorType: printf("Cannot promote Vector\n"); exit(1);
+        case StandardOut: printf("Cannot promote stdout\n"); exit(1);
+        case StandardIn: printf("Cannot promote stdin\n"); exit(1);
+        case Lvalue:
+            newValue = value->lvalue();
+            stack->push(newValue);
+            newValue->release();
+            return promoteTo_l();
+        case StartVector: printf("Cannot promote StartVector\n"); exit(1);
+    }
+
+    type->release();
+    stack->push(newValue);
+    newValue->release();
+    value->release();
+}
+
+void promoteVector(char cType) {
+    _unwrap();
+
+    Value* toSizeValue = stack->pop();
+    int *toSize = toSizeValue->integerValue();
+
+	Value* poppedValue = stack->pop();
+	Vector<Value>* poppedVector = poppedValue->vectorValue();
+	int poppedSize = poppedVector->getCount();
+    int goalSize = (*toSize) == -1 ? poppedSize : (*toSize);
+
+    ValueType* newValueType = new ValueType(VectorType);
+	Value* newValue = new Value(newValueType, new Vector<Value>());
+    Vector<Value>* newVector = newValue->vectorValue();
+
+    Value* indexedValue = nullptr;
+
+    for (int index = 0; index < goalSize; ++index) {
+        indexedValue = poppedVector->get(index);
+        stack->push(indexedValue);
+        indexedValue->release();
+        switch (cType) {
+            case 'b': promoteTo_b(); break;
+            case 'c': promoteTo_c(); break;
+            case 'i': promoteTo_i(); break;
+            case 'r': promoteTo_r(); break;
+            default: throw "cannot promote vector to this type"; break;
+        }
+        indexedValue = stack->pop();
+        newVector->append(indexedValue);
+        indexedValue->release();
+    }
+
+	stack->push(newValue);
+	newValue->release();
+	newVector->release();
+	newValueType->release();
+	poppedValue->release();
+	poppedVector->release();
+}
+
 // requires a reference Vector (e.g. pushVectorValueType) on stack to compare
 // the dimensions and type to
 void promoteTo_v() {

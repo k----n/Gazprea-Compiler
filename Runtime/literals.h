@@ -162,7 +162,9 @@ void setVectorSize() {
     Value *valSizeData = stack->pop();
     int *size_data = valSizeData->integerValue();
     Value *vector = stack->pop();
+
     vector->getType()->setVectorSize(*size_data);
+
     stack->push(vector);
 }
 
@@ -247,6 +249,126 @@ void setVectorContainedType(char type) {
     }
 
     stack->push(vector);
+}
+
+void pushIdentityVector(char cType) {
+    Value* sizeValue = stack->pop();
+    int size = *(sizeValue->integerValue());
+    if (size == -1) {
+        throw "Cannot push unsized null";
+    }
+
+    ValueType* newValueType = new ValueType(VectorType);
+    newValueType->setVectorSize(size);
+    switch(cType) {
+        case 'b': newValueType->setContainedType(BooleanType); break;
+        case 'c': newValueType->setContainedType(CharacterType); break;
+        case 'i': newValueType->setContainedType(IntegerType); break;
+        case 'r': newValueType->setContainedType(RealType); break;
+        default: throw "vector cannot contain this type as a char"; break;
+    }
+    Value* newValue = new Value(newValueType, new Vector<Value>);
+    Vector<Value>* newVector = newValue->vectorValue();
+
+    for (int i = 0; i < size; ++i) {
+        switch(cType) {
+            case 'b': newVector->append(new Value(true)); break;
+            case 'c': newVector->append(new Value((char)1)); break;
+            case 'i': newVector->append(new Value((int)1)); break;
+            case 'r': newVector->append(new Value((float)1)); break;
+            default: throw "vector cannot contain this type as a char"; break;
+        }
+    }
+
+    stack->push(newValue);
+    newValue->release();
+    newVector->release();
+    newValueType->release();
+    sizeValue->release();
+}
+
+
+void pushNullVector(char cType) {
+    Value* sizeValue = stack->pop();
+    int size = *(sizeValue->integerValue());
+    if (size == -1) {
+        throw "Cannot push unsized null";
+    }
+
+    ValueType* newValueType = new ValueType(VectorType);
+    newValueType->setVectorSize(size);
+    switch(cType) {
+        case 'b': newValueType->setContainedType(BooleanType); break;
+        case 'c': newValueType->setContainedType(CharacterType); break;
+        case 'i': newValueType->setContainedType(IntegerType); break;
+        case 'r': newValueType->setContainedType(RealType); break;
+        default: throw "vector cannot contain this type as a char"; break;
+    }
+    Value* newValue = new Value(newValueType, new Vector<Value>);
+    Vector<Value>* newVector = newValue->vectorValue();
+
+    for (int i = 0; i < size; ++i) {
+        switch(cType) {
+            case 'b': newVector->append(new Value(false)); break;
+            case 'c': newVector->append(new Value((char)0)); break;
+            case 'i': newVector->append(new Value((int)0)); break;
+            case 'r': newVector->append(new Value((float)0)); break;
+            default: throw "vector cannot contain this type as a char"; break;
+        }
+    }
+
+    stack->push(newValue);
+    newValue->release();
+    newVector->release();
+    newValueType->release();
+    sizeValue->release();
+}
+
+void matchVectorSizes() {
+    Value *value1 = stack->pop();
+    Value *value2 = stack->pop();
+    ValueType *value1type = value1->getType();
+    ValueType *value2type = value2->getType();
+    int value1size = -1;
+    int value2size = -1;
+
+    if (value1type->hasVectorSize()) {
+        value1size = value1type->getVectorSize();
+    } else {
+        value1size = -1;
+    }
+    if (value2type->hasVectorSize()) {
+        value2size = value2type->getVectorSize();
+    } else {
+        value2size = -1;
+    }
+
+    if (value1size < value2size) {
+        value1type->setVectorSize(value2size);
+    } else {
+        value2type->setVectorSize(value1size);
+    }
+
+    stack->push(value2);
+    stack->push(value1);
+}
+
+void matchVectorTypes() {
+    Value *value1 = stack->pop();
+    Value *value2 = stack->pop();
+    ValueType *value1type = value1->getType();
+    ValueType *value2type = value2->getType();
+    BuiltinType value1containedType = value1type->getContainedType();
+    BuiltinType value2containedType = value2type->getContainedType();
+
+    if (value1containedType == NullType || value2containedType == RealType) {
+        value1type->setContainedType(value2containedType);
+    } else {
+        value2type->setContainedType(value1containedType);
+    }
+
+    stack->push(value2);
+    stack->push(value1);
 }
 
 void endTuple() {
