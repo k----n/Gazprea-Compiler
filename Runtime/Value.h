@@ -14,6 +14,7 @@ public:
 		bool* newValue = new bool;
 		*newValue = value;
 		this->value = newValue;
+		this->extData = nullptr;
 	}
 	
 	Value(int value) : super(TypeValue) {
@@ -21,6 +22,7 @@ public:
 		int* newValue = new int;
 		*newValue = value;
 		this->value = newValue;
+		this->extData = nullptr;
 	}
 	
 	Value(float value) : super(TypeValue) {
@@ -28,6 +30,7 @@ public:
 		float* newValue = new float;
 		*newValue = value;
 		this->value = newValue;
+		this->extData = nullptr;
 	}
 	
 	Value(char value) : super(TypeValue) {
@@ -35,6 +38,7 @@ public:
 		char* newValue = new char;
 		*newValue = value;
 		this->value = newValue;
+		this->extData = nullptr;
 	}
 	
 	/// - Note: `value` is an exception as it becomes fully owned by `Value` -
@@ -44,6 +48,14 @@ public:
 		
 		this->valueType = type;
 		this->value = value;
+		
+		switch (type->getType()) {
+			case StandardIn:
+				this->extData = new Value(0);
+				break;
+			default:
+				break;
+		}
 	}
 	
 	virtual Value* copy() const {
@@ -52,8 +64,12 @@ public:
 		switch (this->valueType->getType()) {
 			case NullType:
 			case IdentityType:
-			case StandardIn:
 			case StandardOut:
+				break;
+			case StandardIn:
+				delete (Value*)copy->extData;
+				copy->extData = this->extData;
+				((Value*)this->extData)->retain();
 				break;
 			case BooleanType:
 				copy->value = new bool;
@@ -185,9 +201,19 @@ public:
 		return this->value;
 	}
 	
+	void* extra_data() {
+		return this->extData;
+	}
+	
+	/// DO NOT USE THIS EXCEPT FOR STREAM_STATE!!!
+	void setValue(int value) {
+		*((int*)this->value) = value;
+	}
+	
 private:
 	ValueType* valueType;
 	void* value;
+	void* extData; // Stores the stream state for input streams (Value(0))
 	
 	~Value() {
 		switch (this->valueType->getType()) {

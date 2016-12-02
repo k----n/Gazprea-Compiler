@@ -53,31 +53,39 @@ void leftArrowOperator() {
 		case IdentityType:	printf("Cannot input IdentityType\n");	exit(1);
 		case BooleanType:
 			readErrorCode = scanf("%c", &boolValue);
-			if (boolValue == 'T') {
-				(*(Value**)lhs->lvalue_ptr())->release();
-				*lhs->lvalue_ptr() = new Value(true);
-			} else if (boolValue == 'F') {
-				(*(Value**)lhs->lvalue_ptr())->release();
-				*lhs->lvalue_ptr() = new Value(false);
-			} else {
-				// TODO: Handle errors
+			if (readErrorCode) {
+				if (boolValue == 'T') {
+					(*(Value**)lhs->lvalue_ptr())->release();
+					*lhs->lvalue_ptr() = new Value(true);
+				} else if (boolValue == 'F') {
+					(*(Value**)lhs->lvalue_ptr())->release();
+					*lhs->lvalue_ptr() = new Value(false);
+				} else {
+					// TODO: Handle errors
+				}
 			}
 			break;
 		case IntegerType:
 			readErrorCode = scanf("%d", &intValue);
-			(*(Value**)lhs->lvalue_ptr())->release();
-			*lhs->lvalue_ptr() = new Value(intValue);
+			if (readErrorCode) {
+				(*(Value**)lhs->lvalue_ptr())->release();
+				*lhs->lvalue_ptr() = new Value(intValue);
+			}
 			break;
 		case RealType:
 		    // TODO account for underscores in floats
 			readErrorCode = scanf("%f", &realValue);
-			(*(Value**)lhs->lvalue_ptr())->release();
-			*lhs->lvalue_ptr() = new Value(realValue);
+			if (readErrorCode) {
+				(*(Value**)lhs->lvalue_ptr())->release();
+				*lhs->lvalue_ptr() = new Value(realValue);
+			}
 			break;
 		case CharacterType:
 			readErrorCode = scanf("%c", &characterValue);
-			(*(Value**)lhs->lvalue_ptr())->release();
-			*lhs->lvalue_ptr() = new Value(characterValue);
+			if (readErrorCode) {
+				(*(Value**)lhs->lvalue_ptr())->release();
+				*lhs->lvalue_ptr() = new Value(characterValue);
+			}
 			break;
 		case TupleType:     printf("Cannot input TupleType\n");		exit(1);
 		case StandardOut:	printf("Cannot input StandardOut\n");	exit(1);
@@ -87,13 +95,19 @@ void leftArrowOperator() {
 		case VectorType:    printf("Cannot input VectorType\n");    exit(1);
 		case StartVector:	printf("Cannot input StartVector\n");	exit(1);
 	}
+	switch (readErrorCode) {
+		case 1:
+			((Value*)rhs->extra_data())->setValue(0);
+			break;
+		case 0:
+			((Value*)rhs->extra_data())->setValue(1);
+			break;
+		case EOF:
+			((Value*)rhs->extra_data())->setValue(2);
+			break;
+	}
 	lvalue->release();
 	type->release();
-	switch (readErrorCode) {
-		case 1: stdInputError = 0;
-		case 0: stdInputError = 1;
-		case EOF: stdInputError = 2;
-	}
 	lhs->release();
 	rhs->release();
 }

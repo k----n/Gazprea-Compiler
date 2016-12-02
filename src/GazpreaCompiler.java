@@ -14,6 +14,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private final String BUILT_INS[] = {"std_output", "std_input", "stream_state"};
 
     private Map<String, List<Function>> functions = new HashMap<>();
+    private Map<String, List<Function>> builtinFunctions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
 
     private List<String> topLevelCode = new ArrayList<>();
@@ -42,6 +43,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
+
+        List<Function> std_outout_list = new ArrayList<>();
+        std_outout_list.add(new Function("std_output", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.OUTPUT_STREAM)));
+        this.builtinFunctions.put("std_output", std_outout_list);
+
+        List<Function> std_input_list = new ArrayList<>();
+        std_input_list.add(new Function("std_input", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM)));
+        this.builtinFunctions.put("std_input", std_input_list);
+
+        List<Function> stream_state_list = new ArrayList<>();
+        List<Argument> stream_state_args = new ArrayList<>();
+        stream_state_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM), "inp"));
+        stream_state_list.add(new Function("stream_state", stream_state_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("stream_state", stream_state_list);
 
         loopIndex = 0;
         conditionalIndex = 0;
@@ -218,10 +233,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     // gets the function related to the function call if it exists
     // otherwise throws error
     private Function getReferringFunction(String name, List<Argument> arguments) {
-        List<Function> possibilities = this.functions.get(name);
+        List<Function> possibilities = new ArrayList<>();
 
-        if (possibilities == null) {
-            throw new RuntimeException("getReferringFunction: Function not defined: " + name);
+        if (this.functions.get(name) != null) {
+            possibilities.addAll(this.functions.get(name));
+        }
+        if (this.builtinFunctions.get(name) != null) {
+            possibilities.addAll(this.builtinFunctions.get(name));
         }
 
         for (Function poss : possibilities) {
@@ -1175,11 +1193,41 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         String functionName = this.visitFunctionName(ctx.functionName());
 
         if (Arrays.asList(BUILT_INS).contains(functionName)) {
+            List<GazpreaParser.ExpressionContext> arguments = ctx.expression();
+            Collections.reverse(arguments);
+            List<Argument> callArgumentValues = new ArrayList<>();
+
+            for (GazpreaParser.ExpressionContext argValue : arguments) {
+                Type argType = this.visitExpression(argValue);
+                Argument arg = new Argument(argType, null);
+                callArgumentValues.add(arg);
+            }
+
             // Special case for built in functions
             ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
 
+            Function refFunction = getReferringFunction(functionName, callArgumentValues);
+            List<Argument> refFunctionArgs = refFunction.getArguments();
+
             functionCall.add("name", this.functionNameMappings.get(functionName));
             this.addCode(functionCall.render());
+
+            List<String> varNames = ctx
+                    .expression()
+                    .stream()
+                    .map(this::getVariableFromExpression)
+                    .collect(Collectors.toList());
+
+            Collections.reverse(arguments);
+            Collections.reverse(varNames);
+
+            zip.zip(refFunctionArgs, varNames, null, null).forEach(pair -> {
+                if (pair.left().getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
+                    ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
+                    postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
+                    this.addCode(postCallAssign.render());
+                }
+            });
 
             switch(functionName) {
                 case "length":
