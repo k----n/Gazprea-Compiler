@@ -235,6 +235,8 @@ private:
 			    ((Vector<Value>*)this->value)->release(); break;
 			case VectorType:    ((Vector<Value>*) this->value)->release(); break;
 			case StandardIn:
+				((Value*)this->extData)->release();
+				break;
 			case StandardOut:
 			case Lvalue:
 			case StartVector:
