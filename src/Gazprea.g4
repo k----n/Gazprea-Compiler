@@ -110,7 +110,7 @@ expression
  | generator
  | filter
  | functionCall
- | expression '[' expression ']'
+ | expression '[' expression (',' expression)* ']'
  | expression op=Interval expression // TODO: this may never be accessed STILL MAKE FUNCTION FOR IT ANYWAYS
  | <assoc=right> op=(Sign|Not) expression
  | <assoc=right> expression op=Exponentiation expression
@@ -235,7 +235,8 @@ TypeSpecifier
 
 TypeType
 : 'vector'
-| 'interval';
+| 'interval'
+| 'matrix';
 
 BuiltinType
  : 'boolean'

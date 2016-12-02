@@ -825,12 +825,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: dotproduct
                 case "**":
                     // TODO
-                    if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))) {
-                        throw new Error("Types must be vectors");
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX && right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+
                     }
-                    operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR && right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    else {
+                        throw new Error("Incompatible types");
+                    }
                 // CASE: *
                 case "*":
                     // Interval case
