@@ -317,10 +317,22 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 }
             });
 
+            this.scope.getLocalScopeVariables().forEach(pair -> {
+                ST free = this.llvmGroup.getInstanceOf("freeVariable");
+                free.add("name", pair.right().getMangledName());
+                this.addCode(free.render());
+            });
+
             ST line = this.llvmGroup.getInstanceOf("functionReturn");
             this.addCode(line.render());
         }
         if (ctx.expression() != null) {
+            this.scope.getLocalScopeVariables().forEach(pair -> {
+                ST free = this.llvmGroup.getInstanceOf("freeVariable");
+                free.add("name", pair.right().getMangledName());
+                this.addCode(free.render());
+            });
+
             this.visitExpression(ctx.expression());
             ST line = this.llvmGroup.getInstanceOf("functionReturn");
             this.addCode(line.render());
@@ -1225,6 +1237,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
             this.addCode(unwrap.render());
         }
+
+        this.scope.getLocalScopeVariables().forEach(pair -> {
+            ST free = this.llvmGroup.getInstanceOf("freeVariable");
+            free.add("name", pair.right().getMangledName());
+            this.addCode(free.render());
+        });
 
         ST line = this.llvmGroup.getInstanceOf("functionReturn");
         this.addCode(line.render());

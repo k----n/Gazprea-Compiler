@@ -92,6 +92,10 @@ getTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 >>
 
+freeVariable(name) ::= <<
+call void @_Z7releasePPv(i8** <name>)
+>>
+
 pushVariable(name) ::= <<
 ; push variable
 call void @_Z4pushPPv(i8** <name>)
