@@ -265,6 +265,10 @@ public class Type {
         this.collection_type = collection_type;
     }
 
+    public void setType(TYPES type) {
+        this.type = type;
+    }
+
     public Tuple getTupleType() {
         return tupleType;
     }

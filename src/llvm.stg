@@ -118,6 +118,7 @@ varInit_character() ::= "call void @_Z24varInitPushNullCharacterv()"
 
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
 popStack() ::= "call void @_Z8popStackv()"
+copyStack() ::= "call void @_Z9copyStackv()"
 
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
 
@@ -199,6 +200,7 @@ notequalTuple() ::= "call void @_Z9neq_tuplev()"
 notEqualNull() ::="call void @_Z8neq_nullv()"
 
 shrinkIterateVector() ::="call void @_Z19shrinkIterateVectorv()"
+shrinkIterateVectorGen() ::="call void @_Z22shrinkIterateVectorGenv()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"
