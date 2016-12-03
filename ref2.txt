@@ -5,7 +5,13 @@ procedure main() returns integer {
     integer s[2] = [1,2];
     integer t[2] = [null];
     integer u[2] = [identity];
-
+    integer k[3] = [null, null, null];
+    integer p[3];
+    
+    k->std_output();
+    '\n' -> std_output();
+    p->std_output();
+    '\n' -> std_output();
     x -> std_output();
     y -> std_output();
     z -> std_output();

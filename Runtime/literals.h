@@ -322,13 +322,10 @@ void pushNullVector(char cType) {
             case 'r': newVector->append(new Value((float)0)); break;
             default: throw "vector cannot contain this type as a char"; break;
         }
-    }
 
+    }
     stack->push(newValue);
-    newValue->release();
-    newVector->release();
-    newValueType->release();
-    sizeValue->release();
+
 }
 
 void matchVectorSizes() {
