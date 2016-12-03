@@ -2,9 +2,18 @@ procedure main() returns integer {
 
     var out = std_output();
 
+integer vector v[10] = [i in 1..10 | i * i]; 
+
     integer i = 7;
 
-    [i in 1..i | i] -> out;
+integer vector z = [i in [i in 1..i | i] | [i in 1..10 | i * i][i]]; 
+
+    v -> out;
+
+    '\n' -> out;
+	
+    z -> out;
+
 
     return 0;
 }

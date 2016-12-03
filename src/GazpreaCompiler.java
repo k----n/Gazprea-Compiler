@@ -1093,6 +1093,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             this.visitExpression(ctx.expression().get(1));
 
+	    ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+            this.currentFunction.addLine(unwrap.render());
+
             ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
             this.currentFunction.addLine(swapStack.render());
 
