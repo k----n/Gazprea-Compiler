@@ -1,5 +1,11 @@
 #pragma once
 
+void release(void** variable) {
+	Value** var = (Value**)variable;
+	(*var)->release();
+}
+
+
 void push(void** variable) {
 	ValueType* type = new ValueType(Lvalue);
 	Value* value = new Value(type, variable);

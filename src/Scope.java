@@ -14,7 +14,7 @@ class Scope<T> {
     }
 
     void pushScope() {
-        this.scopes.add(new Pair<Long, Map<String, T>>(uniqueScopeId, new HashMap<>()));
+        this.scopes.add(new Pair<>(uniqueScopeId, new HashMap<>()));
         ++uniqueScopeId;
     }
 
@@ -38,6 +38,13 @@ class Scope<T> {
             }
         }
         return null;
+    }
+
+    List<Pair<String, T>> getLocalScopeVariables() {
+        Pair<Long, Map<String, T>> localScope = this.scopes.get(this.scopes.size() - 1);
+        List<Pair<String, T>> variables = new ArrayList<>();
+        localScope.right().forEach((key, value) -> variables.add(new Pair<>(key, value)));
+        return variables;
     }
 
     Long uniqueScopeId() {

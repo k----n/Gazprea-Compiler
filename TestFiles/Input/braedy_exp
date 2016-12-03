@@ -1,0 +1,10 @@
+procedure main() returns integer {
+var out = std_output();
+integer vector a[3] = [2, 3, 4];
+integer vector b[3] = [2, 3, 4];
+integer vector c[3] = a ^ b;
+c -> out;
+
+    return 0;
+
+}

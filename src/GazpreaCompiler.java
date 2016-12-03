@@ -14,6 +14,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private final String BUILT_INS[] = {"std_output", "std_input", "stream_state"};
 
     private Map<String, List<Function>> functions = new HashMap<>();
+    private Map<String, List<Function>> builtinFunctions = new HashMap<>();
     private Map<String, Variable> variables = new HashMap<>();
 
     private List<String> topLevelCode = new ArrayList<>();
@@ -43,6 +44,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
+
+        List<Function> std_outout_list = new ArrayList<>();
+        std_outout_list.add(new Function("std_output", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.OUTPUT_STREAM)));
+        this.builtinFunctions.put("std_output", std_outout_list);
+
+        List<Function> std_input_list = new ArrayList<>();
+        std_input_list.add(new Function("std_input", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM)));
+        this.builtinFunctions.put("std_input", std_input_list);
+
+        List<Function> stream_state_list = new ArrayList<>();
+        List<Argument> stream_state_args = new ArrayList<>();
+        stream_state_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM), "inp"));
+        stream_state_list.add(new Function("stream_state", stream_state_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("stream_state", stream_state_list);
 
         loopIndex = 0;
         conditionalIndex = 0;
@@ -219,10 +234,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     // gets the function related to the function call if it exists
     // otherwise throws error
     private Function getReferringFunction(String name, List<Argument> arguments) {
-        List<Function> possibilities = this.functions.get(name);
+        List<Function> possibilities = new ArrayList<>();
 
-        if (possibilities == null) {
-            throw new RuntimeException("getReferringFunction: Function not defined: " + name);
+        if (this.functions.get(name) != null) {
+            possibilities.addAll(this.functions.get(name));
+        }
+        if (this.builtinFunctions.get(name) != null) {
+            possibilities.addAll(this.builtinFunctions.get(name));
         }
 
         for (Function poss : possibilities) {
@@ -300,10 +318,22 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 }
             });
 
+            this.scope.getLocalScopeVariables().forEach(pair -> {
+                ST free = this.llvmGroup.getInstanceOf("freeVariable");
+                free.add("name", pair.right().getMangledName());
+                this.addCode(free.render());
+            });
+
             ST line = this.llvmGroup.getInstanceOf("functionReturn");
             this.addCode(line.render());
         }
         if (ctx.expression() != null) {
+            this.scope.getLocalScopeVariables().forEach(pair -> {
+                ST free = this.llvmGroup.getInstanceOf("freeVariable");
+                free.add("name", pair.right().getMangledName());
+                this.addCode(free.render());
+            });
+
             this.visitExpression(ctx.expression());
             ST line = this.llvmGroup.getInstanceOf("functionReturn");
             this.addCode(line.render());
@@ -383,7 +413,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
-        else if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(2) == ctx.expression()){
+        else if (ctx.expression() != null && ctx.Dot().size() == 1 && ctx.RealLiteral() != null){
             // CASE: RealLiteral Dot expression
             // Interval
             // assume expression will be pushed to stack
@@ -537,7 +567,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
         else if (ctx.generator() != null) {
-            // TODO
+            return this.visitGenerator(ctx.generator());
         }
         else if (ctx.filter() != null) {
             // TODO
@@ -545,7 +575,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
         }
-        else if (ctx.expression()!= null && ctx.expression().size() == 2 && ctx.op.getText().equals("..")){
+        else if (ctx.expression()!= null && ctx.expression().size() == 2 && ctx.op != null && ctx.op.getText().equals("..")){
             ST startVector = this.llvmGroup.getInstanceOf("startVector");
             this.addCode(startVector.render());
 
@@ -566,21 +596,39 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // CASE: where there is two expressions in the expression statement
             Type left = (Type)visit(ctx.expression(0));
             Type right = (Type)visit(ctx.expression(1));
-            String typeLetter = Type.getResultFunction(left, right);
-
-            if (!(typeLetter.equals("skip")) || typeLetter.equals("tuple")) {
-                for (int i = 0; i < 2; i++) {
-                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                    promoteCall.add("typeLetter", typeLetter);
-                    this.addCode(promoteCall.render());
-                    ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
-                    this.addCode(swapStack.render());
+            String operator = null;
+            String typeLetter = null;
+            if (ctx.op != null){
+                operator = ctx.op.getText();
+                typeLetter = Type.getResultFunction(left, right);
+                if (!(typeLetter.equals("skip")) && !typeLetter.equals("tuple")) {
+                    for (int i = 0; i < 2; i++) {
+                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                        promoteCall.add("typeLetter", typeLetter);
+                        this.addCode(promoteCall.render());
+                        ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                        this.addCode(swapStack.render());
+                    }
                 }
             }
-
-            String operator = ctx.op.getText();
             if (operator == null){
                 // TODO INDEXING OR MATRIX
+                if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    ST operatorCall = this.llvmGroup.getInstanceOf("indexVector");
+                    this.addCode(operatorCall.render());
+                    if(right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL){
+                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    else {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType());
+                    }
+                }
+                else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+
+                }
+                else {
+                    throw new Error("Cannot index:" + left.getCollection_type().toString());
+                }
                 return null;
             }
             ST operatorCall;
@@ -637,6 +685,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
                     }
+                    // Tuple Case
+                    else if (left.getType() == Type.TYPES.TUPLE && right.getType() == Type.TYPES.TUPLE){
+                        operatorCall = this.llvmGroup.getInstanceOf("equalTuple");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
                     // Vector case
                     else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
                         operatorCall = this.llvmGroup.getInstanceOf("equalVector");
@@ -656,6 +710,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     // Interval case
                     if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL){
                         operatorCall = this.llvmGroup.getInstanceOf("notequalInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Tuple Case
+                    else if (left.getType() == Type.TYPES.TUPLE && right.getType() == Type.TYPES.TUPLE){
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalTuple");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
                     }
@@ -784,12 +844,17 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: dotproduct
                 case "**":
                     // TODO
-                    if (!(left.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)) && !(right.getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR))) {
-                        throw new Error("Types must be vectors");
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX && right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+
                     }
-                    operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
-                    this.addCode(operatorCall.render());
-                    return Type.getReturnType(typeLetter);
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR && right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    else {
+                        throw new Error("Incompatible types");
+                    }
                 // CASE: *
                 case "*":
                     // Interval case
@@ -938,6 +1003,124 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return new Type(Type.SPECIFIERS.VAR, retType, retCollectionType);
     }
 
+    @Override public Type visitGenerator(GazpreaParser.GeneratorContext ctx) {
+        if (ctx.expression().size() == 3){
+            Type type = this.visitExpression(ctx.expression().get(0)); // push the expression to stack and call function to iterate through it
+
+            // TODO: Matrix generator
+            return new Type(Type.SPECIFIERS.VAR, type.getType(), Type.COLLECTION_TYPES.MATRIX);
+        }
+        else if (ctx.expression().size() == 2) {
+            // push a start vector for starting vector
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.currentFunction.addLine(startVector.render());
+
+            // first get the vector we need to iterate through
+            Type type = this.visitExpression(ctx.expression().get(0)); // push the expression to stack and call function to iterate through it
+
+            // convert to vector
+            ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+            promoteCall.add("typeLetter", "vv");
+            this.currentFunction.addLine((promoteCall.render()));
+
+            // vector we need to iterate through is now on the stack
+
+            // next we initiate the variable that we are going to assign to for each iteration of the vector
+            this.scope.pushScope();
+            String variableName = ctx.Identifier().get(0).getText(); // get the first identifier name
+
+            if (type.getType() == Type.TYPES.INTERVAL){
+                type.setType(Type.TYPES.INTEGER);
+            }
+
+            Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, type.getType()));
+
+            if (this.currentFunction != null) {
+                ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+                varLine.add("name", variable.getMangledName());
+                this.addCode(varLine.render());
+            } else {
+                this.variables.put(variableName, variable);
+            }
+
+            this.scope.initVariable(variableName, variable);
+
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
+            this.currentFunction.addLine(initLine.render());
+
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", variable.getMangledName());
+            this.currentFunction.addLine((initAssign.render()));
+
+            // variable is now taken care of
+            // next part is a work of black magic
+
+            ++this.loopIndex;
+
+            int myLoopIndex = this.loopIndex;
+
+            ST loopBegin = this.llvmGroup.getInstanceOf("loopStart");
+            loopBegin.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopBegin.render());
+
+            // where the magic should happen
+            // get vector size
+            // if size > 1, get first element, make new vector one element shorter
+            // need to push to stack (in order of): new vector, i value
+            // else if vector size is one element: push i value, startvector
+            // get new value on stack: new value, startvector
+            // swap on stack: startvector, new value
+            // copy top of stack: startvector, startvector, new value
+            // copied to check conditional, new value should remain on stack
+
+            ST shrink = this.llvmGroup.getInstanceOf("shrinkIterateVectorGen");
+            this.currentFunction.addLine(shrink.render());
+
+            ST assignIterator = this.llvmGroup.getInstanceOf("assignByVar");
+            assignIterator.add("name", variable.getMangledName());
+            this.currentFunction.addLine(assignIterator.render());
+
+            this.visitExpression(ctx.expression().get(1));
+
+	    ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+            this.currentFunction.addLine(unwrap.render());
+
+            ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+            this.currentFunction.addLine(swapStack.render());
+
+            ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
+            this.currentFunction.addLine(copyStack.render());
+
+            ST condition = this.llvmGroup.getInstanceOf("notEqualNull");
+            this.currentFunction.addLine((condition.render()));
+
+            ST loopConditional = this.llvmGroup.getInstanceOf("loopConditional");
+            loopConditional.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditional.render());
+
+            ST endLoop = this.llvmGroup.getInstanceOf("loopEnd");
+            endLoop.add("index", myLoopIndex);
+            this.currentFunction.addLine(endLoop.render());
+
+            ST loopConditionalEnd = this.llvmGroup.getInstanceOf("loopConditionalEnd");
+            loopConditionalEnd.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditionalEnd.render());
+
+            ST popStack = this.llvmGroup.getInstanceOf("popStack");
+            this.currentFunction.addLine(popStack.render());
+
+            // finalize the vector!
+            ST endVector = this.llvmGroup.getInstanceOf("endVector");
+            this.currentFunction.addLine(endVector.render());
+
+            this.scope.popScope();
+            return new Type(Type.SPECIFIERS.VAR, type.getType(), Type.COLLECTION_TYPES.VECTOR);
+        }
+        else {
+            throw new Error("Invalid generator type");
+        }
+    }
+
     @Override
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
         Tuple tupleType = new Tuple();
@@ -1082,6 +1265,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(unwrap.render());
         }
 
+        this.scope.getLocalScopeVariables().forEach(pair -> {
+            ST free = this.llvmGroup.getInstanceOf("freeVariable");
+            free.add("name", pair.right().getMangledName());
+            this.addCode(free.render());
+        });
+
         ST line = this.llvmGroup.getInstanceOf("functionReturn");
         this.addCode(line.render());
 
@@ -1164,11 +1353,41 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         String functionName = this.visitFunctionName(ctx.functionName());
 
         if (Arrays.asList(BUILT_INS).contains(functionName)) {
+            List<GazpreaParser.ExpressionContext> arguments = ctx.expression();
+            Collections.reverse(arguments);
+            List<Argument> callArgumentValues = new ArrayList<>();
+
+            for (GazpreaParser.ExpressionContext argValue : arguments) {
+                Type argType = this.visitExpression(argValue);
+                Argument arg = new Argument(argType, null);
+                callArgumentValues.add(arg);
+            }
+
             // Special case for built in functions
             ST functionCall = this.llvmGroup.getInstanceOf("functionCall");
 
+            Function refFunction = getReferringFunction(functionName, callArgumentValues);
+            List<Argument> refFunctionArgs = refFunction.getArguments();
+
             functionCall.add("name", this.functionNameMappings.get(functionName));
             this.addCode(functionCall.render());
+
+            List<String> varNames = ctx
+                    .expression()
+                    .stream()
+                    .map(this::getVariableFromExpression)
+                    .collect(Collectors.toList());
+
+            Collections.reverse(arguments);
+            Collections.reverse(varNames);
+
+            zip.zip(refFunctionArgs, varNames, null, null).forEach(pair -> {
+                if (pair.left().getType().getSpecifier().equals(Type.SPECIFIERS.VAR)) {
+                    ST postCallAssign = this.llvmGroup.getInstanceOf("assignVariable");
+                    postCallAssign.add("name", this.scope.getVariable(pair.right()).getMangledName());
+                    this.addCode(postCallAssign.render());
+                }
+            });
 
             switch(functionName) {
                 case "length":
@@ -1763,7 +1982,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (variable.getType().getType() == Type.TYPES.NULL) {
                 variable.setType(assignedType);
             }
-            if (assignedType.getType().equals(Type.TYPES.INTERVAL) && variable.getType().getCollection_type().equals(Type.COLLECTION_TYPES.VECTOR)){
+            if (assignedType.getType() == Type.TYPES.INTERVAL && variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
                 // convert to vector
                 ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                 promoteCall.add("typeLetter", "vv");

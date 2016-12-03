@@ -92,6 +92,10 @@ getTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 >>
 
+freeVariable(name) ::= <<
+call void @_Z7releasePPv(i8** <name>)
+>>
+
 pushVariable(name) ::= <<
 ; push variable
 call void @_Z4pushPPv(i8** <name>)
@@ -118,6 +122,7 @@ varInit_character() ::= "call void @_Z24varInitPushNullCharacterv()"
 
 swapStack() ::= "call void @_Z15swapStackTopTwov()"
 popStack() ::= "call void @_Z8popStackv()"
+copyStack() ::= "call void @_Z9copyStackv()"
 
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
 
@@ -195,13 +200,18 @@ lessthanVector() ::= "call void @_Z5lt__vv()"
 greaterthanVector() ::= "call void @_Z5gt__vv()"
 lessthanequalVector() ::= "call void @_Z5leq_vv()"
 greaterthanequalVector() ::= "call void @_Z5geq_vv()"
+indexVector() ::= "call void @_Z11indexVectorv()"
 
 matchVectorSizes() ::= "call void @_Z16matchVectorSizesv()"
 matchVectorTypes() ::= "call void @_Z16matchVectorTypesv()"
 
+equalTuple() ::= "call void @_Z8eq_tuplev()"
+notequalTuple() ::= "call void @_Z9neq_tuplev()"
+
 notEqualNull() ::="call void @_Z8neq_nullv()"
 
 shrinkIterateVector() ::="call void @_Z19shrinkIterateVectorv()"
+shrinkIterateVectorGen() ::="call void @_Z22shrinkIterateVectorGenv()"
 
 rightArrowOperator() ::= "call void @_Z18rightArrowOperatorv()"
 leftArrowOperator() ::= "call void @_Z17leftArrowOperatorv()"

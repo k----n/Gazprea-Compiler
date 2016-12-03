@@ -1,7 +1,5 @@
 #pragma once
 
-int stdInputError = 0;
-
 void std_output()	{ pushEmptyValue(StandardOut);	}
 void std_input()	{ pushEmptyValue(StandardIn);	}
 
@@ -26,7 +24,7 @@ void stream_state() {
 			printf("Argument was not a stream");
 			exit(1);
 		case StandardIn:
-			value = new Value(stdInputError);
+			value = ((Value*)stream->extra_data())->copy();
 	}
 	stack->push(value);
 	value->release();
