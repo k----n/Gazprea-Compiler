@@ -345,10 +345,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(0) == ctx.expression()){
             // CASE: expression Dot RealLiteral
             // Interval
-
-            ST startVector = this.llvmGroup.getInstanceOf("startVector");
-            this.addCode(startVector.render());
-
             String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
             ST right = this.llvmGroup.getInstanceOf("pushInteger");
             right.add("value", rightInt.replaceAll("_", ""));
@@ -373,9 +369,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
             String rightInt = ctx.RealLiteral(1).getText().replaceAll("\\.","");
 
-            ST startVector = this.llvmGroup.getInstanceOf("startVector");
-            this.addCode(startVector.render());
-
             // since we can't visit literal, push left and right to stack here
             ST right = this.llvmGroup.getInstanceOf("pushInteger");
             right.add("value", rightInt.replaceAll("_", ""));
@@ -393,10 +386,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(2) == ctx.expression()){
             // CASE: RealLiteral Dot expression
             // Interval
-
-            ST startVector = this.llvmGroup.getInstanceOf("startVector");
-            this.addCode(startVector.render());
-
             // assume expression will be pushed to stack
             Type right = this.visitExpression(ctx.expression(0));
 
@@ -417,10 +406,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         else if (ctx.expression().size()== 2 && ctx.Dot().size() == 2){
             // CASE: expression Dot Dot expression
             // Interval
-
-            ST startVector = this.llvmGroup.getInstanceOf("startVector");
-            this.addCode(startVector.render());
-
             // assume expression will be pushed to stack
             Type right = this.visitExpression(ctx.expression(1));
             Type left = this.visitExpression(ctx.expression(0));
@@ -1593,6 +1578,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endVector = this.llvmGroup.getInstanceOf("endVector");
             this.addCode(endVector.render());
 
+            // push size on stack for initializing vector
             if (ctx.sizeData() != null) {
                 this.visitSizeData(ctx.sizeData());
             } else {
@@ -1600,7 +1586,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 pushInt.add("value", -1);
                 this.addCode(pushInt.render());
             }
-
             ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
             this.addCode(setSizeData.render());
 
@@ -1609,12 +1594,35 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(setVectorContainedType.render());
 
             Type rhsType = this.visitExpression(ctx.expression());
+            if (rhsType.getType() == Type.TYPES.INTERVAL) {
+                // convert to vector
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", "vv");
+                this.currentFunction.addLine((promoteCall.render()));
+                rhsType.setType(Type.TYPES.INTEGER);
+                rhsType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
+            }
             if (lhsType.getType() == Type.TYPES.NULL) {
                 lhsType.setType(rhsType.getType());
             }
 
             this.addCode(this.llvmGroup.getInstanceOf("matchVectorSizes").render());
             this.addCode(this.llvmGroup.getInstanceOf("matchVectorTypes").render());
+
+            // push size on stack for promotion
+            if (ctx.sizeData() != null) {
+                this.visitSizeData(ctx.sizeData());
+            } else {
+                ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
+                pushInt.add("value", -1);
+                this.addCode(pushInt.render());
+            }
+            ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
+            promoteVector.add("value", getLetterForType(lhsType));
+            this.addCode(promoteVector.render());
+
+            ST padVector = this.llvmGroup.getInstanceOf("padVector");
+            this.addCode(padVector.render());
         } else {
             // case without rhs
             this.visitSizeData(ctx.sizeData());
@@ -1622,51 +1630,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             pushNullVector.add("value", getLetterForType(lhsType));
             this.addCode(pushNullVector.render());
         }
-
-
-
-
-
-
-
-
-/*
-        // create empty vector type
-        ST startVector = this.llvmGroup.getInstanceOf("startVector");
-        this.addCode(startVector.render());
-        ST endVector = this.llvmGroup.getInstanceOf("endVector");
-        this.addCode(endVector.render());
-*/
-        /*
-        // get the size data on the stack
-        if (ctx.sizeData() != null) {
-            this.visitSizeData(ctx.sizeData());
-        } else {
-            ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
-            pushInt.add("value", -1);
-            this.addCode(pushInt.render());
-        }
-        // assign the size data to the vector
-        ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
-        this.addCode(setSizeData.render());
-        */
-
-        // assign the contained type to the vector
-        //ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
-
-        //setVectorContainedType.add("value", typeChar);
-        //this.addCode(setVectorContainedType.render());
-
-        //if (ctx.expression() != null) {
-        //    Type rhsType = this.visitExpression(ctx.expression());
-
-        //    this.addCode(this.llvmGroup.getInstanceOf("matchVectorSizes").render());
-        //    this.addCode(this.llvmGroup.getInstanceOf("matchVectorTypes").render());
-
-        //    if (lhsType.getType() == Type.TYPES.NULL) {
-        //        lhsType.setType(rhsType.getType());
-        //    }
-        //}
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), lhsType);
 

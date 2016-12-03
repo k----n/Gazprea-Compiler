@@ -24,33 +24,6 @@ void printCharacter(Value* value) {
 	printf("%c", *value->characterValue());
 }
 
-//void printVector(CalculatorValue* value) {
-//	bool oldShouldPrintNewLine = shouldPrintNewLine;
-//	shouldPrintNewLine = false;
-//	Vector<CalculatorValue>* vector = value->vectorValue();
-//	for (int i = 0; i < vector->getCount(); ++i) {
-//		stack->push(vector->get(i));
-//		printValue();
-//		if (i + 1 < vector->getCount()) {
-//			printf(", ");
-//		}
-//	}
-//	shouldPrintNewLine = oldShouldPrintNewLine;
-//}
-//
-//void printString(CalculatorValue* value) {
-//	for (int i = 0; i < value->vectorValue()->getCount(); ++i) {
-//		stack->push(value->vectorValue()->get(i));
-//		printValue();
-//	}
-//}
-//
-//void printTuple(CalculatorValue* value) {
-//	printf("(");
-//	printVector(value);
-//	printf(")");
-//}
-
 void printValue() {
 	Value* value = stack->pop();
 	ValueType* valueType = value->getType();

@@ -3,15 +3,24 @@ procedure main() returns integer {
     integer vector y = [1,2];
     var z = [1,2];
     integer s[2] = [1,2];
-    integer t[2] = [null, null];
+    integer t[2] = [null];
+    integer u[2] = [identity];
 
-    //x -> std_output();
-    //y -> std_output();
+    x -> std_output();
+    y -> std_output();
     z -> std_output();
-    //s -> std_output();
+    s -> std_output();
     [null, 1] -> std_output();
-    [identity, identity, 1] -> std_output();
-    t -> std_output();
+    [identity, identity, 1] -> std_output(); 
+    t -> std_output(); 
+    u -> std_output();
+    '\n' -> std_output();
+    
+    integer vector m[*] = 1..2;
+    m -> std_output();
+    
+    integer vector md[5] = 1..2;
+    md -> std_output();
 
     return 0;
 }

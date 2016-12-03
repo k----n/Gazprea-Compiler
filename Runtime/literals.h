@@ -170,6 +170,7 @@ void setVectorSize() {
 
 void padVectorToStrictSize() {
     _unwrap();
+
     Value *vectorValue = stack->pop();
     if (! vectorValue->isVector()) {
         throw "we require a vector for padVectorToStrictSize";
@@ -202,16 +203,22 @@ void padVectorToStrictSize() {
         switch (containedType) {
             case BooleanType:
                 toPush = new Value((bool)0);
+                break;
             case CharacterType:
                 toPush = new Value((char)0);
+                break;
             case IntegerType:
                 toPush = new Value((int)0);
+                break;
             case RealType:
                 toPush = new Value((float)0.0);
+                break;
             case IdentityType:
                 toPush = new Value(new ValueType(IdentityType), nullptr);
+                break;
             case NullType:
             	toPush = new Value(new ValueType(NullType), nullptr);
+            	break;
             default:
                 throw "contained type invalid";
         }
@@ -337,6 +344,7 @@ void matchVectorSizes() {
     } else {
         value1size = -1;
     }
+
     if (value2type->hasVectorSize()) {
         value2size = value2type->getVectorSize();
     } else {

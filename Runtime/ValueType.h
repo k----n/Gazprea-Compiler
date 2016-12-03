@@ -21,7 +21,7 @@ public:
 	    this->containedType = containedType;
 	    this->has_vector_size = has_vector_size;
 	    this->has_matrix_size = has_matrix_size;
-	    this->has_contained_type = containedType;
+	    this->has_contained_type = has_contained_type;
 	    this->vector_size = vector_size;
 	    this->matrix_size = matrix_size;
 	}
@@ -34,7 +34,7 @@ public:
 	BuiltinType getType() { return this->builtinType; }
 
     bool hasVectorSize() {
-        return has_vector_size;
+        return this->has_vector_size;
     }
 	void setVectorSize(int size) {
 	    if (this->builtinType != VectorType) {
@@ -42,12 +42,11 @@ public:
         }
 
 	    this->vector_size = size;
-
 	    this->has_vector_size = true;
 	}
 
     bool hasMatrixSize() {
-        return has_matrix_size;
+        return this->has_matrix_size;
     }
 	void setMatrixSize(int size) {
 	    if (this->builtinType != VectorType) {
@@ -56,10 +55,11 @@ public:
 
 	    this->matrix_size = size;
 	    this->has_matrix_size = true;
+
 	}
 
     bool hasContainedType() {
-        return has_contained_type;
+        return this->has_contained_type;
     }
 	void setContainedType(BuiltinType type) {
 	    this->containedType = type;

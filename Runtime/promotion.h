@@ -398,12 +398,20 @@ void promoteVector(char cType) {
 	Value* newValue = new Value(newValueType, new Vector<Value>());
     Vector<Value>* newVector = newValue->vectorValue();
 
+    newValueType->setVectorSize(goalSize);
+    switch (cType) {
+        case 'b': newValueType->setContainedType(BooleanType); break;
+        case 'c': newValueType->setContainedType(CharacterType); break;
+        case 'i': newValueType->setContainedType(IntegerType); break;
+        case 'r': newValueType->setContainedType(RealType); break;
+        default: throw "cannot promote vector to this type"; break;
+    }
+
     Value* indexedValue = nullptr;
 
-    for (int index = 0; index < goalSize; ++index) {
+    for (int index = 0; index < poppedSize; ++index) {
         indexedValue = poppedVector->get(index);
         stack->push(indexedValue);
-        indexedValue->release();
         switch (cType) {
             case 'b': promoteTo_b(); break;
             case 'c': promoteTo_c(); break;
@@ -413,15 +421,11 @@ void promoteVector(char cType) {
         }
         indexedValue = stack->pop();
         newVector->append(indexedValue);
-        indexedValue->release();
+
     }
 
 	stack->push(newValue);
-	newValue->release();
-	newVector->release();
-	newValueType->release();
-	poppedValue->release();
-	poppedVector->release();
+
 }
 
 // requires a reference Vector (e.g. pushVectorValueType) on stack to compare
@@ -456,8 +460,10 @@ void promoteTo_v() {
             }
 
            	newType = new ValueType(VectorType);
-
+           	newType->setContainedType(IntegerType);
+           	newType->setVectorSize(end-start + 1);
            	newValue = new Value(newType, vectorValues);
+
             break;
         case VectorType:
 			newValue = value;

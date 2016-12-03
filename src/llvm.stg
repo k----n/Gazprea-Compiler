@@ -122,6 +122,7 @@ popStack() ::= "call void @_Z8popStackv()"
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
 
 promoteVector(value) ::= "call void @_Z13promoteVectorc(i8 <value>)"
+padVector() ::= "call void @_Z21padVectorToStrictSizev()"
 
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
