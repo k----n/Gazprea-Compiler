@@ -1,11 +1,13 @@
 #pragma once
 
 void printBoolean(Value* value) {
-	if (*value->booleanValue()) {
+	bool* boolValue = value->booleanValue();
+	if (*boolValue) {
 		printf("T");
 	} else {
 		printf("F");
 	}
+	delete boolValue;
 }
 
 void printInteger(Value* value) {
@@ -57,6 +59,7 @@ void printValue() {
 
     // following two declarations are meant for printing a vector
     int vectorSize;
+	int matrixSize;
     Value *vectorElement;
 
 	Value *newChar; // only for nulltype and identitytype
@@ -97,6 +100,14 @@ void printValue() {
                 }
 		    }
 		    break;
+		case MatrixType:
+			matrixSize = value->matrixValue()->getCount();
+			for (int i = 0; i < matrixSize; ++i) {
+				vectorElement = value->matrixValue()->get(i);
+				stack->push(vectorElement);
+				printValue();
+			}
+			break;
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
 		case StandardIn:	printf("Cannot print StandardIn\n");	exit(1);
 		case Lvalue:		printf("Cannot print Lvalue\n");		exit(1);

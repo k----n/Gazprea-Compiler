@@ -176,6 +176,7 @@ void eq_tuple(){
                 case StandardIn:
                 case Lvalue:
                 case TupleType:
+				case MatrixType:
                 case StartVector:
                     printf("Type cannot be compared in tuple\n"); exit(1);
             }

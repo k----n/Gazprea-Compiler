@@ -47,7 +47,7 @@ public:
         return has_matrix_size;
     }
 	void setMatrixSize(int size) {
-	    if (this->builtinType != VectorType) {
+	    if (this->builtinType != MatrixType) {
             throw "not a vector type";
         }
 

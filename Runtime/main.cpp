@@ -29,22 +29,9 @@ int main(int argc, const char * argv[]) {
 #ifndef LLVM_BUILD
 	
 	void* t1 = nullptr;
-	void* t2 = nullptr;
-	void* t3 = nullptr;
 	
 	pushStartVector();
-	varInitPushNullInteger();
-	varInitPushNullInteger();
-	endTuple();
-	assign(&t1);
-	pushIdentity();
-	assign(&t1);
-	push(&t1);
-	getAt(0);
-	std_output();
-	rightArrowOperator();
-	
-	
+	p
 	
 	pushInteger(0); // Push return code
 #endif

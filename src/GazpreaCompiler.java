@@ -11,7 +11,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private STGroup runtimeGroup;
     private STGroup llvmGroup;
 
-    private final String BUILT_INS[] = {"std_output", "std_input", "stream_state"};
+    private final String BUILT_INS[] = {
+            "std_output",
+            "std_input",
+            "stream_state",
+            "length",
+            "rows",
+            "columns",
+            "reverse"
+    };
 
     private Map<String, List<Function>> functions = new HashMap<>();
     private Map<String, List<Function>> builtinFunctions = new HashMap<>();
@@ -43,10 +51,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
+        this.functionNameMappings.put("length", "_Z6lengthv");
+        this.functionNameMappings.put("rows", "_Z4rowsv");
+        this.functionNameMappings.put("columns", "_Z7columnsv");
+        this.functionNameMappings.put("reverse", "_Z7reversev");
 
-        List<Function> std_outout_list = new ArrayList<>();
-        std_outout_list.add(new Function("std_output", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.OUTPUT_STREAM)));
-        this.builtinFunctions.put("std_output", std_outout_list);
+        List<Function> std_output_list = new ArrayList<>();
+        std_output_list.add(new Function("std_output", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.OUTPUT_STREAM)));
+        this.builtinFunctions.put("std_output", std_output_list);
 
         List<Function> std_input_list = new ArrayList<>();
         std_input_list.add(new Function("std_input", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM)));
@@ -57,6 +69,30 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         stream_state_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM), "inp"));
         stream_state_list.add(new Function("stream_state", stream_state_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
         this.builtinFunctions.put("stream_state", stream_state_list);
+
+        List<Function> length_list = new ArrayList<>();
+        List<Argument> length_args = new ArrayList<>();
+        length_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.VECTOR), "vec"));
+        length_list.add(new Function("length", length_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("length", length_list);
+
+        List<Function> rows_list = new ArrayList<>();
+        List<Argument> rows_args = new ArrayList<>();
+        rows_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.MATRIX), "mat"));
+        rows_list.add(new Function("rows", rows_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("rows", rows_list);
+
+        List<Function> columns_list = new ArrayList<>();
+        List<Argument> columns_args = new ArrayList<>();
+        columns_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.MATRIX), "mat"));
+        columns_list.add(new Function("columns", columns_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("columns", columns_list);
+
+        List<Function> reverse_list = new ArrayList<>();
+        List<Argument> reverse_args = new ArrayList<>();
+        reverse_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.VECTOR), "vec"));
+        reverse_list.add(new Function("reverse", reverse_args, new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.VECTOR)));
+        this.builtinFunctions.put("reverse", reverse_list);
 
         loopIndex = 0;
         conditionalIndex = 0;
@@ -1521,15 +1557,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             });
 
             switch(functionName) {
-                case "length":
-                    // TODO: IMPLEMENT length()
-                    break;
                 case "std_output":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.OUTPUT_STREAM);
                 case "std_input":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INPUT_STREAM);
                 case "stream_status":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "length":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "rows":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "columns":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "reverse":
+                    return new Type(Type.SPECIFIERS.VAR, null, Type.COLLECTION_TYPES.VECTOR);
                 default:
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.VOID);
             }
@@ -1850,6 +1891,161 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     @Override
     public String visitFunctionName(GazpreaParser.FunctionNameContext ctx) {
         return ctx.getText();
+    }
+
+    private void processTrivialDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
+        // processes:
+        // - boolean
+        // - character
+        // - integer
+        // - real
+        // - interval
+        String variableName = ctx.Identifier().getText();
+
+        if (ctx.expression() != null) {
+            Type rhsType = this.visitExpression(ctx.expression());
+
+            if (lhsType.getType() == Type.TYPES.NULL) {
+                lhsType = rhsType;
+            }
+        } else {
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + lhsType.getTypeLLVMString());
+            this.addCode(initLine.render());
+        }
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), lhsType);
+
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", variable.getMangledName());
+            this.addCode(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
+
+        if (lhsType.getType() != Type.TYPES.NULL) {
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + lhsType.getTypeLLVMString());
+            this.addCode(initLine.render());
+
+            ST line = this.llvmGroup.getInstanceOf("assignByVar");
+            line.add("name", variable.getMangledName());
+            this.addCode(line.render());
+        }
+
+
+        ST line = this.llvmGroup.getInstanceOf("assignByVar");
+        line.add("name", variable.getMangledName());
+        this.addCode(line.render());
+
+        this.scope.initVariable(variableName, variable);
+    }
+
+    private int getLetterForType(Type input_type){
+        switch (input_type.getType()) {
+            case BOOLEAN: return 'b';
+            case CHARACTER: return 'c';
+            case INTEGER: return 'i';
+            case REAL: return 'r';
+            case IDENTITY:
+            case NULL: return  'n';
+            default:
+                throw new RuntimeException("Vector does not support this type");
+        }
+    }
+
+    private void processVectorDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
+        // processes:
+        // - vectors of all types
+
+        String variableName = ctx.Identifier().getText();
+
+        // must be vector
+        lhsType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
+
+        if (ctx.expression() != null) {
+
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+            ST endVector = this.llvmGroup.getInstanceOf("endVector");
+            this.addCode(endVector.render());
+
+            // push size on stack for initializing vector
+            if (ctx.sizeData() != null) {
+                this.visitSizeData(ctx.sizeData());
+            } else {
+                ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
+                pushInt.add("value", -1);
+                this.addCode(pushInt.render());
+            }
+            ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
+            this.addCode(setSizeData.render());
+
+            ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
+            setVectorContainedType.add("value", getLetterForType(lhsType));
+            this.addCode(setVectorContainedType.render());
+
+            Type rhsType = this.visitExpression(ctx.expression());
+            if (rhsType.getType() == Type.TYPES.INTERVAL) {
+                // convert to vector
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", "vv");
+                this.currentFunction.addLine((promoteCall.render()));
+                rhsType.setType(Type.TYPES.INTEGER);
+                rhsType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
+            }
+            if (lhsType.getType() == Type.TYPES.NULL) {
+                lhsType.setType(rhsType.getType());
+            }
+
+            this.addCode(this.llvmGroup.getInstanceOf("matchVectorSizes").render());
+            this.addCode(this.llvmGroup.getInstanceOf("matchVectorTypes").render());
+
+            // push size on stack for promotion
+            if (ctx.sizeData() != null) {
+                this.visitSizeData(ctx.sizeData());
+            } else {
+                ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
+                pushInt.add("value", -1);
+                this.addCode(pushInt.render());
+            }
+            ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
+            promoteVector.add("value", getLetterForType(lhsType));
+            this.addCode(promoteVector.render());
+
+            ST padVector = this.llvmGroup.getInstanceOf("padVector");
+            this.addCode(padVector.render());
+        } else {
+            // case without rhs
+            this.visitSizeData(ctx.sizeData());
+            ST pushNullVector = this.llvmGroup.getInstanceOf("pushNullVector");
+            pushNullVector.add("value", getLetterForType(lhsType));
+            this.addCode(pushNullVector.render());
+        }
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), lhsType);
+
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", variable.getMangledName());
+            this.addCode(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
+
+        ST line = this.llvmGroup.getInstanceOf("assignByVar");
+        line.add("name", variable.getMangledName());
+        this.addCode(line.render());
+
+        this.scope.initVariable(variableName, variable);
+    }
+
+    private void processTupleDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
+        // processes:
+        // - tuples of all types
+
+
+        String variableName = ctx.Identifier().getText();
+
     }
 
     @Override

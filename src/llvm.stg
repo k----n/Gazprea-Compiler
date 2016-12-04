@@ -143,6 +143,7 @@ call void @_Z8endTuplev()
 >>
 endInterval() ::= "call void @_Z11endIntervalv()"
 endVector() ::= "call void @_Z9endVectorv()"
+endMatrix() ::= "call void @_Z9endMatrixv()"
 
 setVectorContainedType(value) ::= "call void @_Z22setVectorContainedTypec(i8 signext <value>)"
 setVectorSize() ::= "call void @_Z13setVectorSizev()"

@@ -163,12 +163,52 @@ void endInterval() {
     type -> release();
 }
 
+void endMatrix() {
+	Stack<Value>* elements = new Stack<Value>;
+	
+	_unwrap();
+	Value* element = stack->pop();
+	
+	int size = 0;
+	while (!element->isStartVector()) {
+		_unwrap();
+		elements->push(element);
+		element->release();
+		element = stack->pop();
+		++size;
+	}
+	element->release();
+	
+	Vector<Value>* matrixValues = new Vector<Value>();
+	
+	Value* node = elements->popOrNull();
+	while (node != nullptr) {
+		matrixValues->append(node);
+		node->release();
+		node = elements->popOrNull();
+	}
+	
+	ValueType* type = new ValueType(MatrixType);
+	type->setMatrixSize(size);
+	Value* matrix = new Value(type, matrixValues);
+	stack->push(matrix);
+	type->release();
+	matrix->release();
+	elements->release();
+}
 
 void endVector() {
     Stack<Value>* elements = new Stack<Value>;
 
     _unwrap();
     Value* element = stack->pop();
+	
+	if (element->isVector()) {
+		stack->push(element);
+		element->release();
+		endMatrix();
+		return;
+	}
 
     int size = 0;
     while (!element->isStartVector()) {

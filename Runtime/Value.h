@@ -94,9 +94,10 @@ public:
 			    copy->value = this->intervalValue()->copy();
 			    break;
 			case VectorType:
-			// TODO: copy
-			    //copy->value = this->vectorValue()->copy();
+			    copy->value = this->vectorValue()->copy();
 			    break;
+			case MatrixType:
+				copy->value = this->matrixValue()->copy();
 			case Lvalue:
 				// TODO: Retain???
 				break;
@@ -122,11 +123,11 @@ public:
 	bool isTuple()		const { return this->valueType->getType() == TupleType;   }
 	bool isInterval()   const { return this->valueType->getType() == IntervalType; }
 	bool isVector()     const { return this->valueType->getType() == VectorType; }
+	bool isMatrix()		const { return this->valueType->getType() == MatrixType; }
 	bool isStandardIn()	const { return this->valueType->getType() == StandardIn;	}
 	bool isStandardOut()const { return this->valueType->getType() == StandardOut;	}
 	bool isLvalue()		const { return this->valueType->getType() == Lvalue;		}
 	bool isStartVector()const { return this->valueType->getType() == StartVector; }
-
 	
 	bool* booleanValue() {
 		bool* b = new bool;
@@ -179,11 +180,18 @@ public:
 	}
 
     Vector<Value>* vectorValue() const {
-        if (this->isNull())		{ printf("This is a null interval\n"); exit(1); }
-        if (this->isIdentity())	{ printf("This is an identity interval\n"); exit(1); }
+        if (this->isNull())		{ printf("This is a null vector\n"); exit(1); }
+        if (this->isIdentity())	{ printf("This is an identity vector\n"); exit(1); }
         if (!this->isVector()){ printf("Not a Vector \n"); exit(1); }
         return ((Vector<Value>*)this->value)->copy();
     }
+	
+	Vector<Value>* matrixValue() const {
+		if (this->isNull())		{ printf("This is a null matrix"); exit(1); }
+		if (this->isIdentity())	{ printf("This is an identity matrix"); exit(1); }
+		if (!this->isMatrix())	{ printf("Not a matrix"); exit(1); }
+		return ((Vector<Value>*)this->value)->copy();
+	}
 
 	Value* lvalue() {
 		if (!this->isLvalue()) { printf("Not an lvalue\n"); exit(1); }
@@ -233,7 +241,10 @@ private:
 			case IntervalType:
 			    //printf("interval was released\n");
 			    ((Vector<Value>*)this->value)->release(); break;
-			case VectorType:    ((Vector<Value>*) this->value)->release(); break;
+			case VectorType:
+				((Vector<Value>*) this->value)->release(); break;
+			case MatrixType:
+				((Vector<Vector<Value>*>*)this->value)->release(); break;
 			case StandardIn:
 				((Value*)this->extData)->release();
 				break;
