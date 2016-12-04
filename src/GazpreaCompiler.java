@@ -1040,6 +1040,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.scope.pushScope();
             String variableName = ctx.Identifier().get(0).getText(); // get the first identifier name
 
+            // TODO Change based on marcus's answer
             if (type.getType() == Type.TYPES.INTERVAL){
                 type.setType(Type.TYPES.INTEGER);
             }
@@ -1093,7 +1094,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             this.visitExpression(ctx.expression().get(1));
 
-	    ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+	        ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
             this.currentFunction.addLine(unwrap.render());
 
             ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
@@ -1131,6 +1132,160 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             throw new Error("Invalid generator type");
         }
     }
+
+    @Override public Type visitFilter(GazpreaParser.FilterContext ctx) {
+        // first get the vector we need to iterate through
+        Type type = this.visitExpression(ctx.expression()); // push the expression to stack and call function to iterate through it
+
+        // convert to vector
+        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+        promoteCall.add("typeLetter", "vv");
+        this.currentFunction.addLine((promoteCall.render()));
+
+        // duplicate vector so last one is to iterate through
+        ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
+        this.currentFunction.addLine(copyStack.render());
+
+        // vector we need to iterate through is now on the stack
+        // next we initiate the variable that we are going to assign to for each iteration of the vector
+        this.scope.pushScope();
+        String variableName = ctx.Identifier().getText(); // get the first identifier name
+
+        // TODO Change based on marcus's answer
+        if (type.getType() == Type.TYPES.INTERVAL){
+            type.setType(Type.TYPES.INTEGER);
+        }
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, type.getType()));
+
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", variable.getMangledName());
+            this.addCode(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
+
+        this.scope.initVariable(variableName, variable);
+
+        ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
+        this.currentFunction.addLine(initLine.render());
+
+        ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+        initAssign.add("name", variable.getMangledName());
+        this.currentFunction.addLine(initAssign.render());
+
+        // now we will loop through each of these predicate thingies and they will push a tuple onto the stack
+        this.visitPredicate(ctx.predicate(), variable);
+
+        this.scope.popScope();
+
+        // finally find the things that aren't in the vector and return tuple onto the stack
+        ST getAdd = this.llvmGroup.getInstanceOf("getAddFilter");
+        this.currentFunction.addLine(getAdd.render());
+
+        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE);
+    }
+
+    // function overloading
+    private Type visitPredicate(GazpreaParser.PredicateContext ctx, Variable variable) {
+        int size = ctx.filterexpression().size();
+
+        ST startVector = this.llvmGroup.getInstanceOf("startVector");
+        this.currentFunction.addLine(startVector.render());
+
+        ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+        this.currentFunction.addLine(swapStack.render());
+
+        ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
+        for (int i = 0; i < size; i++){
+            // duplicate vector to iterate through it
+            this.currentFunction.addLine(copyStack.render());
+        }
+
+        for (int i = 0; i < size; i++){
+            // create the loops
+            ++this.loopIndex;
+
+            int myLoopIndex = this.loopIndex;
+
+            this.currentLoop.addFirst(myLoopIndex);
+
+            // start vector for vector of values
+            this.currentFunction.addLine(startVector.render());
+
+            ST loopBegin = this.llvmGroup.getInstanceOf("loopStart");
+            loopBegin.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopBegin.render());
+
+            // where the magic should happen
+            // get vector size
+            // if size > 1, get first element, make new vector one element shorter
+            // need to push to stack (in order of): new vector, i value
+            // else if vector size is one element: push i value, startvector
+            // get new value on stack: new value, startvector
+            // swap on stack: startvector, new value
+
+            ST shrink = this.llvmGroup.getInstanceOf("shrinkIterateVectorGen");
+            this.currentFunction.addLine(shrink.render());
+
+            ST assignIterator = this.llvmGroup.getInstanceOf("assignByVar");
+            assignIterator.add("name", variable.getMangledName());
+            this.currentFunction.addLine(assignIterator.render());
+
+            this.visitFilterexpression(ctx.filterexpression(i));
+
+            ST line = this.llvmGroup.getInstanceOf("pushVariable");
+            line.add("name", variable.getMangledName());
+            this.currentFunction.addLine(line.render());
+
+            ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+            this.currentFunction.addLine(unwrap.render());
+
+            this.currentFunction.addLine(swapStack.render());
+
+            // see if the stack has a true value, if true keep value on stack, otherwise pop stack again
+            ST check = this.llvmGroup.getInstanceOf("notEqualFilter");
+            this.currentFunction.addLine((check.render()));
+
+            ST condition = this.llvmGroup.getInstanceOf("notEqualNull");
+            this.currentFunction.addLine((condition.render()));
+
+            ST loopConditional = this.llvmGroup.getInstanceOf("loopConditional");
+            loopConditional.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditional.render());
+
+            ST loopEnd = this.llvmGroup.getInstanceOf("loopEnd");
+            loopEnd.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopEnd.render());
+
+            ST loopConditionalEnd = this.llvmGroup.getInstanceOf("loopConditionalEnd");
+            loopConditionalEnd.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditionalEnd.render());
+
+            ST endVector = this.llvmGroup.getInstanceOf("endVector");
+            this.addCode(endVector.render());
+
+            this.currentLoop.removeFirst();
+
+            // swap that vector with a iterator vector
+            this.currentFunction.addLine(swapStack.render());
+        }
+        ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
+        this.addCode(endTuple.render());
+
+        return null;
+    }
+
+
+    @Override public Type visitFilterexpression(GazpreaParser.FilterexpressionContext ctx) {
+        // this will be a modified version of visit expression, it will be similar but not the same
+        if (true) {
+            throw new Error("Not completed yet");
+        }
+        return null;
+    }
+
 
     @Override
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {

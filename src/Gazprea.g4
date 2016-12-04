@@ -160,7 +160,38 @@ assignment
 typedef: Typedef type Identifier;
 
 generator: '[' Identifier In expression (',' Identifier In expression)? '|' expression ']';
-filter: '[' Identifier In expression '&' expression ']';
+filter: '[' Identifier In expression '&' predicate ']';
+
+predicate: filterexpression (Or filterexpression)*;
+
+filterexpression
+ : filterexpression Dot Dot filterexpression // interval
+ | filterexpression Dot RealLiteral // interval
+ | RealLiteral RealLiteral // interval
+ | RealLiteral Dot filterexpression // interval
+ | filterexpression RealLiteral // tuple access
+ | filterexpression Dot Identifier // tuple access
+ | literal
+ | Identifier
+ | As '<' (type | tupleTypeDetails) '>' ('(' filterexpression ')' | filterexpression)
+ | generator
+ | filter
+ | functionCall
+ | filterexpression '[' filterexpression (',' filterexpression)* ']'
+ | filterexpression op=Interval filterexpression // TODO: this may never be accessed STILL MAKE FUNCTION FOR IT ANYWAYS
+ | <assoc=right> op=(Sign|Not) filterexpression
+ | <assoc=right> filterexpression op=Exponentiation filterexpression
+ | filterexpression op=DotProduct filterexpression // TODO: NOT SURE ABOUT THIS PRECEDENCE
+ | filterexpression op=(Asteriks|Division|Modulus) filterexpression
+ | filterexpression op=Sign filterexpression
+ | filterexpression op=By filterexpression
+ | filterexpression op=(LessThan|LessThanOrEqual|GreaterThan|GreaterThanOrEqual) filterexpression
+ | filterexpression op=(Equals|NotEqual) filterexpression
+ | filterexpression op=And filterexpression
+ | filterexpression Xor filterexpression
+ | <assoc=right> filterexpression op=Concatenation filterexpression
+ | '(' expression ')'
+ ;
 
 //
 //iterator: Loop Identifier In expression block;

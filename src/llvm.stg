@@ -202,6 +202,9 @@ equalTuple() ::= "call void @_Z8eq_tuplev()"
 notequalTuple() ::= "call void @_Z9neq_tuplev()"
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
+notEqualFilter() ::="call void @_Z10neq_filterv()"
+
+getAddFilter() ::="call define void @_Z7getAddFv()"
 
 shrinkIterateVector() ::="call void @_Z19shrinkIterateVectorv()"
 shrinkIterateVectorGen() ::="call void @_Z22shrinkIterateVectorGenv()"

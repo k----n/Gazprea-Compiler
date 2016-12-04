@@ -148,8 +148,6 @@ void endInterval() {
     Value * node1 = stack->pop();
     Value * node2 = stack->pop();
 
-    stack->pop(); // pop one more time for start vector
-
     Vector<Value>* intervalValues = new Vector<Value>;
 
     intervalValues->append(node1);
@@ -359,4 +357,92 @@ void setTuple(int i) {
     tuple->release();
     value->release();
     value1->release();
+}
+
+void getAddF() {
+    Value* value = stack->pop(); // this is the tuple
+    Value* value2 = stack->pop(); // this is the original vector
+
+    if (!(value)->isTuple()) {
+        printf("NOT TUPLE\n");
+        exit(1);
+    }
+
+    int size = value->tupleValue()->getCount();
+
+    Vector<Value>* tupleValues = new Vector<Value>;
+
+    Value* node;
+    for (int j = 0; j < size; ++j) {
+        node = value->tupleValue()->get(j);
+        int count = node->vectorValue()->getCount();
+        for (int i = 0; i < count; ++i){
+           tupleValues->append(node);
+        }
+    }
+
+    bool flag = true;
+
+    int vSize = value2->vectorValue()->getCount();
+
+    int newSize = tupleValues->getCount();
+
+    // get type of vector
+    ValueType* type = value2->vectorValue()->get(0)->getType();
+
+    Vector<Value>* newValues = new Vector<Value>;
+
+    Value* node2;
+    for (int i = 0; i < vSize; ++i){
+        node = value2->vectorValue()->get(i);
+        flag = true;
+        for (int j = 0; j < newSize; ++j){
+            node2 = tupleValues->get(j);
+            switch(type->getType()){
+                case BooleanType:
+                    if (node->booleanValue() != node2->booleanValue()){
+                        flag = false;
+                    }
+                    break;
+                case IntegerType:
+                    if (node->integerValue() != node2->integerValue()){
+                        flag = false;
+                    }
+                    break;
+                case RealType:
+                    if (node->realValue() != node2->realValue()){
+                        flag = false;
+                    }
+                    break;
+                case CharacterType:
+                    if (node->characterValue() != node2->characterValue()){
+                        flag = false;
+                    }
+                    break;
+                case VectorType:
+                case IntervalType:
+                case NullType:
+                case IdentityType:
+                case StandardOut:
+                case StandardIn:
+                case Lvalue:
+                case TupleType:
+                case StartVector:
+                    printf("Type cannot be compared\n"); exit(1);
+            }
+        }
+        if (flag == true){
+            newValues->append(node);
+        }
+    }
+
+	ValueType* tupleType = new ValueType(TupleType);
+
+    Value* tuple = new Value(tupleType, newValues);
+
+    stack -> push(tuple);
+
+    type->release();
+    tuple->release();
+    value->release();
 }

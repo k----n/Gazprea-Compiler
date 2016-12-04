@@ -14,6 +14,12 @@ integer vector z = [i in [i in 1..i | i] | [i in 1..10 | i * i][i]];
 	
     z -> out;
 
+    character vector x = [i in 97..122 | as<character>(i)];
+
+    '\n' -> out;
+
+    x -> out;
+
 
     return 0;
 }

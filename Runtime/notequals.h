@@ -89,3 +89,12 @@ void neq_null() {
         stack -> push(new Value(false));
     }
 }
+
+void neq_filter() {
+    _unwrap();
+    Value* element = stack->pop();
+    if (!element->booleanValue()){
+        stack -> pop();
+    }
+    element -> release();
+}
