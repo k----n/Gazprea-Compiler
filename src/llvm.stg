@@ -136,6 +136,7 @@ pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
 pushReal(value) ::= "call void @_Z8pushRealf(float <value>)"
 pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 <value>)"
 pushNullVector(value) ::= "call void @_Z14pushNullVectorc(i8 <value>)"
+pushIdentityVector(value) ::= "call void @_Z18pushIdentityVectorc(i8 <value>)"
 
 startVector() ::= <<
 ; starting of a vector

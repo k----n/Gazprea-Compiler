@@ -983,8 +983,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             line.add("value", (int) val);
             retType = Type.TYPES.CHARACTER;
         } else if (ctx.StringLiteral() != null) {
-            // TODO
-            retType = Type.TYPES.STRING;
+            return this.visitStringLiteral(ctx.StringLiteral());
         } else if (ctx.RealLiteral() != null) {
             line = this.llvmGroup.getInstanceOf("pushReal");
             float val = Float.parseFloat(ctx.getText().replaceAll("_", ""));
@@ -1152,6 +1151,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
 
+    public Type visitStringLiteral(TerminalNode str) {
+
+
+        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.CHARACTER, Type.COLLECTION_TYPES.VECTOR);
+    }
+
     @Override
     public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
         Integer size = ctx.expression().size();
@@ -1186,8 +1191,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 break;
             }
         }
-
-
 
         Type type = new Type(Type.SPECIFIERS.VAR, highestRankType);
 
@@ -1327,7 +1330,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
 
         } else {
-            // TODO check to see if assigning type is valid
             Type visitType = this.visitExpression(ctx.expression());
 
             if (visitType.getType().equals(Type.TYPES.TUPLE) && ctx.Identifier().size() > 1){
@@ -1790,6 +1792,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         // must be vector
         lhsType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
 
+        ST popStack = this.llvmGroup.getInstanceOf("popStack");
+
         if (ctx.expression() != null) {
 
             ST startVector = this.llvmGroup.getInstanceOf("startVector");
@@ -1814,13 +1818,27 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             Type rhsType = this.visitExpression(ctx.expression());
             if (rhsType.getType() == Type.TYPES.INTERVAL) {
-                // convert to vector
                 ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                 promoteCall.add("typeLetter", "vv");
                 this.currentFunction.addLine((promoteCall.render()));
                 rhsType.setType(Type.TYPES.INTEGER);
                 rhsType.setCollection_type(Type.COLLECTION_TYPES.VECTOR);
             }
+            if (rhsType.getType() == Type.TYPES.NULL && rhsType.getCollection_type() == null) {
+                this.addCode(popStack.render());
+                this.visitSizeData(ctx.sizeData());
+                ST pushNullVector = this.llvmGroup.getInstanceOf("pushNullVector");
+                pushNullVector.add("value", getLetterForType(lhsType));
+                this.addCode(pushNullVector.render());
+            }
+            if (rhsType.getType() == Type.TYPES.IDENTITY && rhsType.getCollection_type() == null) {
+                this.addCode(popStack.render());
+                this.visitSizeData(ctx.sizeData());
+                ST pushNullVector = this.llvmGroup.getInstanceOf("pushIdentityVector");
+                pushNullVector.add("value", getLetterForType(lhsType));
+                this.addCode(pushNullVector.render());
+            }
+
             if (lhsType.getType() == Type.TYPES.NULL) {
                 lhsType.setType(rhsType.getType());
             }
@@ -1867,6 +1885,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.scope.initVariable(variableName, variable);
     }
 
+    private void processMatrixDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
+
+    }
+
     private void processTupleDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
         // processes:
         // - tuples of all types
@@ -1885,7 +1907,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 || lhsType.getType() != Type.TYPES.NULL
                 || ctx.sizeData() != null) {
             // process when left hand side gives at least a little information (partial or total statically typed)
-            if (ctx.sizeData() != null || lhsType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+            if ((ctx.sizeData() != null && ctx.sizeData().Asteriks().size() + ctx.sizeData().expression().size() > 1)
+                    || lhsType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+            } else if (ctx.sizeData() != null
+                    || lhsType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                 processVectorDeclaration(ctx, lhsType);
             } else if (lhsType.getType() == Type.TYPES.TUPLE){
                 processTupleDeclaration(ctx, lhsType);
