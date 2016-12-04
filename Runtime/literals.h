@@ -50,7 +50,7 @@ void pushCharacter(char value) {
 }
 
 void varInitPushNullCharacter() {
-	pushReal('\0');
+	pushCharacter('\0');
 }
 
 void pushStartVector() {
@@ -214,7 +214,8 @@ void padVectorToStrictSize() {
 
     Value *vectorValue = stack->pop();
     if (! vectorValue->isVector()) {
-        throw "we require a vector for padVectorToStrictSize";
+        printf("we require a vector for padVectorToStrictSize");
+        exit(1);
     }
     Vector<Value> *vector = vectorValue->vectorValue();
     ValueType *valueType = vectorValue->getType();
@@ -261,7 +262,8 @@ void padVectorToStrictSize() {
             	toPush = new Value(new ValueType(NullType), nullptr);
             	break;
             default:
-                throw "contained type invalid";
+                printf("contained type invalid\n");
+                exit(1);
         }
 
         vector->append(toPush);
@@ -293,7 +295,8 @@ void setVectorContainedType(char type) {
             vector->getType()->setContainedType(IdentityType);
             break;
         default:
-            throw "Vector cannot be of this char type";
+            printf("Vector cannot be of this char type\n");
+            exit(1);
     }
 
     stack->push(vector);
@@ -303,7 +306,8 @@ void pushIdentityVector(char cType) {
     Value* sizeValue = stack->pop();
     int size = *(sizeValue->integerValue());
     if (size == -1) {
-        throw "Cannot push unsized null";
+        printf("Cannot push unsized null\n");
+        exit(1);
     }
 
     ValueType* newValueType = new ValueType(VectorType);
@@ -313,7 +317,7 @@ void pushIdentityVector(char cType) {
         case 'c': newValueType->setContainedType(CharacterType); break;
         case 'i': newValueType->setContainedType(IntegerType); break;
         case 'r': newValueType->setContainedType(RealType); break;
-        default: throw "vector cannot contain this type as a char"; break;
+        default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
     }
     Value* newValue = new Value(newValueType, new Vector<Value>);
     Vector<Value>* newVector = newValue->vectorValue();
@@ -324,22 +328,20 @@ void pushIdentityVector(char cType) {
             case 'c': newVector->append(new Value((char)1)); break;
             case 'i': newVector->append(new Value((int)1)); break;
             case 'r': newVector->append(new Value((float)1)); break;
-            default: throw "vector cannot contain this type as a char"; break;
+            default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
         }
     }
 
     stack->push(newValue);
-    newValue->release();
-    newVector->release();
-    newValueType->release();
-    sizeValue->release();
+
 }
 
 void pushNullVector(char cType) {
     Value* sizeValue = stack->pop();
     int size = *(sizeValue->integerValue());
     if (size == -1) {
-        throw "Cannot push unsized null";
+        printf("Cannot push unsized null\n");
+        exit(1);
     }
 
     ValueType* newValueType = new ValueType(VectorType);
@@ -349,7 +351,7 @@ void pushNullVector(char cType) {
         case 'c': newValueType->setContainedType(CharacterType); break;
         case 'i': newValueType->setContainedType(IntegerType); break;
         case 'r': newValueType->setContainedType(RealType); break;
-        default: throw "vector cannot contain this type as a char"; break;
+        default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
     }
     Value* newValue = new Value(newValueType, new Vector<Value>);
     Vector<Value>* newVector = newValue->vectorValue();
@@ -360,7 +362,7 @@ void pushNullVector(char cType) {
             case 'c': newVector->append(new Value((char)0)); break;
             case 'i': newVector->append(new Value((int)0)); break;
             case 'r': newVector->append(new Value((float)0)); break;
-            default: throw "vector cannot contain this type as a char"; break;
+            default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
         }
 
     }
@@ -429,7 +431,7 @@ void endTuple() {
 		element = stack->pop();
 	}
 	element->release();
-	
+
 	Vector<Value>* tupleValues = new Vector<Value>;
 	Value* node = elements->pop();
 	while (node != nullptr) {
@@ -437,7 +439,7 @@ void endTuple() {
 		node->release();
 		node = elements->popOrNull();
 	}
-	
+
 	ValueType* type = new ValueType(TupleType);
 	Value* tuple = new Value(type, tupleValues);
 	stack->push(tuple);
@@ -447,12 +449,80 @@ void endTuple() {
 	//tupleValues->release(); - Do not release
 }
 
+// needs a reference tuple
+// the ref tuple is not consumed
+void pushIdentityTuple() {
+    _unwrap();
+    Value* tupleValue = stack->pop();
+    if (!tupleValue->isTuple()) {
+        printf("No tuple to reference!\n");
+        exit(1);
+    }
+
+    Vector<Value>* refTuple = tupleValue->tupleValue();
+    int refTupleSize = refTuple->getCount();
+
+    Value* newTupleValue = new Value(new ValueType(TupleType), new Vector<Value>);
+    Vector<Value>* newTuple = newTupleValue->tupleValue();
+
+    Value* tempValue;
+
+    for (int i = 0; i < refTupleSize; ++i) {
+        Value* refAtom = refTuple->get(i);
+        ValueType* refAtomType = refAtom->getType();
+        switch (refAtomType->getType()) {
+            case BooleanType:
+                newTuple->append(new Value((bool)1));
+                break;
+            case CharacterType:
+                newTuple->append(new Value((char)1));
+                break;
+            case IntegerType:
+                newTuple->append(new Value((int)1));
+                break;
+            case RealType:
+                newTuple->append(new Value((float)1));
+                break;
+            case VectorType:
+                stack->push(new Value((int)refAtomType->getVectorSize()));
+                switch(refAtomType->getContainedType()) {
+                    case BooleanType:
+                        pushIdentityVector('b');
+                        break;
+                    case CharacterType:
+                        pushIdentityVector('c');
+                        break;
+                    case IntegerType:
+                        pushIdentityVector('i');
+                        break;
+                    case RealType:
+                        pushIdentityVector('r');
+                        break;
+                    default:
+                        printf("something went wrong with the vector in the tuple\n");
+                        exit(1);
+                }
+                tempValue = stack->pop();
+                newTuple->append(tempValue);
+                break;
+            //case MatrixType:
+                // TODO: DO THIS
+            default:
+                printf("tuple cant hold this type\n");
+                exit(1);
+        }
+    }
+
+    stack->push(tupleValue);
+    stack->push(newTupleValue);
+}
+
 void setTuple(int i) {
     Value* value1 = stack->pop()->copy();
     Value* value = stack->pop(); // this is the tuple
 
     if (!value->isLvalue()) {
-        printf("Not an lvalue");
+        printf("Not an lvalue\n");
         exit(1);
     }
     Value** ptr = value->lvalue_ptr();

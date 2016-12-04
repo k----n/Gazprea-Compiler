@@ -29,7 +29,7 @@ functionBlock
 block: '{' translationalUnit* '}';
 
 tupleTypeDetails: '(' (tupleTypeAtom ',')+ tupleTypeAtom ')';
-tupleTypeAtom: type Identifier?;
+tupleTypeAtom: type Identifier? sizeData?;
 
 // Types
 type

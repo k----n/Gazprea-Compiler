@@ -197,12 +197,12 @@ public class Type {
         Type otherType = (Type) obj;
 
         if (this.type != null
-            && (    this.type.equals(otherType.getType())
-                || ( this.type.equals(TYPES.NULL) )
-                || ( this.type.equals(TYPES.IDENTITY) )
-                || ( this.type.equals(TYPES.INTEGER)
+            && (   this.type.equals(otherType.getType())
+                || this.type.equals(TYPES.NULL)
+                || this.type.equals(TYPES.IDENTITY)
+                || (   this.type.equals(TYPES.INTEGER)
                     && otherType.getType() != null
-                    && otherType.getType().equals(TYPES.REAL))
+                    && otherType.getType().equals(TYPES.REAL) )
                 )
             ) {
             // continue
@@ -266,13 +266,63 @@ public class Type {
     public void setCollection_type(COLLECTION_TYPES collection_type) {
         this.collection_type = collection_type;
     }
+
     public void setType(TYPES type) { this.type = type; }
-
-
     public Tuple getTupleType() {
         return tupleType;
     }
+
+
     public Integer getVectorSize() { return vectorSize; }
     public Pair<Integer, Integer> getMatrixDimensions() { return matrixDimensions; }
+    public void setVectorSize(Integer vectorSize) {
+        this.vectorSize = vectorSize;
+    }
+    public void setMatrixDimensions(Pair<Integer, Integer> matrixDimensions) {
+        this.matrixDimensions = matrixDimensions;
+    }
+
+    public String toString() {
+        String containingStr;
+
+        if (this.collection_type != null) {
+            switch (this.collection_type) {
+                case VECTOR:
+                    containingStr = strVECTOR;
+                    break;
+                case MATRIX:
+                    containingStr = strMATRIX;
+                    break;
+                default:
+                    containingStr = "";
+                    break;
+            }
+        } else {
+            containingStr = "";
+        }
+
+        if (this.type != null) {
+            switch (this.type) {
+                case IDENTITY:
+                    return containingStr + " " + strIDENTITY;
+                case NULL:
+                    return containingStr + " " + strNULL;
+                case INTEGER:
+                    return containingStr + " " + strINTEGER;
+                case REAL:
+                    return containingStr + " " + strREAL;
+                case BOOLEAN:
+                    return containingStr + " " + strBOOLEAN;
+                case CHARACTER:
+                    return containingStr + " " + strCHARACTER;
+                case INTERVAL:
+                    return containingStr + " " + strINTERVAL;
+                default:
+                    return containingStr;
+            }
+        } else {
+            return "";
+        }
+     }
 
 }

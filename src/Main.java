@@ -25,16 +25,31 @@ public class Main {
 
         if (DEBUG) {
             ANTLRInputStream input = new ANTLRInputStream(
-                    "procedure f() {\n" +
-                            "    integer x;\n" +
-                            "    5 -> std_output();\n" +
-                            "    x <- std_input();\n" +
-                            "    call f();\n" +
+                    "procedure println(integer x) {\n" +
+                            "    var out = std_output();\n" +
+                            "    x -> out;\n" +
+                            "    '\\n' -> out;\n" +
+                            "}\n" +
+                            "\n" +
+                            "procedure println(character x) {\n" +
+                            "    var out = std_output();\n" +
+                            "    x -> out;\n" +
+                            "    '\\n' -> out;\n" +
                             "}\n" +
                             "\n" +
                             "procedure main() returns integer {\n" +
-                            "    call f();\n" +
-                            "    return 0;\n" +
+                            "    tuple(integer, character) s;\n" +
+                            "    tuple(integer, character) t = null;\n" +
+                            "    tuple(integer, character) u = identity;\n" +
+                            "\n" +
+                            "    call println(s.1);\n" +
+                            "    call println(s.2);\n" +
+                            "    call println(t.1);\n" +
+                            "    call println(t.2);\n" +
+                            "    call println(u.1);\n" +
+                            "    call println(u.2);\n" +
+                            "\n" +
+                            "    return 0; \n" +
                             "}");
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);

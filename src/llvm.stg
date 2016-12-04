@@ -57,27 +57,13 @@ breakStatement(index) ::= <<
  br label %.break_<index>_label
 >>
 
-// name is the unique name of the tuple
-// fields are the data types in llvm form (e.g. i32, i8, etc.)
-tuple_struct(name, fields) ::= <<
-%Gaz_Struct.<name> = type {<fields; separator=",\n">}
->>
-varInit_tuple(tuple_statements) ::= <<
-call void @_Z14pushEmptyTuplev();
-<tuple_statements; separator="\n">
->>
-pushNullIntegerToTuple(value) ::= <<
-call void @_Z18pushIntNullToTuplev()
->>
-pushNullRealToTuple(value) ::= <<
-call void @_Z19pushRealNullToTuplev()
->>
-pushNullBooleanToTuple(value) ::= <<
-call void @_Z19pushBoolNullToTuplev()
->>
-pushNullCharacterToTuple(value) ::= <<
-call void @_Z19pushCharNullToTuplev()
->>
+pushNullIntegerToTuple(value) ::= "call void @_Z18pushIntNullToTuplev()"
+pushNullRealToTuple(value) ::= "call void @_Z19pushRealNullToTuplev()"
+pushNullBooleanToTuple(value) ::= "call void @_Z19pushBoolNullToTuplev()"
+pushNullCharacterToTuple(value) ::= "call void @_Z19pushCharNullToTuplev()"
+
+pushIdentityTuple() ::= "call void @_Z17pushIdentityTuplev()"
+
 // expects the expression is already in stack
 assignTupleField(index) ::= <<
 call void @_Z8setTuplei(i32 <index>)
@@ -87,7 +73,6 @@ call void @_Z8setTuplei(i32 <index>)
 assignTupleField2(index) ::= <<
 call void @_Z16assignTupleFieldv()
 >>
-
 getTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 >>

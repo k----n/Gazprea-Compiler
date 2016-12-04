@@ -38,7 +38,8 @@ public:
     }
 	void setVectorSize(int size) {
 	    if (this->builtinType != VectorType) {
-            throw "not a vector type";
+            printf("not a vector type");
+            exit(1);
         }
 
 	    this->vector_size = size;
@@ -50,7 +51,8 @@ public:
     }
 	void setMatrixSize(int size) {
 	    if (this->builtinType != VectorType) {
-            throw "not a vector type";
+            printf("not a vector type");
+            exit(1);
         }
 
 	    this->matrix_size = size;
@@ -69,7 +71,8 @@ public:
 	BuiltinType getContainedType() {
 	// todo: judge if matrices are vector types
 	    if (this->builtinType != VectorType) {
-            throw "not a vector type";
+            printf("not a vector type");
+            exit(1);
         }
 
 	    if (this->has_contained_type) {
@@ -81,7 +84,8 @@ public:
 
 	int getVectorSize() {
 	    if (this->builtinType != VectorType) {
-	        throw "not a vector type";
+	        printf("not a vector type");
+	        exit(1);
 	    }
 
 	    if (this->has_vector_size) {
@@ -94,7 +98,8 @@ public:
 	int getMatrixSize() {
 	// TODO: Judge if matrices are vectors
 	    if (this->builtinType != VectorType) {
-            throw "not a vector type";
+            printf("not a vector type");
+            exit(1);
         }
 
 	    if (this->has_matrix_size) {
