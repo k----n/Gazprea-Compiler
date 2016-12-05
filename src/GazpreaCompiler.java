@@ -1076,7 +1076,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.scope.pushScope();
             String variableName = ctx.Identifier().get(0).getText(); // get the first identifier name
 
-            // TODO Change based on marcus's answer
             if (type.getType() == Type.TYPES.INTERVAL){
                 type.setType(Type.TYPES.INTEGER);
             }
@@ -1187,7 +1186,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.scope.pushScope();
         String variableName = ctx.Identifier().getText(); // get the first identifier name
 
-        // TODO Change based on marcus's answer
         if (type.getType() == Type.TYPES.INTERVAL){
             type.setType(Type.TYPES.INTEGER);
         }

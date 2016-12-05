@@ -95,6 +95,9 @@ void neq_filter() {
     Value* element = stack->pop();
     if (!element->booleanValue()){
         stack -> pop();
+        Value* node = new Value(0);
+        stack -> push(node);
     }
     element -> release();
+    node -> release();
 }

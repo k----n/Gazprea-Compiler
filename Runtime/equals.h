@@ -192,4 +192,11 @@ void eq_tuple(){
 
     stack -> push(booleanV);
 
+    booleanV ->release();
+    value1 -> release();
+    value2 -> release();
+    t1 -> release();
+    t2 -> release();
+    r -> release();
+    type -> release();
 }

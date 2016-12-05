@@ -474,6 +474,10 @@ void getAddF() {
         if (flag == true){
             newValues->append(node);
         }
+        else {
+            node = new Value(0);
+            newValues->append(node);
+        }
     }
 
 	ValueType* tupleType = new ValueType(TupleType);
