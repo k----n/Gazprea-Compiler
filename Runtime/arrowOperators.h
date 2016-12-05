@@ -19,10 +19,10 @@ void rightArrowOperator() {
 		case CharacterType:
 //		case IntervalType:
 		case VectorType:
+		case MatrixType:
 			stack->push(lhs);
 			printValue();
 			break;
-//		case MatrixType:
 		case TupleType:     printf("Cannot print TupleType\n");     exit(1);
 		case IntervalType:  printf("Cannot print IntervalType\n");  exit(1);
 		case StandardOut:	printf("Cannot print StandardOut\n");	exit(1);
@@ -93,6 +93,7 @@ void leftArrowOperator() {
 		case Lvalue:		printf("Cannot input Lvalue\n");		exit(1);
 		case IntervalType:  printf("Cannot input IntervalType\n");  exit(1);
 		case VectorType:    printf("Cannot input VectorType\n");    exit(1);
+		case MatrixType:	printf("Cannot input MatrixType\n");	exit(1);
 		case StartVector:	printf("Cannot input StartVector\n");	exit(1);
 	}
 	switch (readErrorCode) {

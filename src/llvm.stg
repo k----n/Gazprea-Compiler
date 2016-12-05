@@ -135,6 +135,7 @@ promoteTuple() ::= "call void @_Z12promoteTuplev()"
 
 endInterval() ::= "call void @_Z11endIntervalv()"
 endVector() ::= "call void @_Z9endVectorv()"
+endMatrix() ::= "call void @_Z9endMatrixv()"
 
 setVectorContainedType(value) ::= "call void @_Z22setVectorContainedTypec(i8 signext <value>)"
 setVectorSize() ::= "call void @_Z13setVectorSizev()"
@@ -197,6 +198,9 @@ equalTuple() ::= "call void @_Z8eq_tuplev()"
 notequalTuple() ::= "call void @_Z9neq_tuplev()"
 
 notEqualNull() ::="call void @_Z8neq_nullv()"
+notEqualFilter() ::="call void @_Z10neq_filterv()"
+
+getAddFilter() ::="call define void @_Z7getAddFv()"
 
 shrinkIterateVector() ::="call void @_Z19shrinkIterateVectorv()"
 shrinkIterateVectorGen() ::="call void @_Z22shrinkIterateVectorGenv()"

@@ -65,6 +65,7 @@ void assign(void** variable) {
                         case StandardIn:
                         case Lvalue:
                         case VectorType: //TODO account for this case
+						case MatrixType:
 						case StartVector:
                             printf("Tuple cannot contain this type\n");
                             exit(1);
@@ -122,6 +123,7 @@ void assign(void** variable) {
                         case CharacterType:
                         case IntervalType:
                         case VectorType:
+						case MatrixType:
 						case StartVector:
                             printf("Interval cannot contain this type\n");
                             exit(1);
@@ -154,6 +156,7 @@ void assign(void** variable) {
                         case NullType:
                         case IdentityType:
                         case VectorType:
+						case MatrixType:
                         case StandardOut:
                         case StandardIn:
                         case Lvalue:
@@ -190,6 +193,9 @@ void assign(void** variable) {
 				if (innerValueType != nullptr) { innerValueType->release(); }
 				if (innerValue != nullptr) { innerValue->release(); }
                 break;
+			case MatrixType:
+				// TODO:
+				break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);
@@ -256,6 +262,7 @@ void assign(void** variable) {
                         case RealType:
                         case CharacterType:
                         case VectorType:
+						case MatrixType:
                         case IntervalType:
 						case StartVector:
                             printf("Interval cannot contain this type\n");
@@ -289,6 +296,7 @@ void assign(void** variable) {
 						case StandardIn:
 						case Lvalue:
                         case VectorType: // TODO account for this case
+						case MatrixType:
 						case StartVector:
 							printf("Tuple cannot contain this type\n");
 							exit(1);
@@ -337,6 +345,7 @@ void assign(void** variable) {
                         case NullType:
                         case IdentityType:
                         case VectorType:
+						case MatrixType:
                         case StandardOut:
                         case StandardIn:
                         case Lvalue:
@@ -373,6 +382,9 @@ void assign(void** variable) {
 				if (innerValueType != nullptr) { innerValueType->release(); }
 				if (innerValue != nullptr) { innerValue->release(); }
                 break;
+			case MatrixType:
+				// TODO:
+				break;
 			case StandardOut:
 				rType = new ValueType(StandardOut);
 				rvalue = new Value(rType, nullptr);

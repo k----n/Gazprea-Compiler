@@ -11,7 +11,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private STGroup runtimeGroup;
     private STGroup llvmGroup;
 
-    private final String BUILT_INS[] = {"std_output", "std_input", "stream_state"};
+    private final String BUILT_INS[] = {
+            "std_output",
+            "std_input",
+            "stream_state",
+            "length",
+            "rows",
+            "columns",
+            "reverse"
+    };
 
     private Map<String, List<Function>> functions = new HashMap<>();
     private Map<String, List<Function>> builtinFunctions = new HashMap<>();
@@ -41,10 +49,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.functionNameMappings.put("std_output", "_Z10std_outputv");
         this.functionNameMappings.put("std_input", "_Z9std_inputv");
         this.functionNameMappings.put("stream_state", "_Z12stream_statev");
+        this.functionNameMappings.put("length", "_Z6lengthv");
+        this.functionNameMappings.put("rows", "_Z4rowsv");
+        this.functionNameMappings.put("columns", "_Z7columnsv");
+        this.functionNameMappings.put("reverse", "_Z7reversev");
 
-        List<Function> std_outout_list = new ArrayList<>();
-        std_outout_list.add(new Function("std_output", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.OUTPUT_STREAM)));
-        this.builtinFunctions.put("std_output", std_outout_list);
+        List<Function> std_output_list = new ArrayList<>();
+        std_output_list.add(new Function("std_output", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.OUTPUT_STREAM)));
+        this.builtinFunctions.put("std_output", std_output_list);
 
         List<Function> std_input_list = new ArrayList<>();
         std_input_list.add(new Function("std_input", new ArrayList<>(), new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM)));
@@ -55,6 +67,30 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         stream_state_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, Type.TYPES.INPUT_STREAM), "inp"));
         stream_state_list.add(new Function("stream_state", stream_state_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
         this.builtinFunctions.put("stream_state", stream_state_list);
+
+        List<Function> length_list = new ArrayList<>();
+        List<Argument> length_args = new ArrayList<>();
+        length_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.VECTOR), "vec"));
+        length_list.add(new Function("length", length_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("length", length_list);
+
+        List<Function> rows_list = new ArrayList<>();
+        List<Argument> rows_args = new ArrayList<>();
+        rows_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.MATRIX), "mat"));
+        rows_list.add(new Function("rows", rows_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("rows", rows_list);
+
+        List<Function> columns_list = new ArrayList<>();
+        List<Argument> columns_args = new ArrayList<>();
+        columns_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.MATRIX), "mat"));
+        columns_list.add(new Function("columns", columns_args, new Type(Type.SPECIFIERS.CONST, Type.TYPES.INTEGER)));
+        this.builtinFunctions.put("columns", columns_list);
+
+        List<Function> reverse_list = new ArrayList<>();
+        List<Argument> reverse_args = new ArrayList<>();
+        reverse_args.add(new Argument(new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.VECTOR), "vec"));
+        reverse_list.add(new Function("reverse", reverse_args, new Type(Type.SPECIFIERS.CONST, null, Type.COLLECTION_TYPES.VECTOR)));
+        this.builtinFunctions.put("reverse", reverse_list);
 
         loopIndex = 0;
         conditionalIndex = 0;
@@ -551,31 +587,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     this.addCode(promoteTuple.render());
 
                     return newType;
-                    /*
-                    ST popStack = this.llvmGroup.getInstanceOf("popStack");
-                    this.addCode(popStack.render());
-
-                    Tuple tupleType = new Tuple();
-
-                    ST startVector = this.llvmGroup.getInstanceOf("startVector");
-                    this.addCode(startVector.render());
-                    for (int e = 0; e < ctx.tupleTypeDetails().tupleTypeAtom().size(); ++e) {
-                        Type exprType = visitTupleTypeAtom(ctx.tupleTypeDetails().tupleTypeAtom().get(e)).left();
-                        String typeLetter = Type.getCastingFunction(promoteType.peek().get(e), exprType);
-                        visitExpression(ctx.expression(0).literal().tupleLiteral().expression(e));
-                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                        promoteCall.add("typeLetter", typeLetter);
-                        this.addCode(promoteCall.render());
-                        exprType = Type.getReturnType(typeLetter);
-                        tupleType.addField("" + (e + 1), exprType);
-                    }
-                    ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
-                    this.addCode(endTuple.render());
-
-                    promoteType.pop();
-
-                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
-                    */
                 }
                 else{
                     throw new Error("Cannot cast type");
@@ -1044,6 +1055,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.scope.pushScope();
             String variableName = ctx.Identifier().get(0).getText(); // get the first identifier name
 
+            // TODO Change based on marcus's answer
             if (type.getType() == Type.TYPES.INTERVAL){
                 type.setType(Type.TYPES.INTEGER);
             }
@@ -1097,7 +1109,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             this.visitExpression(ctx.expression().get(1));
 
-	    ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+	        ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
             this.currentFunction.addLine(unwrap.render());
 
             ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
@@ -1135,6 +1147,160 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             throw new Error("Invalid generator type");
         }
     }
+
+    @Override public Type visitFilter(GazpreaParser.FilterContext ctx) {
+        // first get the vector we need to iterate through
+        Type type = this.visitExpression(ctx.expression()); // push the expression to stack and call function to iterate through it
+
+        // convert to vector
+        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+        promoteCall.add("typeLetter", "vv");
+        this.currentFunction.addLine((promoteCall.render()));
+
+        // duplicate vector so last one is to iterate through
+        ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
+        this.currentFunction.addLine(copyStack.render());
+
+        // vector we need to iterate through is now on the stack
+        // next we initiate the variable that we are going to assign to for each iteration of the vector
+        this.scope.pushScope();
+        String variableName = ctx.Identifier().getText(); // get the first identifier name
+
+        // TODO Change based on marcus's answer
+        if (type.getType() == Type.TYPES.INTERVAL){
+            type.setType(Type.TYPES.INTEGER);
+        }
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, type.getType()));
+
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", variable.getMangledName());
+            this.addCode(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
+
+        this.scope.initVariable(variableName, variable);
+
+        ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
+        this.currentFunction.addLine(initLine.render());
+
+        ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+        initAssign.add("name", variable.getMangledName());
+        this.currentFunction.addLine(initAssign.render());
+
+        // now we will loop through each of these predicate thingies and they will push a tuple onto the stack
+        this.visitPredicate(ctx.predicate(), variable);
+
+        this.scope.popScope();
+
+        // finally find the things that aren't in the vector and return tuple onto the stack
+        ST getAdd = this.llvmGroup.getInstanceOf("getAddFilter");
+        this.currentFunction.addLine(getAdd.render());
+
+        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE);
+    }
+
+    // function overloading
+    private Type visitPredicate(GazpreaParser.PredicateContext ctx, Variable variable) {
+        int size = ctx.filterexpression().size();
+
+        ST startVector = this.llvmGroup.getInstanceOf("startVector");
+        this.currentFunction.addLine(startVector.render());
+
+        ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+        this.currentFunction.addLine(swapStack.render());
+
+        ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
+        for (int i = 0; i < size; i++){
+            // duplicate vector to iterate through it
+            this.currentFunction.addLine(copyStack.render());
+        }
+
+        for (int i = 0; i < size; i++){
+            // create the loops
+            ++this.loopIndex;
+
+            int myLoopIndex = this.loopIndex;
+
+            this.currentLoop.addFirst(myLoopIndex);
+
+            // start vector for vector of values
+            this.currentFunction.addLine(startVector.render());
+
+            ST loopBegin = this.llvmGroup.getInstanceOf("loopStart");
+            loopBegin.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopBegin.render());
+
+            // where the magic should happen
+            // get vector size
+            // if size > 1, get first element, make new vector one element shorter
+            // need to push to stack (in order of): new vector, i value
+            // else if vector size is one element: push i value, startvector
+            // get new value on stack: new value, startvector
+            // swap on stack: startvector, new value
+
+            ST shrink = this.llvmGroup.getInstanceOf("shrinkIterateVectorGen");
+            this.currentFunction.addLine(shrink.render());
+
+            ST assignIterator = this.llvmGroup.getInstanceOf("assignByVar");
+            assignIterator.add("name", variable.getMangledName());
+            this.currentFunction.addLine(assignIterator.render());
+
+            this.visitFilterexpression(ctx.filterexpression(i));
+
+            ST line = this.llvmGroup.getInstanceOf("pushVariable");
+            line.add("name", variable.getMangledName());
+            this.currentFunction.addLine(line.render());
+
+            ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+            this.currentFunction.addLine(unwrap.render());
+
+            this.currentFunction.addLine(swapStack.render());
+
+            // see if the stack has a true value, if true keep value on stack, otherwise pop stack again
+            ST check = this.llvmGroup.getInstanceOf("notEqualFilter");
+            this.currentFunction.addLine((check.render()));
+
+            ST condition = this.llvmGroup.getInstanceOf("notEqualNull");
+            this.currentFunction.addLine((condition.render()));
+
+            ST loopConditional = this.llvmGroup.getInstanceOf("loopConditional");
+            loopConditional.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditional.render());
+
+            ST loopEnd = this.llvmGroup.getInstanceOf("loopEnd");
+            loopEnd.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopEnd.render());
+
+            ST loopConditionalEnd = this.llvmGroup.getInstanceOf("loopConditionalEnd");
+            loopConditionalEnd.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditionalEnd.render());
+
+            ST endVector = this.llvmGroup.getInstanceOf("endVector");
+            this.addCode(endVector.render());
+
+            this.currentLoop.removeFirst();
+
+            // swap that vector with a iterator vector
+            this.currentFunction.addLine(swapStack.render());
+        }
+        ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
+        this.addCode(endTuple.render());
+
+        return null;
+    }
+
+
+    @Override public Type visitFilterexpression(GazpreaParser.FilterexpressionContext ctx) {
+        // this will be a modified version of visit expression, it will be similar but not the same
+        if (true) {
+            throw new Error("Not completed yet");
+        }
+        return null;
+    }
+
 
     @Override
     public Type visitTupleLiteral(GazpreaParser.TupleLiteralContext ctx) {
@@ -1394,15 +1560,20 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             });
 
             switch(functionName) {
-                case "length":
-                    // TODO: IMPLEMENT length()
-                    break;
                 case "std_output":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.OUTPUT_STREAM);
                 case "std_input":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INPUT_STREAM);
                 case "stream_status":
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "length":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "rows":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "columns":
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER);
+                case "reverse":
+                    return new Type(Type.SPECIFIERS.VAR, null, Type.COLLECTION_TYPES.VECTOR);
                 default:
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.VOID);
             }

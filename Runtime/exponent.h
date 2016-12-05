@@ -77,7 +77,7 @@ void exp_v() {
             exit(1);
         }
 
-        Vector<Value>* vectorValues = new Vector<Value>;
+//        Vector<Value>* vectorValues = new Vector<Value>;
 
         // add vector to vector
         int size1 = value1->vectorValue()->getCount();

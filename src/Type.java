@@ -196,6 +196,10 @@ public class Type {
 
         Type otherType = (Type) obj;
 
+        if (this.collection_type.equals(otherType.collection_type) && this.type == null || otherType.type == null) {
+            return true;
+        }
+
         if (this.type != null
             && (   this.type.equals(otherType.getType())
                 || this.type.equals(TYPES.NULL)

@@ -1,0 +1,37 @@
+procedure test1() {
+    var out = std_output();
+
+    var a = [0, 1, 2, 3];
+    a -> out;
+    '\n' -> out;
+
+    var b = length(a);
+    b -> out;
+    '\n' -> out;
+
+    var c = reverse(a);
+    c -> out;
+    '\n' -> out;
+    '\n' -> out;
+}
+
+procedure test2() {
+    var out = std_output();
+
+    var a = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8]
+    ];
+    a -> out;
+    '\n' -> out;
+
+    '\n' -> out;
+}
+
+procedure main() returns integer {
+    call test1();
+    //call test2();
+
+    return 0;
+}

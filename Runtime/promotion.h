@@ -42,6 +42,7 @@ void promoteTo_b() {
 			newValue = new Value(*charValue != '\0');
 			break;
         case VectorType:
+		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -106,6 +107,7 @@ void promoteTo_i() {
 			newValue = new Value((int)*charValue);
 			break;
         case VectorType:
+		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -170,6 +172,7 @@ void promoteTo_r() {
 			newValue = new Value((float)*charValue);
 			break;
         case VectorType:
+		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -230,6 +233,7 @@ void promoteTo_c() {
 			newValue->retain();
 			break;
         case VectorType:
+		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -277,6 +281,7 @@ void promoteTo_l() {
 		case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
 	    case VectorType: printf("Cannot promote Vector\n"); exit(1);
+		case MatrixType: printf("Cannot promote Matrix\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:
@@ -335,6 +340,7 @@ void promoteTo_n() {
         case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
         case TupleType: printf("Cannot promote Tuple\n"); exit(1);
         case VectorType: printf("Cannot promote Vector\n"); exit(1);
+		case MatrixType: printf("Cannot promote Matrix\n"); exit(1);
         case StandardOut: printf("Cannot promote stdout\n"); exit(1);
         case StandardIn: printf("Cannot promote stdin\n"); exit(1);
         case Lvalue:
@@ -369,6 +375,7 @@ void promoteTo_d() {
         case CharacterType: printf("Cannot promote CharacterType\n"); exit(1);
         case TupleType: printf("Cannot promote Tuple\n"); exit(1);
         case VectorType: printf("Cannot promote Vector\n"); exit(1);
+		case MatrixType: printf("Cannot promote Matrix\n"); exit(1);
         case StandardOut: printf("Cannot promote stdout\n"); exit(1);
         case StandardIn: printf("Cannot promote stdin\n"); exit(1);
         case Lvalue:
@@ -453,8 +460,8 @@ void padVectorToStrictSize() {
 void promoteTo_v() {
 	Value* value = stack->pop();
 	Value* newValue = nullptr;
-	bool* boolValue = nullptr;
-	int* intValue = nullptr;
+//	bool* boolValue = nullptr;
+//	int* intValue = nullptr;
 	Vector<Value>* vectorValues = nullptr;
 	ValueType* newType = nullptr;
 	ValueType* type = value->getType();
@@ -496,6 +503,7 @@ void promoteTo_v() {
         case NullType: printf("Cannot promote NullType\n"); exit(1);
 		case IdentityType: printf("Cannot promote IdentityType\n"); exit(1);
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
+		case MatrixType: printf("Cannot promote Matrix\n"); exit(1);
 		case StandardOut: printf("Cannot promote stdout\n"); exit(1);
 		case StandardIn: printf("Cannot promote stdin\n"); exit(1);
 		case Lvalue:

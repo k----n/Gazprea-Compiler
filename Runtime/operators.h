@@ -53,18 +53,3 @@ void copyStack() {
     stack->push(value);
     value->release();
 }
-
-void printStack() {
-
-    Value* value = stack->pop()->copy();
-
-    stack -> push(value);
-
-    printf("\n");
-    printValue();
-    printf("\n");
-
-    stack ->push(value);
-    value->release();
-
-}
