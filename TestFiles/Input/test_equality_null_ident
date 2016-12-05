@@ -1,0 +1,44 @@
+procedure main() returns integer {
+    var out = std_output();	
+
+    (([1,2,3],1,2.69) != null) -> out;
+
+    (null != ([1,2,3],1,2.69)) -> out;
+
+    (null != [1,2,3]) -> out;
+
+    ([1,2,3] != null) -> out;
+
+    (([1,2,3],1,2.69) == null) -> out;
+
+    (null == ([1,2,3],1,2.69)) -> out;
+
+    (null == [1,2,3]) -> out;
+
+    ([1,2,3] == null) -> out;
+
+    '\n' -> out;
+
+
+    (([1,2,3],1,2.69) != identity) -> out;
+
+
+
+    (identity != ([1,2,3],1,2.69)) -> out;
+
+
+
+    (identity != [1,2,3]) -> out;
+
+    ([1,2,3] != identity) -> out;
+
+    (([1,2,3],1,2.69) == identity) -> out;
+
+    (identity == ([1,2,3],1,2.69)) -> out;
+
+    (identity == [1,2,3]) -> out;
+
+    ([1,2,3] == identity) -> out; 
+
+    return 0;
+}

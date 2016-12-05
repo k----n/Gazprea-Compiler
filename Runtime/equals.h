@@ -26,6 +26,37 @@ void eq__v() {
     _unwrap();
     Value* value2 = stack->pop();
 
+    if (!(value1)->isVector()){
+        if (!(value2)->isVector()){
+            printf("Incompatible Vector Equality Types\n");
+            exit(1);
+        }
+        else {
+            Vector<Value>* vectorValues = new Vector<Value>();
+            int size = value2->vectorValue()->getCount();
+            for (int i = 0; i < size; i++){
+                vectorValues->append(value1);
+            }
+            ValueType* newType = new ValueType(VectorType);
+            value1 = new Value(newType, vectorValues);
+        }
+    }
+    else if (!(value2)->isVector()){
+        if (!(value1)->isVector()){
+            printf("Incompatible Vector Equality Types\n");
+            exit(1);
+        }
+        else {
+            Vector<Value>* vectorValues = new Vector<Value>();
+            int size = value1->vectorValue()->getCount();
+            for (int i = 0; i < size; i++){
+                vectorValues->append(value2);
+            }
+            ValueType* newType = new ValueType(VectorType);
+            value2 = new Value(newType, vectorValues);
+        }
+    }
+
     if (!(value1)->isVector() || !(value2)->isVector()) {
         printf("Incompatible Vector Equality Types\n");
         exit(1);
@@ -117,11 +148,61 @@ void eq_Interval(){
     interval2 -> release();
 }
 
-void eq_tuple(){
+void eq__t(){
     _unwrap();
-    Value* value1 = stack->pop();
+    Value* value1 = stack->pop()->copy();
     _unwrap();
-    Value* value2 = stack->pop();
+    Value* value2 = stack->pop()->copy();
+
+    if (!(value1)->isTuple()){
+        if (!(value2)->isTuple()){
+            printf("Incompatible Tuple Equality Types\n");
+            exit(1);
+        }
+        else {
+            // we need to check types
+            if (value1->isNull()){
+                stack -> push(value2);
+                pushNullTuple();
+                value1 = stack -> pop();
+                stack -> pop();
+            }
+            else if (value1->isIdentity()){
+                stack -> push(value2);
+                pushIdentityTuple();
+                value1 = stack -> pop();
+                stack -> pop();
+            }
+            else {
+                printf("Incompatible Tuple Equality Types\n");
+                exit(1);
+            }
+        }
+    } else if (!(value2)->isTuple()){
+        if (!(value1)->isTuple()){
+            printf("Incompatible Tuple Equality Types 1\n");
+            exit(1);
+        }
+        else {
+            // we need to check types
+            if (value2->isNull()){
+                stack -> push(value1);
+                pushNullTuple();
+                value2 = stack -> pop();
+                stack -> pop();
+            }
+            else if (value2->isIdentity()){
+                stack -> push(value1);
+                pushIdentityTuple();
+                value2 = stack -> pop();
+                stack -> pop();
+            }
+            else {
+                printf("Incompatible Tuple Equality Types 2\n");
+                exit(1);
+            }
+        }
+    }
 
     if (!(value1)->isTuple() || !(value2)->isTuple()) {
         printf("Incompatible Tuple Equality Types\n");
@@ -181,7 +262,7 @@ void eq_tuple(){
                     printf("Type cannot be compared in tuple\n"); exit(1);
             }
             r = stack->pop();
-            if (!(r->booleanValue())){
+            if (!(*r->booleanValue())){
                 status = false;
                 break;
             }
@@ -195,8 +276,4 @@ void eq_tuple(){
     booleanV ->release();
     value1 -> release();
     value2 -> release();
-    t1 -> release();
-    t2 -> release();
-    r -> release();
-    type -> release();
 }

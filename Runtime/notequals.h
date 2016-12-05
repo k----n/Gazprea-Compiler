@@ -25,8 +25,8 @@ void neq_v() {
     neg_b();
 }
 
-void neq_tuple(){
-    eq_tuple();
+void neq_t(){
+    eq__t();
     neg_b();
 }
 
@@ -99,5 +99,4 @@ void neq_filter() {
         stack -> push(node);
     }
     element -> release();
-    node -> release();
 }
