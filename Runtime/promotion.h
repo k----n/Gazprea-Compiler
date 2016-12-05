@@ -389,7 +389,22 @@ void promoteVector(char cType) {
     Value* toSizeValue = stack->pop();
     int *toSize = toSizeValue->integerValue();
 
+    printf("BREH: %d\n", *toSize);
+
 	Value* poppedValue = stack->pop();
+
+	if (poppedValue->getType()->getType() != VectorType) {
+	    switch (poppedValue->getType()->getType()) {
+	        case NullType:
+	        case IdentityType:
+	            poppedValue = new Value(new ValueType(VectorType), new Vector<Value>);
+	            break;
+	        default:
+	            printf("promoteVector cannot promote this type\n");
+	            exit(1);
+	    }
+	}
+
 	Vector<Value>* poppedVector = poppedValue->vectorValue();
 	int poppedSize = poppedVector->getCount();
     int goalSize = (*toSize) == -1 ? poppedSize : (*toSize);
@@ -491,3 +506,68 @@ void promoteTo_v() {
 	value->release();
 }
 
+
+// requires a reference tuple which it will consume
+void promoteTuple() {
+    Value* toPromoteValue = stack->pop();
+    Vector<Value>* toPromote = toPromoteValue->tupleValue();
+    Value* refValue = stack->pop();
+    Vector<Value>* ref = refValue->tupleValue();
+
+    Value* returnedValue = new Value(new ValueType(TupleType), new Vector<Value>);
+    Vector<Value>* returnedTuple = returnedValue->tupleValue();
+
+    int refSize = ref->getCount();
+    int toPromoteSize = toPromote->getCount();
+
+    if (refSize != toPromoteSize) {
+        printf("Sizes are unequal\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < refSize; ++i) {
+        Value* refNode = ref->get(i);
+        Value* toPromoteNode = toPromote->get(i);
+
+        stack->push(toPromoteNode);
+        switch(refNode->getType()->getType()) {
+            case BooleanType:
+                promoteTo_b();
+                break;
+            case CharacterType:
+                promoteTo_c();
+                break;
+            case IntegerType:
+                promoteTo_i();
+                break;
+            case RealType:
+                promoteTo_r();
+                break;
+            case VectorType:
+                stack->push(toPromoteNode);
+                stack->push(new Value(refNode->getType()->getVectorSize()));
+                switch (refNode->getType()->getContainedType()) {
+                    case BooleanType:
+                        promoteVector('b');
+                        break;
+                    case CharacterType:
+                        promoteVector('c');
+                        break;
+                    case IntegerType:
+                        promoteVector('i');
+                        break;
+                    case RealType:
+                        promoteVector('r');
+                        break;
+                    default:
+                        printf("vector cannot be promoted to this type.\n"); exit(1);
+                }
+                break;
+            default: printf("invalid reference node of tuple\n"); exit(1);
+        }
+        toPromoteNode = stack->pop();
+        returnedTuple->append(toPromoteNode);
+    }
+
+    stack->push(returnedValue);
+}

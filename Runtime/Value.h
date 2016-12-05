@@ -179,8 +179,8 @@ public:
 	}
 
     Vector<Value>* vectorValue() const {
-        if (this->isNull())		{ printf("This is a null interval\n"); exit(1); }
-        if (this->isIdentity())	{ printf("This is an identity interval\n"); exit(1); }
+        if (this->isNull())		{ printf("This is a null vector\n"); exit(1); }
+        if (this->isIdentity())	{ printf("This is an identity vector\n"); exit(1); }
         if (!this->isVector()){ printf("Not a Vector \n"); exit(1); }
         return (Vector<Value>*)this->value;
     }

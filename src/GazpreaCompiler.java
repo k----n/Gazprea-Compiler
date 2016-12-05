@@ -1147,7 +1147,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
         this.addCode(endTuple.render());
 
-        tupleDetails.pop();
+        //tupleDetails.pop();
 
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
@@ -1906,9 +1906,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 this.addCode(popStack.render());
                 ST pushIdentityTuple = this.llvmGroup.getInstanceOf("pushIdentityTuple");
                 this.addCode(pushIdentityTuple.render());
+            } else {
+                // This is a regular old tuple and this is where the casting needs to be done
+                ST promoteTuple = this.llvmGroup.getInstanceOf("promoteTuple");
+                this.addCode(promoteTuple.render());
             }
-
-
         }
 
         Variable variable = new Variable(variableName, this.mangleVariableName(variableName), lhsType);

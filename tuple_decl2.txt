@@ -1,0 +1,18 @@
+procedure main() returns integer {
+    var out = std_output();
+    tuple(integer, integer) y = (null, null);
+    tuple(integer, integer, integer[3]) x = (null, null, null);
+
+    y.1 -> out;
+    '\n' -> out;
+    y.2 -> out;
+    '\n' -> out;
+    x.1 -> out;
+    '\n' -> out;
+    x.2 -> out;
+    '\n' -> out;
+    x.3 -> out;
+    '\n' -> out;
+
+    return 0;
+}

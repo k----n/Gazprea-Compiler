@@ -68,7 +68,6 @@ pushIdentityTuple() ::= "call void @_Z17pushIdentityTuplev()"
 assignTupleField(index) ::= <<
 call void @_Z8setTuplei(i32 <index>)
 >>
-
 // TODO: NOTE MAY HAVE TO MAKE TUPLE FIELD ASSIGN BY VAR
 assignTupleField2(index) ::= <<
 call void @_Z16assignTupleFieldv()
@@ -131,6 +130,9 @@ endTuple() ::= <<
 call void @_Z8endTuplev()
 ; ending of a vector
 >>
+
+promoteTuple() ::= "call void @_Z12promoteTuplev()"
+
 endInterval() ::= "call void @_Z11endIntervalv()"
 endVector() ::= "call void @_Z9endVectorv()"
 
