@@ -196,8 +196,8 @@ public class Type {
 
         Type otherType = (Type) obj;
 
-        if (this.collection_type.equals(otherType.collection_type) && this.type == null || otherType.type == null) {
-            return true;
+        if (this.collection_type == otherType.collection_type && this.type == null || otherType.type == null) {
+            // continue
         }
 
         if (this.type != null

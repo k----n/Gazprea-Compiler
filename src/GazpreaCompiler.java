@@ -406,9 +406,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override
     public Type visitExpression(GazpreaParser.ExpressionContext ctx) {
-        if (ctx.expression() != null && ctx.Dot()!= null && ctx.RealLiteral() != null && ctx.getChild(0) == ctx.expression()){
+        if (ctx.expression().size() == 1 && ctx.Dot().size() == 1 && ctx.RealLiteral().size() == 1 && ctx.getChild(0) == ctx.expression()){
             // CASE: expression Dot RealLiteral
             // Interval
+
             String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
             ST right = this.llvmGroup.getInstanceOf("pushInteger");
             right.add("value", rightInt.replaceAll("_", ""));
@@ -447,10 +448,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
-        else if (ctx.expression() != null && ctx.Dot().size() == 1 && ctx.RealLiteral() != null){
+        else if (ctx.expression().size() == 1 && ctx.Dot().size() == 1 && ctx.RealLiteral().size() == 1){
             // CASE: RealLiteral Dot expression
             // Interval
             // assume expression will be pushed to stack
+
             Type right = this.visitExpression(ctx.expression(0));
 
             if (!(right.getType().equals(Type.TYPES.INTEGER))){
@@ -471,6 +473,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // CASE: expression Dot Dot expression
             // Interval
             // assume expression will be pushed to stack
+
             Type right = this.visitExpression(ctx.expression(1));
             Type left = this.visitExpression(ctx.expression(0));
 
