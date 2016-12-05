@@ -57,37 +57,21 @@ breakStatement(index) ::= <<
  br label %.break_<index>_label
 >>
 
-// name is the unique name of the tuple
-// fields are the data types in llvm form (e.g. i32, i8, etc.)
-tuple_struct(name, fields) ::= <<
-%Gaz_Struct.<name> = type {<fields; separator=",\n">}
->>
-varInit_tuple(tuple_statements) ::= <<
-call void @_Z14pushEmptyTuplev();
-<tuple_statements; separator="\n">
->>
-pushNullIntegerToTuple(value) ::= <<
-call void @_Z18pushIntNullToTuplev()
->>
-pushNullRealToTuple(value) ::= <<
-call void @_Z19pushRealNullToTuplev()
->>
-pushNullBooleanToTuple(value) ::= <<
-call void @_Z19pushBoolNullToTuplev()
->>
-pushNullCharacterToTuple(value) ::= <<
-call void @_Z19pushCharNullToTuplev()
->>
+pushNullIntegerToTuple(value) ::= "call void @_Z18pushIntNullToTuplev()"
+pushNullRealToTuple(value) ::= "call void @_Z19pushRealNullToTuplev()"
+pushNullBooleanToTuple(value) ::= "call void @_Z19pushBoolNullToTuplev()"
+pushNullCharacterToTuple(value) ::= "call void @_Z19pushCharNullToTuplev()"
+
+pushIdentityTuple() ::= "call void @_Z17pushIdentityTuplev()"
+
 // expects the expression is already in stack
 assignTupleField(index) ::= <<
 call void @_Z8setTuplei(i32 <index>)
 >>
-
 // TODO: NOTE MAY HAVE TO MAKE TUPLE FIELD ASSIGN BY VAR
 assignTupleField2(index) ::= <<
 call void @_Z16assignTupleFieldv()
 >>
-
 getTupleField(index) ::= <<
 call void @_Z15getValueAtTuplei(i32 <index>)
 >>
@@ -126,12 +110,17 @@ copyStack() ::= "call void @_Z9copyStackv()"
 
 promoteTo(typeLetter) ::= "call void @_Z11promoteTo_<typeLetter>()"
 
+promoteVector(value) ::= "call void @_Z13promoteVectorc(i8 <value>)"
+padVector() ::= "call void @_Z21padVectorToStrictSizev()"
+
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"
 pushInteger(value) ::= "call void @_Z11pushIntegeri(i32 <value>)"
 pushBoolean(value) ::= "call void @_Z11pushBooleanb(i1 zeroext <value>)"
 pushReal(value) ::= "call void @_Z8pushRealf(float <value>)"
-pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 signext <value>)"
+pushCharacter(value) ::= "call void @_Z13pushCharacterc(i8 <value>)"
+pushNullVector(value) ::= "call void @_Z14pushNullVectorc(i8 <value>)"
+pushIdentityVector(value) ::= "call void @_Z18pushIdentityVectorc(i8 <value>)"
 
 startVector() ::= <<
 ; starting of a vector
@@ -141,6 +130,9 @@ endTuple() ::= <<
 call void @_Z8endTuplev()
 ; ending of a vector
 >>
+
+promoteTuple() ::= "call void @_Z12promoteTuplev()"
+
 endInterval() ::= "call void @_Z11endIntervalv()"
 endVector() ::= "call void @_Z9endVectorv()"
 endMatrix() ::= "call void @_Z9endMatrixv()"
@@ -198,6 +190,9 @@ greaterthanVector() ::= "call void @_Z5gt__vv()"
 lessthanequalVector() ::= "call void @_Z5leq_vv()"
 greaterthanequalVector() ::= "call void @_Z5geq_vv()"
 indexVector() ::= "call void @_Z11indexVectorv()"
+
+matchVectorSizes() ::= "call void @_Z16matchVectorSizesv()"
+matchVectorTypes() ::= "call void @_Z16matchVectorTypesv()"
 
 equalTuple() ::= "call void @_Z8eq_tuplev()"
 notequalTuple() ::= "call void @_Z9neq_tuplev()"

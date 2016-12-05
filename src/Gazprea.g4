@@ -29,7 +29,7 @@ functionBlock
 block: '{' translationalUnit* '}';
 
 tupleTypeDetails: '(' (tupleTypeAtom ',')+ tupleTypeAtom ')';
-tupleTypeAtom: type Identifier?;
+tupleTypeAtom: type Identifier? sizeData?;
 
 // Types
 type
@@ -107,7 +107,7 @@ expression
  | expression Dot Identifier // tuple access
  | literal
  | Identifier
- | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)
+ | As '<' (type sizeData? | tupleTypeDetails) '>' ('(' expression ')' | expression)
  | generator
  | filter
  | functionCall
@@ -140,8 +140,9 @@ literal
  | tupleLiteral
  ;
 
+// important to note empty matrices will look like vectors
+matrixLiteral: '[' vectorLiteral (',' vectorLiteral)* ']';
 vectorLiteral: '[' (expression (',' expression)*)? ']';
-//
 tupleLiteral: '(' expression (',' expression)+ ')';
 
 

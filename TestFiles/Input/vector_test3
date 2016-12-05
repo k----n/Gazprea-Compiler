@@ -1,0 +1,13 @@
+procedure main() returns integer {
+    integer vector x[4];
+    integer vector y[4] = null;
+    integer vector z[*] = [null, null, null, null];
+    integer a[*] = [null, null, null, null];
+
+    x -> std_output();
+    y -> std_output();
+    z -> std_output();
+    a -> std_output();
+
+    return 0;
+}

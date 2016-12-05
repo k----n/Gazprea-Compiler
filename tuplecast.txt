@@ -1,0 +1,30 @@
+procedure main() returns integer {
+    var out = std_output();	      
+    tuple(integer, integer, integer[3]) t = (1, null, [3, 2]);
+    tuple(character, character, character[3]) s = as<(character, character, character[3])>((56, 57, [56, 57, 58]));
+
+    t.1 -> out;
+    '\n' -> out;
+    t.2 -> out;
+    '\n' -> out;
+    t.3 -> out;
+    '\n' -> out;
+
+    t = as<(integer, integer, integer[3])>(('a','b',['a','b']));
+
+    t.1 -> out;
+    '\n' -> out;    
+    t.2 -> out;
+    '\n' -> out;
+    t.3 -> out;
+    '\n' -> out; 
+
+    s.1 -> out;
+    '\n' -> out;
+    s.2 -> out;
+    '\n' -> out;
+    s.3 -> out;
+    '\n' -> out;
+
+    return 0;
+}

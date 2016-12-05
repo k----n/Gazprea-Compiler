@@ -185,11 +185,20 @@ void eq_tuple(){
                 status = false;
                 break;
             }
+			
+			r -> release();
         }
+	   
+		t1 -> release();
+		t2 -> release();
+		type -> release();
     }
 
     Value* booleanV = new Value(status);
 
     stack -> push(booleanV);
 
+    booleanV ->release();
+    value1 -> release();
+    value2 -> release();
 }

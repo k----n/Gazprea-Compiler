@@ -6,7 +6,10 @@ procedure main() returns integer {
 
     s.c = 'b';
     s.r = 6;
+
+
     t.r -> std_output();
+
     s.c -> std_output();
     s.r -> std_output();
 
