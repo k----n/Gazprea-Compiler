@@ -1,0 +1,15 @@
+switch (type->getType()) {
+case IntervalType: printf("IntervalType\n"); break;
+case VectorType: printf("VectorType\n"); break;
+case BooleanType: printf("BooleanType\n"); break;
+case IntegerType: printf("IntegerType\n"); break;
+case RealType: printf("Real\n"); break;
+case CharacterType: printf("CharacterType\n"); break;
+case NullType: printf("NullType\n"); break;
+case IdentityType: printf("IdentityType\n"); break;
+case TupleType: printf("Tuple\n"); break;
+case StandardOut: printf("stdout\n"); break;
+case StandardIn: printf("stdin\n"); break;
+case Lvalue: printf("LValue\n"); break;
+case StartVector: printf("StartVector\n"); break;
+}

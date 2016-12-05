@@ -169,21 +169,21 @@ public:
 		if (this->isNull())		{ printf("This is a null tuple\n"); exit(1); }
 		if (this->isIdentity())	{ printf("This is an identity tuple\n"); exit(1); }
 		if (!this->isTuple())	{ printf("Not a tuple value\n"); exit(1); }
-		return ((Vector<Value>*)this->value)->copy();
+		return (Vector<Value>*)this->value;
 	}
 
 	Vector<Value>* intervalValue() const {
 		if (this->isNull())		{ printf("This is a null interval\n"); exit(1); }
 		if (this->isIdentity())	{ printf("This is an identity interval\n"); exit(1); }
 		if (!this->isInterval()){ printf("Not an Interval\n"); exit(1); }
-		return ((Vector<Value>*)this->value)->copy();
+		return (Vector<Value>*)this->value;
 	}
 
     Vector<Value>* vectorValue() const {
         if (this->isNull())		{ printf("This is a null vector\n"); exit(1); }
         if (this->isIdentity())	{ printf("This is an identity vector\n"); exit(1); }
         if (!this->isVector()){ printf("Not a Vector \n"); exit(1); }
-        return ((Vector<Value>*)this->value)->copy();
+        return (Vector<Value>*)this->value;
     }
 	
 	Vector<Value>* matrixValue() const {

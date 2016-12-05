@@ -1,0 +1,18 @@
+procedure main() returns integer {
+    integer x = 3;
+    real y = 5;
+    y = x;
+    x = 15;
+    integer s;
+    integer t = null;
+    
+    var u = 3;
+    var l = 2.0;
+
+    u -> std_output();
+    l -> std_output();
+    x -> std_output();
+    y -> std_output();
+    
+    return 0;
+}

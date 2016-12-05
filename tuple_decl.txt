@@ -1,0 +1,38 @@
+procedure println(integer x) {
+    var out = std_output();
+    x -> out;
+    '\n' -> out;
+}
+
+procedure println(character x) {
+    var out = std_output();
+    x -> out;
+    '\n' -> out;
+}
+
+procedure main() returns integer {
+    tuple(integer, character) s;
+    tuple(integer, character) t = null;
+    tuple(integer, character) u = identity;
+    var out = std_output();
+
+    call println(s.1);
+    call println(s.2);
+    call println(t.1);
+    call println(t.2);
+    call println(u.1);
+    call println(u.2);
+    
+    tuple(integer[3], character[3]) a;
+    tuple(integer[3], character[3]) b = null;
+    tuple(integer[3], character[3]) c = identity;
+
+    a.1 -> out;
+    a.2 -> out;
+    b.1 -> out;
+    b.2 -> out;
+    c.1 -> out;
+    c.2 -> out;
+
+    return 0; 
+}
