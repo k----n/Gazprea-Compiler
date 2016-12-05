@@ -31,9 +31,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Deque<Integer> currentLoop = new ArrayDeque<>();
     private Deque<Integer> currentIterator = new ArrayDeque<>();
 
-    private Stack<Type.TYPES> matrixDetails = new Stack<>();
-    private Stack<ArrayList<Type>> tupleDetails = new Stack<>();
-
     private Scope<Variable> scope = new Scope<>(); // Name mangler
     private Function currentFunction = null; // For adding code to it
 
@@ -523,21 +520,36 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             else if (ctx.As() == null) {
                 // CASE: parenthesis
                 return type;
-            } else {
+            }
+            else {
                 // CASE: casting case
-                Type newType;
+                Type newType = this.visitType(ctx.type());
                 if (ctx.type() != null) {
-                    newType = this.visitType(ctx.type());
-                    String typeLetter = Type.getCastingFunction(type, newType);
-                    ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                    promoteCall.add("typeLetter", typeLetter);
-                    this.addCode(promoteCall.render());
+                    if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        this.visit(ctx.sizeData());
+                        ST promoteVector = llvmGroup.getInstanceOf("promoteVector");
+                        promoteVector.add("value", getLetterForType(newType));
+                        this.addCode(promoteVector.render());
+                    } else if (newType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
 
+                    } else {
+                        String typeLetter = Type.getCastingFunction(type, newType);
+                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                        promoteCall.add("typeLetter", typeLetter);
+                        this.addCode(promoteCall.render());
+                    }
                     return newType;
                 }
                 // TODO tuple case, NEED TO POP PREVIOUS EXPRESSION OFF STACK
-                else if (type.getType().equals(Type.TYPES.TUPLE)) {
+                else if (ctx.tupleTypeDetails() != null) {
                     // pop stack first
+                    this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+
+                    ST promoteTuple = llvmGroup.getInstanceOf("promoteTuple");
+                    this.addCode(promoteTuple.render());
+
+                    return newType;
+                    /*
                     ST popStack = this.llvmGroup.getInstanceOf("popStack");
                     this.addCode(popStack.render());
 
@@ -561,6 +573,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     promoteType.pop();
 
                     return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
+                    */
                 }
                 else{
                     throw new Error("Cannot cast type");
@@ -1127,27 +1140,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         ST startVector = this.llvmGroup.getInstanceOf("startVector");
         this.addCode(startVector.render());
-        if (tupleDetails== null) {
-            for (int e = 0; e < ctx.expression().size(); ++e) {
-                Type exprType = this.visitExpression(ctx.expression(e));
 
-                tupleType.addField("" + (e + 1), exprType);
-            }
-        }
-        else {
-            for (int e = 0; e < ctx.expression().size(); ++e) {
-                Type exprType = this.visitExpression(ctx.expression(e));
-                String typeLetter = Type.getCastingFunction(exprType, tupleDetails.peek().get(e));
-                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                promoteCall.add("typeLetter", typeLetter);
-                this.addCode(promoteCall.render());
-                tupleType.addField("" + (e + 1), tupleDetails.peek().get(e));
-            }
+        for (int e = 0; e < ctx.expression().size(); ++e) {
+            Type exprType = this.visitExpression(ctx.expression(e));
+            tupleType.addField("" + (e + 1), exprType);
         }
         ST endTuple = this.llvmGroup.getInstanceOf("endTuple");
         this.addCode(endTuple.render());
-
-        //tupleDetails.pop();
 
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
@@ -1974,60 +1973,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             this.scope.initVariable(variableName, variable);
         }
-/*
-
-
-        if (variable.getType().getType() != Type.TYPES.NULL
-                && variable.getType().getType() != Type.TYPES.TUPLE
-                && variable.getType().getType() != Type.TYPES.INTERVAL) {
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
-            this.addCode(initLine.render());
-
-            ST line = this.llvmGroup.getInstanceOf("assignByVar");
-            line.add("name", variable.getMangledName());
-            this.addCode(line.render());
-        } else if ((variable.getType().getType() == Type.TYPES.TUPLE)
-                || (variable.getType().getType() == Type.TYPES.INTERVAL)) {
-            ST initAssign = this.llvmGroup.getInstanceOf("assignByVar");
-            initAssign.add("name", variable.getMangledName());
-            this.addCode(initAssign.render());
-        }
-
-        // expression type
-        if (ctx.expression() != null) {
-            // expression is included
-            Type assignedType = this.visitExpression(ctx.expression());
-            if (variable.getType().getType() == Type.TYPES.NULL) {
-                variable.setType(assignedType);
-            }
-            if (assignedType.getType() == Type.TYPES.INTERVAL && variable.getType().getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
-                // convert to vector
-                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-                promoteCall.add("typeLetter", "vv");
-                this.currentFunction.addLine((promoteCall.render()));
-
-                if (variable.getType().getType() != Type.TYPES.NULL
-                        && variable.getType().getType() != Type.TYPES.INTERVAL) {
-                    String typeLetter = Type.getResultFunction(variable.getType(), variable.getType());
-                    ST promote = this.llvmGroup.getInstanceOf("promoteTo");
-                    promote.add("typeLetter", typeLetter);
-                    this.addCode(promote.render());
-                }
-            }
-            ST line = this.llvmGroup.getInstanceOf("assignByVar");
-            line.add("name", variable.getMangledName());
-            this.addCode(line.render());
-
-        } else if (ctx.expression() == null) {
-            if (lhsType.getType() == null) {
-                // expression portion is excluded
-                ST nullLine = this.llvmGroup.getInstanceOf("pushNull");
-                this.addCode(nullLine.render());
-            }
-        }
-
-        this.scope.initVariable(variableName, variable);
-        */
 
         return null;
     }
@@ -2120,7 +2065,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitType(GazpreaParser.TypeContext ctx) {
 
         Type.TYPES typeName = Type.TYPES.NULL;
-        tupleDetails = null;
         if (ctx.typeName() != null) {
             String typeNameString = this.visitTypeName(ctx.typeName());
             switch(typeNameString) {
@@ -2133,9 +2077,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case Type.strREAL:
                     typeName = Type.TYPES.REAL; break;
                 case Type.strTUPLE:
-                    Type type = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
-                    //tupleDetails.push(promoteType.peek());
-                    return type;
+                    return this.visitTupleTypeDetails(ctx.tupleTypeDetails());
                 case Type.strSTRING:
                     // TODO: Consider purging string type by converting to vector char type
                     typeName = Type.TYPES.STRING; break;

@@ -1,17 +1,24 @@
 procedure main() returns integer {
-    var out = std_output();
     tuple(integer, integer) y = (null, null);
-    tuple(integer, integer, integer[3]) x = (null, null, null);
+    tuple(integer, integer, integer[3]) x1 = (null, null, null);
+    tuple(integer, integer, integer[3]) x2 = (identity, identity, identity);
+    var out = std_output();
 
     y.1 -> out;
     '\n' -> out;
     y.2 -> out;
     '\n' -> out;
-    x.1 -> out;
+    x1.1 -> out;
     '\n' -> out;
-    x.2 -> out;
+    x1.2 -> out;
     '\n' -> out;
-    x.3 -> out;
+    x1.3 -> out;
+    '\n' -> out;
+    x2.1 -> out;
+    '\n' -> out;
+    x2.2 -> out;
+    '\n' -> out;
+    x2.3 -> out;
     '\n' -> out;
 
     return 0;

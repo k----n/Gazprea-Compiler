@@ -106,7 +106,7 @@ expression
  | expression Dot Identifier // tuple access
  | literal
  | Identifier
- | As '<' (type | tupleTypeDetails) '>' ('(' expression ')' | expression)
+ | As '<' (type sizeData? | tupleTypeDetails) '>' ('(' expression ')' | expression)
  | generator
  | filter
  | functionCall

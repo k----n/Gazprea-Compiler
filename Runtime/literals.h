@@ -2,6 +2,10 @@
 
 #include "BuiltinType.h"
 
+void popStack() {
+    stack->pop();
+}
+
 void pushEmptyValue(BuiltinType builtinType) {
 	ValueType* type = new ValueType(builtinType);
 	Value* value = new Value(type, nullptr);
@@ -209,68 +213,6 @@ void setVectorSize() {
     stack->push(vector);
 }
 
-void padVectorToStrictSize() {
-    _unwrap();
-
-    Value *vectorValue = stack->pop();
-    if (! vectorValue->isVector()) {
-        printf("we require a vector for padVectorToStrictSize");
-        exit(1);
-    }
-    Vector<Value> *vector = vectorValue->vectorValue();
-    ValueType *valueType = vectorValue->getType();
-
-    int current_size = vector->getCount();
-
-    int goal_size;
-    if (valueType->hasVectorSize()) {
-        goal_size = valueType->getVectorSize();
-    } else {
-        /* TODO: handle case where there is no goal size
-            perhaps return is sufficient*/
-        stack->push(vectorValue);
-        return;
-    }
-
-    BuiltinType containedType;
-    if (valueType->hasContainedType()) {
-        containedType = valueType->getContainedType();
-    } else {
-        containedType = NullType;
-    }
-
-    for (int s = current_size; s < goal_size; ++s) {
-        Value *toPush;
-
-        switch (containedType) {
-            case BooleanType:
-                toPush = new Value((bool)0);
-                break;
-            case CharacterType:
-                toPush = new Value((char)0);
-                break;
-            case IntegerType:
-                toPush = new Value((int)0);
-                break;
-            case RealType:
-                toPush = new Value((float)0.0);
-                break;
-            case IdentityType:
-                toPush = new Value(new ValueType(IdentityType), nullptr);
-                break;
-            case NullType:
-            	toPush = new Value(new ValueType(NullType), nullptr);
-            	break;
-            default:
-                printf("contained type invalid\n");
-                exit(1);
-        }
-
-        vector->append(toPush);
-    }
-
-    stack->push(vectorValue);
-}
 
 void setVectorContainedType(char type) {
     Value *vector = stack->pop();
@@ -367,7 +309,6 @@ void pushNullVector(char cType) {
 
     }
     stack->push(newValue);
-
 }
 
 void matchVectorSizes() {
@@ -447,6 +388,74 @@ void endTuple() {
 	tuple->release();
 	elements->release();
 	//tupleValues->release(); - Do not release
+}
+
+// needs a reference tuple
+// the ref tuple is not consumed
+void pushNullTuple() {
+    _unwrap();
+    Value* tupleValue = stack->pop();
+    if (!tupleValue->isTuple()) {
+        printf("No tuple to reference!\n");
+        exit(1);
+    }
+
+    Vector<Value>* refTuple = tupleValue->tupleValue();
+    int refTupleSize = refTuple->getCount();
+
+    Value* newTupleValue = new Value(new ValueType(TupleType), new Vector<Value>);
+    Vector<Value>* newTuple = newTupleValue->tupleValue();
+
+    Value* tempValue;
+
+    for (int i = 0; i < refTupleSize; ++i) {
+        Value* refAtom = refTuple->get(i);
+        ValueType* refAtomType = refAtom->getType();
+        switch (refAtomType->getType()) {
+            case BooleanType:
+                newTuple->append(new Value((bool)0));
+                break;
+            case CharacterType:
+                newTuple->append(new Value((char)0));
+                break;
+            case IntegerType:
+                newTuple->append(new Value((int)0));
+                break;
+            case RealType:
+                newTuple->append(new Value((float)0));
+                break;
+            case VectorType:
+                stack->push(new Value((int)refAtomType->getVectorSize()));
+                switch(refAtomType->getContainedType()) {
+                    case BooleanType:
+                        pushNullVector('b');
+                        break;
+                    case CharacterType:
+                        pushNullVector('c');
+                        break;
+                    case IntegerType:
+                        pushNullVector('i');
+                        break;
+                    case RealType:
+                        pushNullVector('r');
+                        break;
+                    default:
+                        printf("something went wrong with the vector in the tuple\n");
+                        exit(1);
+                }
+                tempValue = stack->pop();
+                newTuple->append(tempValue);
+                break;
+            //case MatrixType:
+                // TODO: DO THIS
+            default:
+                printf("tuple cant hold this type\n");
+                exit(1);
+        }
+    }
+
+    stack->push(tupleValue);
+    stack->push(newTupleValue);
 }
 
 // needs a reference tuple

@@ -46,10 +46,6 @@ bool toBool() {
 	return returnValue;
 }
 
-void popStack() {
-    stack->pop();
-}
-
 // duplicate value element in stack
 void copyStack() {
     Value* value = stack->pop()->copy();
