@@ -97,6 +97,7 @@ void neq_filter() {
         stack -> pop();
         Value* node = new Value(0);
         stack -> push(node);
+		node -> release();
     }
     element -> release();
 }

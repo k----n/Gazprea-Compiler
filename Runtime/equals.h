@@ -266,7 +266,13 @@ void eq__t(){
                 status = false;
                 break;
             }
+			
+			r -> release();
         }
+	   
+		t1 -> release();
+		t2 -> release();
+		type -> release();
     }
 
     Value* booleanV = new Value(status);
