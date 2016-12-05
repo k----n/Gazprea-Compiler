@@ -31,7 +31,24 @@ int main(int argc, const char * argv[]) {
 	void* t1 = nullptr;
 	
 	pushStartVector();
-	p
+	pushStartVector();
+	pushInteger(0);
+	pushInteger(1);
+	pushInteger(2);
+	endVector();
+	pushStartVector();
+	pushInteger(3);
+	pushInteger(4);
+	pushInteger(5);
+	endVector();
+	endMatrix();
+	
+	assign(&t1);
+	
+	push(&t1);
+	columns();
+	std_output();
+	rightArrowOperator();
 	
 	pushInteger(0); // Push return code
 #endif

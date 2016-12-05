@@ -71,8 +71,10 @@ notstatement
  | iteratorLoop
  ;
 
-declaration: type Identifier sizeData? (Assign expression)?
-            | typedef;
+declaration
+ : type Identifier sizeData? (Assign expression)?
+ | typedef
+ ;
 
 returnStatement: Return expression?;
 
@@ -83,7 +85,6 @@ continueStatement: Continue;
 streamStatement: expression arrow=(LeftArrow | RightArrow) expression;
 
 conditional: If expression translationalUnit (Else translationalUnit)?;
-
 
 // loops
 infiniteLoop: Loop translationalUnit;
@@ -153,10 +154,10 @@ Return: 'return';
 Returns: 'returns';
 
 assignment
-    : Identifier RealLiteral Assign expression
-    | Identifier Dot Identifier Assign expression
-    | Identifier (',' Identifier)* Assign expression
-    ;
+ : Identifier RealLiteral Assign expression
+ | Identifier Dot Identifier Assign expression
+ | Identifier (',' Identifier)* Assign expression
+ ;
 
 typedef: Typedef type Identifier;
 

@@ -664,7 +664,7 @@ void getAddF() {
                     }
                     break;
                 case VectorType:
-                case MatrixType:
+				case MatrixType:
                 case IntervalType:
                 case NullType:
                 case IdentityType:

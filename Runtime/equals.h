@@ -185,7 +185,13 @@ void eq_tuple(){
                 status = false;
                 break;
             }
+			
+			r -> release();
         }
+	   
+		t1 -> release();
+		t2 -> release();
+		type -> release();
     }
 
     Value* booleanV = new Value(status);
@@ -195,8 +201,4 @@ void eq_tuple(){
     booleanV ->release();
     value1 -> release();
     value2 -> release();
-    t1 -> release();
-    t2 -> release();
-    r -> release();
-    type -> release();
 }
