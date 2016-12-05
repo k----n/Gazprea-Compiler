@@ -20,10 +20,17 @@ procedure test2() {
 
     var a = [
         [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8]
+        [3, 4, 5]
     ];
     a -> out;
+    '\n' -> out;
+
+    var b = rows(a);
+    b -> out;
+    '\n' -> out;
+
+    var c = columns(a);
+    c -> out;
     '\n' -> out;
 
     '\n' -> out;
@@ -31,7 +38,7 @@ procedure test2() {
 
 procedure main() returns integer {
     call test1();
-    //call test2();
+    call test2();
 
     return 0;
 }
