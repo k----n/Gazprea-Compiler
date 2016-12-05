@@ -523,8 +523,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
             else {
                 // CASE: casting case
-                Type newType = this.visitType(ctx.type());
                 if (ctx.type() != null) {
+                    Type newType = this.visitType(ctx.type());
                     if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                         this.visit(ctx.sizeData());
                         ST promoteVector = llvmGroup.getInstanceOf("promoteVector");
@@ -542,8 +542,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 }
                 // TODO tuple case, NEED TO POP PREVIOUS EXPRESSION OFF STACK
                 else if (ctx.tupleTypeDetails() != null) {
-                    // pop stack first
-                    this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+                    Type newType = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+
+                    ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                    this.addCode(swapStack.render());
 
                     ST promoteTuple = llvmGroup.getInstanceOf("promoteTuple");
                     this.addCode(promoteTuple.render());

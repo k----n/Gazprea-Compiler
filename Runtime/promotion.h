@@ -559,7 +559,7 @@ void promoteVector(char cType) {
         case 'c': newValueType->setContainedType(CharacterType); break;
         case 'i': newValueType->setContainedType(IntegerType); break;
         case 'r': newValueType->setContainedType(RealType); break;
-        default: throw "cannot promote vector to this type"; break;
+        default: printf("cannot promote vector to this type\n"); exit(1); break;
     }
 
     Value* indexedValue = nullptr;
@@ -572,7 +572,7 @@ void promoteVector(char cType) {
             case 'c': promoteTo_c(); break;
             case 'i': promoteTo_i(); break;
             case 'r': promoteTo_r(); break;
-            default: throw "cannot promote vector to this type"; break;
+            default: printf("cannot promote vector to this type\n"); exit(1); break;
         }
         indexedValue = stack->pop();
         newVector->append(indexedValue);
@@ -585,7 +585,7 @@ void promoteVector(char cType) {
 
 
 
-// requires a reference tuple which it will consume
+// requires a reference tuple which it will not consume
 void promoteTuple() {
     Value* toPromoteValue = stack->pop();
 
@@ -609,6 +609,7 @@ void promoteTuple() {
 
     Vector<Value>* toPromote = toPromoteValue->tupleValue();
     Value* refValue = stack->pop();
+
     Vector<Value>* ref = refValue->tupleValue();
 
     Value* returnedValue = new Value(new ValueType(TupleType), new Vector<Value>);
@@ -666,5 +667,6 @@ void promoteTuple() {
         returnedTuple->append(toPromoteNode);
     }
 
+    stack->push(refValue);
     stack->push(returnedValue);
 }

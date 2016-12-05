@@ -467,7 +467,6 @@ void pushIdentityTuple() {
         printf("No tuple to reference!\n");
         exit(1);
     }
-
     Vector<Value>* refTuple = tupleValue->tupleValue();
     int refTupleSize = refTuple->getCount();
 
