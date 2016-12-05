@@ -123,19 +123,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             }
         }
 
-        /*
-        List<String> functionIR = this.functions
-                .entrySet()
-                .stream()
-                .map(entry -> {
-                    ST functionLines = this.llvmGroup.getInstanceOf("function");
-                    functionLines.add("name", entry.getKey());
-                    functionLines.add("code", entry.getValue().render());
-                    return functionLines.render();
-                })
-                .collect(Collectors.toList());
-        */
-
         ST program = this.runtimeGroup.getInstanceOf("runtime");
         program.add("variables", globalVariables);
         program.add("functions", functionIR);
@@ -1320,8 +1307,60 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.TUPLE, tupleType);
     }
 
-    public Type visitStringLiteral(TerminalNode str) {
+    public Type visitStringLiteral(TerminalNode node) {
+        String str = node.getText();
+        str = str.substring(1, str.length() - 1);
 
+        ST startVector = this.llvmGroup.getInstanceOf("startVector");
+        this.addCode(startVector.render());
+
+        for (int i = 0; i < str.length(); ++i) {
+            if(str.charAt(i) == '\\') {
+                int val;
+                switch(str.charAt(i+1)) {
+                    case 'a':
+                        val = 7;
+                        break;
+                    case 'b':
+                        val = '\b';
+                        break;
+                    case 'n':
+                        val = '\n';
+                        break;
+                    case 'r':
+                        val = '\r';
+                        break;
+                    case 't':
+                        val = '\t';
+                        break;
+                    case '\\':
+                        val = '\\';
+                        break;
+                    case '\'':
+                        val = '\'';
+                        break;
+                    case '"':
+                        val = '\"';
+                        break;
+                    case '0':
+                        val = '\0';
+                        break;
+                    default:
+                        throw new RuntimeException("Invalid escape sequence, brah\n");
+                }
+                ST pushCharacter = llvmGroup.getInstanceOf("pushCharacter");
+                pushCharacter.add("value", (int) val);
+                this.addCode(pushCharacter.render());
+                ++i;
+            } else {
+                ST pushCharacter = llvmGroup.getInstanceOf("pushCharacter");
+                pushCharacter.add("value", (int) str.charAt(i));
+                this.addCode(pushCharacter.render());
+            }
+        }
+
+        ST endVector = this.llvmGroup.getInstanceOf("endVector");
+        this.addCode(endVector.render());
 
         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.CHARACTER, Type.COLLECTION_TYPES.VECTOR);
     }
@@ -2253,8 +2292,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case Type.strTUPLE:
                     return this.visitTupleTypeDetails(ctx.tupleTypeDetails());
                 case Type.strSTRING:
-                    // TODO: Consider purging string type by converting to vector char type
-                    typeName = Type.TYPES.STRING; break;
+                    return new Type(Type.SPECIFIERS.VAR, Type.TYPES.CHARACTER, Type.COLLECTION_TYPES.VECTOR);
                 default:
                 if (typedefs.containsKey(typeNameString)){
                     typeName = typedefs.get(typeNameString).getType();

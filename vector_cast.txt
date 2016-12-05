@@ -1,0 +1,10 @@
+procedure main() returns integer {
+    var vector x = as<string[15]>([1, 2, 3]);
+    var vector y = as<integer vector[100]>(['h','e','l','l','o',' ','w','o','r','l','d','!']);
+    var out = std_output();
+
+    x -> out;
+    y -> out;
+
+    return 0;
+}
