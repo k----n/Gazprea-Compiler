@@ -340,9 +340,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             });
 
             this.scope.getLocalScopeVariables().forEach(pair -> {
-                ST free = this.llvmGroup.getInstanceOf("freeVariable");
-                free.add("name", pair.right().getMangledName());
-                this.addCode(free.render());
+                if (pair.right().getType().getSpecifier() != Type.SPECIFIERS.VAR) {
+                    ST free = this.llvmGroup.getInstanceOf("freeVariable");
+                    free.add("name", pair.right().getMangledName());
+                    this.addCode(free.render());
+                }
             });
 
             ST line = this.llvmGroup.getInstanceOf("functionReturn");
@@ -350,9 +352,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
         if (ctx.expression() != null) {
             this.scope.getLocalScopeVariables().forEach(pair -> {
-                ST free = this.llvmGroup.getInstanceOf("freeVariable");
-                free.add("name", pair.right().getMangledName());
-                this.addCode(free.render());
+                if (pair.right().getType().getSpecifier() != Type.SPECIFIERS.VAR) {
+                    ST free = this.llvmGroup.getInstanceOf("freeVariable");
+                    free.add("name", pair.right().getMangledName());
+                    this.addCode(free.render());
+                }
             });
 
             this.visitExpression(ctx.expression());
@@ -1500,21 +1504,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             } else {
                 field = ctx.Identifier(1).getText();
             }
-/*
-            // first get the tuple on the stack
-            ST line = this.llvmGroup.getInstanceOf("pushVariable");
-            Variable variable = this.scope.getVariable(varName);
-            line.add("name", variable.getMangledName());
-            this.addCode(line.render());
 
-            // then get the field respective to the tuple on the stack
-            Tuple tupleType = variable.getType().getTupleType();
-            Integer fieldNumber = tupleType.getFieldNumber(field);
-
-            ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
-            getTupleField.add("index", fieldNumber - 1);
-            this.addCode(getTupleField.render());
-*/
             // TODO fix this tuple assignment
             // first get the tuple on the stack
             ST line = this.llvmGroup.getInstanceOf("pushVariable");
