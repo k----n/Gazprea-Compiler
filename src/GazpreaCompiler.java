@@ -964,6 +964,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                     }
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("modulus");
                         operatorCall.add("typeLetter", typeLetter);
