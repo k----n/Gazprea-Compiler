@@ -24,10 +24,10 @@ public class Type {
     /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "iv",       "void",  "void"    },
     /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
     /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "rv",       "void",  "void"    },
-    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "nv",       "void",     "tv",    "void"    },
-    /*IDNTY*/   {"bv",      "iv",       "void",     "rv",           "void",     "dv",       "tv",    "void"    },
+    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "nv",       "void",     "tv",    "lv"      },
+    /*IDNTY*/   {"bv",      "iv",       "void",     "rv",           "void",     "dv",       "tv",    "lv"      },
     /*TUPLE*/   {"void",    "void",     "void",     "void",         "tv",       "tv",       "tuple", "void"    },
-    /*INTERVAL*/{"void",    "skip",     "void",     "void",         "void",     "void",     "void",  "lv"      },
+    /*INTERVAL*/{"void",    "skip",     "void",     "void",         "lv",       "lv",       "void",  "lv"      },
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
@@ -132,6 +132,9 @@ public class Type {
                 break;
             case "cv":
                 retType = TYPES.CHARACTER;
+                break;
+            case "lv":
+                retType = TYPES.INTERVAL;
                 break;
             default: return null;
         }

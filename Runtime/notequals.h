@@ -30,7 +30,7 @@ void neq_t(){
     neg_b();
 }
 
-void neq_Interval(){
+void neq_l(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();
     Value* interval1 = stack->pop();

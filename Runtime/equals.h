@@ -100,7 +100,7 @@ void eq__v() {
     stack -> push(result);
 }
 
-void eq_Interval(){
+void eq__l(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();
     Value* interval1 = stack->pop();
@@ -236,7 +236,7 @@ void eq__t(){
             Value * r;
             switch(type->getType()){
                 case IntervalType:
-                    eq_Interval();
+                    eq__l();
                     break;
                 case BooleanType:
                     eq__b();
