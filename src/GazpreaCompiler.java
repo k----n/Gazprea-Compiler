@@ -557,13 +557,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: casting case
                 if (ctx.type() != null) {
                     Type newType = this.visitType(ctx.type());
-                    if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR
+                            || (ctx.sizeData() != null && ctx.sizeData().expression().size() + ctx.sizeData().Asteriks().size() == 1) ) {
                         this.visit(ctx.sizeData());
-                        ST promoteVector = llvmGroup.getInstanceOf("promoteVector");
+                        ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
                         promoteVector.add("value", getLetterForType(newType));
                         this.addCode(promoteVector.render());
-                    } else if (newType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
-
+                    } else if (newType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX
+                            || (ctx.sizeData() != null && ctx.sizeData().expression().size() + ctx.sizeData().Asteriks().size() == 2) ) {
+                        this.visitSizeData(ctx.sizeData());
+                        ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");
+                        promoteMatrix.add("value", getLetterForType(newType));
+                        this.addCode(promoteMatrix.render());
                     } else {
                         String typeLetter = Type.getCastingFunction(type, newType);
                         ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");

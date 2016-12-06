@@ -704,6 +704,7 @@ void promoteMatrix(char cType) {
 
 // requires a reference tuple which it will not consume
 void promoteTuple() {
+    _unwrap();
     Value* toPromoteValue = stack->pop();
 
     switch (toPromoteValue->getType()->getType()) {
