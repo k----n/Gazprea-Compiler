@@ -786,7 +786,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("lessthanVector");
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
-                    } else {
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
+                    else {
                         operatorCall = this.llvmGroup.getInstanceOf("lessthan");
                         operatorCall.add("typeLetter", typeLetter);
                         this.addCode(operatorCall.render());
@@ -798,7 +806,15 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("lessthanequalVector");
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
-                    } else {
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
+                    else {
                         operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
                         operatorCall.add("typeLetter", typeLetter);
                         this.addCode(operatorCall.render());
