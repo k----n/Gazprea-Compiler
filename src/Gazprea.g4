@@ -141,7 +141,6 @@ literal
  ;
 
 // important to note empty matrices will look like vectors
-matrixLiteral: '[' vectorLiteral (',' vectorLiteral)* ']';
 vectorLiteral: '[' (expression (',' expression)*)? ']';
 tupleLiteral: '(' expression (',' expression)+ ')';
 

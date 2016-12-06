@@ -285,13 +285,10 @@ void setVectorContainedType(char type) {
     stack->push(vector);
 }
 
+
 void pushIdentityVector(char cType) {
     Value* sizeValue = stack->pop();
     int size = *(sizeValue->integerValue());
-    if (size == -1) {
-        printf("Cannot push unsized null\n");
-        exit(1);
-    }
 
     ValueType* newValueType = new ValueType(VectorType);
     newValueType->setVectorSize(size);
@@ -300,6 +297,7 @@ void pushIdentityVector(char cType) {
         case 'c': newValueType->setContainedType(CharacterType); break;
         case 'i': newValueType->setContainedType(IntegerType); break;
         case 'r': newValueType->setContainedType(RealType); break;
+        case 'n': newValueType->setContainedType(NullType); break;
         default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
     }
     Value* newValue = new Value(newValueType, new Vector<Value>);
@@ -311,6 +309,7 @@ void pushIdentityVector(char cType) {
             case 'c': newVector->append(new Value((char)1)); break;
             case 'i': newVector->append(new Value((int)1)); break;
             case 'r': newVector->append(new Value((float)1)); break;
+            case 'n': newVector->append(new Value(new ValueType(IdentityType), nullptr));
             default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
         }
     }
@@ -322,10 +321,6 @@ void pushIdentityVector(char cType) {
 void pushNullVector(char cType) {
     Value* sizeValue = stack->pop();
     int size = *(sizeValue->integerValue());
-    if (size == -1) {
-        printf("Cannot push unsized null\n");
-        exit(1);
-    }
 
     ValueType* newValueType = new ValueType(VectorType);
     newValueType->setVectorSize(size);
@@ -334,6 +329,7 @@ void pushNullVector(char cType) {
         case 'c': newValueType->setContainedType(CharacterType); break;
         case 'i': newValueType->setContainedType(IntegerType); break;
         case 'r': newValueType->setContainedType(RealType); break;
+        case 'n': newValueType->setContainedType(NullType); break;
         default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
     }
     Value* newValue = new Value(newValueType, new Vector<Value>);
@@ -345,6 +341,7 @@ void pushNullVector(char cType) {
             case 'c': newVector->append(new Value((char)0)); break;
             case 'i': newVector->append(new Value((int)0)); break;
             case 'r': newVector->append(new Value((float)0)); break;
+            case 'n': newVector->append(new Value(new ValueType(NullType), nullptr));
             default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
         }
 
@@ -398,6 +395,74 @@ void matchVectorTypes() {
 
     stack->push(value2);
     stack->push(value1);
+}
+
+void pushIdentityMatrix(char cType) {
+    _unwrap();
+    Value* columnValue = stack->pop();
+    int columnSize = *(columnValue->integerValue());
+    _unwrap();
+    Value* rowValue = stack->pop();
+    int rowSize = *(rowValue->integerValue());
+
+    Vector<Value>* newNullMatrix = new Vector<Value>();
+    Value* newNullValue = new Value(new ValueType(MatrixType), newNullMatrix);
+
+    BuiltinType overallType;
+
+    switch (cType) {
+        case 'b': overallType = BooleanType; break;
+        case 'c': overallType = CharacterType; break;
+        case 'i': overallType = IntegerType; break;
+        case 'r': overallType = RealType; break;
+        case 'n': overallType = IdentityType; break;
+        default: printf("cannot have null matrix of this type!\n"); exit(1);
+    }
+
+    for (int r = 0; r < rowSize; ++r) {
+        for (int c = 0; c < columnSize; ++c) {
+            pushInteger(rowSize);
+            pushIdentityVector(cType);
+            Value* rowValue = stack->pop();
+            newNullMatrix->append(rowValue);
+        }
+    }
+
+    stack->push(newNullValue);
+}
+
+void pushNullMatrix(char cType) {
+    _unwrap();
+    Value* columnValue = stack->pop();
+    int columnSize = *(columnValue->integerValue());
+    _unwrap();
+    Value* rowValue = stack->pop();
+    int rowSize = *(rowValue->integerValue());
+
+    Vector<Value>* newNullMatrix = new Vector<Value>();
+    Value* newNullValue = new Value(new ValueType(MatrixType), newNullMatrix);
+
+    BuiltinType overallType;
+
+    switch (cType) {
+        case 'b': overallType = BooleanType; break;
+        case 'c': overallType = CharacterType; break;
+        case 'i': overallType = IntegerType; break;
+        case 'r': overallType = RealType; break;
+        case 'n': overallType = NullType; break;
+        default: printf("cannot have null matrix of this type!\n"); exit(1);
+    }
+
+    for (int r = 0; r < rowSize; ++r) {
+        for (int c = 0; c < columnSize; ++c) {
+            pushInteger(rowSize);
+            pushNullVector(cType);
+            Value* rowValue = stack->pop();
+            newNullMatrix->append(rowValue);
+        }
+    }
+
+    stack->push(newNullValue);
 }
 
 void endTuple() {

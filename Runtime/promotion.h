@@ -540,10 +540,10 @@ void promoteTo_v() {
 
 void promoteVector(char cType) {
     _unwrap();
-
     Value* toSizeValue = stack->pop();
     int *toSize = toSizeValue->integerValue();
 
+    _unwrap();
 	Value* poppedValue = stack->pop();
     Vector<Value>* poppedVector;
 
@@ -552,14 +552,17 @@ void promoteVector(char cType) {
 	    switch (poppedValue->getType()->getType()) {
 	        case IdentityType:
 	            poppedVector = new Vector<Value>();
-	            if (toSize < 0) { printf("can't play this identity game with no size\n"); exit(1); }
 	            poppedValue = new Value(new ValueType(VectorType), poppedVector);
 	            for (index = 0; index < *toSize; ++index) {
 	                poppedVector->append(new Value(new ValueType(IdentityType), nullptr));
 	            }
 	            break;
 	        case NullType:
-	            poppedValue = new Value(new ValueType(VectorType), new Vector<Value>);
+	            poppedVector = new Vector<Value>();
+	            poppedValue = new Value(new ValueType(VectorType), poppedVector);
+	            for (index = 0; index < *toSize; ++index) {
+	                poppedVector->append(new Value(new ValueType(NullType), nullptr));
+	            }
 	            break;
 	        case IntervalType:
 	            stack->push(poppedValue);
@@ -610,7 +613,83 @@ void promoteVector(char cType) {
     padVectorToStrictSize();
 }
 
+void promoteMatrix(char cType) {
+    _unwrap();
+    Value* columnValue = stack->pop();
+    int columnSize = columnValue->integerValue();
+    _unwrap();
+    Value* rowValue = stack->pop();
+    int rowSize = rowValue->integerValue();
+    _unwrap();
+    Value* poppedMatrixValue = stack->pop();
+    Vector<Value>* poppedMatrix = poppedMatrixValue->matrixValue();
+    int poppedRows = poppedMatrix->vectorValue()->getCount();
 
+    BuiltinType overallType;
+    switch(cType) {
+        case 'b': overallType = BooleanType; break;
+        case 'c': overallType = CharacterType; break;
+        case 'i': overallType = IntegerType; break;
+        case 'r': overallType = RealType; break;
+        case 'n': overallType = NullType; break;
+        default:
+            printf("cannot promote matrix to this type\n"); exit(1);
+    }
+
+    Vector<Value>* toPush = new Vector<Value>();
+    ValueType* toPushValueType = new ValueType(MatrixType);
+    toPushValueType->setContainedType(overallType);
+    Value* toPushValue = new Value(toPushValueType, toPush);
+
+    switch(poppedMatrix->getType()->getType()) {
+        case NullType:
+            pushInteger(rowSize);
+            pushInteger(columnSize);
+            pushNullMatrix(cType);
+            break;
+        case IdentityType:
+            pushInteger(rowSize);
+            pushInteger(columnSize);
+            pushIdentityMatrix(cType);
+            break;
+        case VectorType:
+            // only vector that can be promoted to matrix is []
+            stack->push(toPushValue);
+            return;
+        case MatrixType:
+            // continue on;
+            break;
+        default:
+            printf("This type cannot be promoted to a matrix\n"); exit(1);
+            break;
+    }
+
+    int maxWidth = 0;
+    for (int r = 0; r < poppedRows; ++r) {
+        Value* row = poppedMatrix->get(r);
+        Vector<Value>* rowVector = row->vectorValue();
+        maxWidth = maxWidth > rowVector->getCount() ? maxWidth : rowVector->getCount();
+    }
+
+    int toSetVectorSize = maxWidth > columnSize ? maxWidth : columnSize;
+    for (int r = 0; r < poppedRows; ++r) {
+        Value* row = poppedMatrix->get(r);
+        ValueType* rowType = row->getType();
+
+        rowType->setVectorSize(toSetVectorSize);
+        rowType->setContainedType(overallType);
+        stack->push(row);
+        padVectorToStrictSize();
+    }
+
+    int toSetMatrixType = poppedRows > rowSize ? poppedRows : rowSize;
+
+    toPushValueType->setVectorSize(toSetVectorSize);
+    toPushValueType->setMatrixSize(toSetMatrixType);
+    toPushValueType->setContainedType(overallType);
+
+    stack->push(toPush);
+}
 
 // requires a reference tuple which it will not consume
 void promoteTuple() {

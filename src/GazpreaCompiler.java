@@ -1373,6 +1373,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
         Integer size = ctx.expression().size();
 
+        boolean isMatrix = false;
+
         ST startVector = this.llvmGroup.getInstanceOf("startVector");
         this.addCode(startVector.render());
 
@@ -1388,9 +1390,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         for (int expr = 0; expr < size; ++expr) {
             Type exprType = this.visitExpression(ctx.expression(expr));
-            //if (elementTypeCounts.get(exprType.getType())!= null) {
-                elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
-            //}
+            if (exprType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                isMatrix = true;
+            } else if (exprType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                throw new RuntimeException("Vector literal cannot contain a matrix!\n");
+            }
+            elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
         }
         ST endVector = this.llvmGroup.getInstanceOf("endVector");
         this.addCode(endVector.render());
@@ -1413,50 +1418,65 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         this.addCode(startVector.render());
 
-        for (int expr = 0; expr < ctx.expression().size(); ++expr) {
-            Type exprType = this.visitExpression(ctx.expression(expr));
-            String typeLetter = Type.getCastingFunction(exprType, type);
-            ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-            promoteCall.add("typeLetter", typeLetter);
-            this.addCode(promoteCall.render());
+        if (isMatrix) {
+            for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+                Type exprType = this.visitExpression(ctx.expression(expr));
+                ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
+                promoteVector.add("value", this.getLetterForType(highestRankType));
+                ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+                if (ctx.expression(expr).literal() != null && ctx.expression(expr).literal().vectorLiteral() != null) {
+                    int vectorSize = ctx.expression(expr).literal().vectorLiteral().expression().size();
+                    pushInteger.add("value", vectorSize);
+                    this.addCode(pushInteger.render());
+                } else {
+                    pushInteger.add("value", -1);
+                    this.addCode(pushInteger.render());
+                }
+                this.addCode(promoteVector.render());
+
+            }
+
+            ST endMatrix = this.llvmGroup.getInstanceOf("endMatrix");
+            this.addCode(endMatrix.render());
+
+            // push column measurement
+            ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+            pushInteger.add("value", -1);
+            this.addCode(pushInteger.render());
+
+            // push row measurement
+            pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+            pushInteger.add("value", ctx.expression().size());
+            this.addCode(pushInteger.render());
+
+            ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");
+            promoteMatrix.add("value", this.getLetterForType(highestRankType));
+            this.addCode(promoteMatrix.render());
+
+            return new Type(Type.SPECIFIERS.VAR, highestRankType, Type.COLLECTION_TYPES.MATRIX);
+        } else {
+            for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+                Type exprType = this.visitExpression(ctx.expression(expr));
+                String typeLetter = Type.getCastingFunction(exprType, type);
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
+            }
+
+            this.addCode(endVector.render());
+
+            ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+            pushInteger.add("value", size);
+            this.addCode(pushInteger.render());
+            ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
+            this.addCode(setSizeData.render());
+
+            // assign the contained type to the vector
+            ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
+            setVectorContainedType.add("value", getLetterForType(highestRankType));
+            this.addCode(setVectorContainedType.render());
+            return new Type(Type.SPECIFIERS.VAR, highestRankType, Type.COLLECTION_TYPES.VECTOR, size);
         }
-
-        this.addCode(endVector.render());
-
-        ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
-        pushInteger.add("value", size);
-        this.addCode(pushInteger.render());
-        ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
-        this.addCode(setSizeData.render());
-
-        // assign the contained type to the vector
-        ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
-        int value;
-        switch (highestRankType) {
-            case BOOLEAN:
-                value = 'b';
-                break;
-            case CHARACTER:
-                value = 'c';
-                break;
-            case INTEGER:
-                value = 'i';
-                break;
-            case REAL:
-                value = 'r';
-                break;
-            case IDENTITY:
-            case NULL:
-                value ='n';
-                break;
-            default:
-                throw new RuntimeException("Vector does not support this type");
-        }
-
-        setVectorContainedType.add("value", value);
-        this.addCode(setVectorContainedType.render());
-
-        return new Type(Type.SPECIFIERS.VAR, type.getType(), Type.COLLECTION_TYPES.VECTOR, size);
     }
 
     @Override
@@ -1975,6 +1995,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     private int getLetterForType(Type input_type){
         switch (input_type.getType()) {
+            case BOOLEAN: return 'b';
+            case CHARACTER: return 'c';
+            case INTEGER: return 'i';
+            case REAL: return 'r';
+            case IDENTITY:
+            case NULL: return  'n';
+            default:
+                throw new RuntimeException("Vector does not support this type");
+        }
+    }
+
+    private int getLetterForType(Type.TYPES input_type){
+        switch (input_type) {
             case BOOLEAN: return 'b';
             case CHARACTER: return 'c';
             case INTEGER: return 'i';
