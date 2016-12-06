@@ -42,7 +42,6 @@ void promoteTo_b() {
 			newValue = new Value(*charValue != '\0');
 			break;
         case VectorType:
-		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -53,6 +52,19 @@ void promoteTo_b() {
                 vectorValues->append(node);
             }
             newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
+		case MatrixType:
+            size = value->matrixValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->matrixValue()->get(i);
+                stack->push(node);
+                promoteTo_b();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(MatrixType);
             newValue = new Value(newType, vectorValues);
             break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
@@ -107,7 +119,6 @@ void promoteTo_i() {
 			newValue = new Value((int)*charValue);
 			break;
         case VectorType:
-		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -118,6 +129,19 @@ void promoteTo_i() {
                 vectorValues->append(node);
             }
             newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
+		case MatrixType:
+            size = value->matrixValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->matrixValue()->get(i);
+                stack->push(node);
+                promoteTo_i();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(MatrixType);
             newValue = new Value(newType, vectorValues);
             break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
@@ -171,8 +195,20 @@ void promoteTo_r() {
 			charValue = value->characterValue();
 			newValue = new Value((float)*charValue);
 			break;
-        case VectorType:
 		case MatrixType:
+            size = value->matrixValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->matrixValue()->get(i);
+                stack->push(node);
+                promoteTo_r();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(MatrixType);
+            newValue = new Value(newType, vectorValues);
+            break;
+        case VectorType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -233,7 +269,6 @@ void promoteTo_c() {
 			newValue->retain();
 			break;
         case VectorType:
-		case MatrixType:
             size = value->vectorValue()->getCount();
             vectorValues = new Vector<Value>;
             for (int i = 0; i < size; i++){
@@ -244,6 +279,19 @@ void promoteTo_c() {
                 vectorValues->append(node);
             }
             newType = new ValueType(VectorType);
+            newValue = new Value(newType, vectorValues);
+            break;
+		case MatrixType:
+            size = value->matrixValue()->getCount();
+            vectorValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                node = value->matrixValue()->get(i);
+                stack->push(node);
+                promoteTo_c();
+                node = stack->pop()->copy();
+                vectorValues->append(node);
+            }
+            newType = new ValueType(MatrixType);
             newValue = new Value(newType, vectorValues);
             break;
 		case TupleType: printf("Cannot promote Tuple\n"); exit(1);
