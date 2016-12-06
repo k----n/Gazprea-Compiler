@@ -59,6 +59,32 @@ void neg_v() {
     newType -> release();
 }
 
+void neg_m() {
+    _unwrap();
+    Value* value = stack->pop();
+
+    if (!(value)->isMatrix()) {
+        printf("NOT A MATRIX; CANNOT NEGATE\n");
+        exit(1);
+    }
+
+    int size = value->matrixValue()->getCount();
+
+    Vector<Value>* matrixValues = new Vector<Value>;
+
+    for (int i = 0; i < size; i++){
+        stack->push(value->matrixValue()->get(i));
+        neg_v();
+        matrixValues->append(stack->pop()->copy());
+    }
+
+    ValueType* newType = new ValueType(MatrixType);
+    Value* newValue = new Value(newType, matrixValues);
+    stack->push(newValue);
+    newValue->release();
+    newType -> release();
+}
+
 void neg_Interval(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();

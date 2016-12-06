@@ -521,6 +521,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 } else if (type.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                     ST operatorCall = this.llvmGroup.getInstanceOf("negVector");
                     this.addCode(operatorCall.render());
+                } else if (type.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "mv");
+                    this.addCode(negation.render());
                 } else if (type.getType().equals(Type.TYPES.INTEGER)) {
                     ST negation = this.llvmGroup.getInstanceOf("negation");
                     negation.add("typeLetter", "iv");
