@@ -280,6 +280,7 @@ void promoteTo_l() {
             intervalValues = new Vector<Value>;
             node = new Value(0);
             intervalValues->append(node);
+            node = new Value(0);
             intervalValues->append(node);
             type1 = new ValueType(IntervalType);
             newValue = new Value(type1, intervalValues);
@@ -288,6 +289,7 @@ void promoteTo_l() {
             intervalValues = new Vector<Value>;
             node = new Value(1);
             intervalValues->append(node);
+            node = new Value(1);
             intervalValues->append(node);
             type1 = new ValueType(IntervalType);
             newValue = new Value(type1, intervalValues);

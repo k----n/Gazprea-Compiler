@@ -1942,7 +1942,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         // - character
         // - integer
         // - real
-        // - interval
         String variableName = ctx.Identifier().getText();
 
         if (ctx.expression() != null) {
@@ -1952,7 +1951,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 lhsType = rhsType;
             }
         } else {
-            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + lhsType.getTypeLLVMString());
+            ST initLine;
+            initLine = this.llvmGroup.getInstanceOf("varInit_" + lhsType.getTypeLLVMString());
             this.addCode(initLine.render());
         }
 
@@ -2098,6 +2098,45 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         this.scope.initVariable(variableName, variable);
     }
 
+    private void processIntervalDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
+        ST popStack = this.llvmGroup.getInstanceOf("popStack");
+
+        String variableName = ctx.Identifier().getText();
+
+        if (ctx.expression() != null) {
+            Type rhsType = this.visitExpression(ctx.expression());
+
+            if (rhsType.getType() == Type.TYPES.NULL) {
+                // continue
+            } else if (rhsType.getType() == Type.TYPES.IDENTITY) {
+                this.addCode(popStack.render());
+
+                ST pushIdentity = this.llvmGroup.getInstanceOf("pushIdentity");
+                this.addCode(pushIdentity.render());
+
+                ST promoteTo = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteTo.add("typeLetter", "lv");
+                this.addCode(promoteTo.render());
+            }
+        }
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), lhsType);
+
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", variable.getMangledName());
+            this.addCode(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
+
+        ST line = this.llvmGroup.getInstanceOf("assignByVar");
+        line.add("name", variable.getMangledName());
+        this.addCode(line.render());
+
+        this.scope.initVariable(variableName, variable);
+    }
+
     private void processMatrixDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
 
     }
@@ -2160,8 +2199,10 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             } else if (ctx.sizeData() != null
                     || lhsType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                 processVectorDeclaration(ctx, lhsType);
-            } else if (lhsType.getType() == Type.TYPES.TUPLE){
+            } else if (lhsType.getType() == Type.TYPES.TUPLE) {
                 processTupleDeclaration(ctx, lhsType);
+            } else if (lhsType.getType() == Type.TYPES.INTERVAL) {
+                processIntervalDeclaration(ctx, lhsType);
             } else {
                 processTrivialDeclaration(ctx, lhsType);
             }
@@ -2328,8 +2369,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 break;
                 case Type.strINTERVAL:
                     // create empty vector type
-                    ST startVector = this.llvmGroup.getInstanceOf("startVector");
-                    this.addCode(startVector.render());
                     ST st = this.llvmGroup.getInstanceOf("varInit_integer");
                     this.addCode(st.render());
                     this.addCode(st.render());
