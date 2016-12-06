@@ -256,12 +256,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Function getReferringFunction(String name, List<Argument> arguments) {
         List<Function> possibilities = new ArrayList<>();
 
-        if (this.functions.get(name) != null) {
-            possibilities.addAll(this.functions.get(name));
-        }
-
         if (this.builtinFunctions.get(name) != null) {
             possibilities.addAll(this.builtinFunctions.get(name));
+
+            return possibilities.get(0);
+        }
+
+        if (this.functions.get(name) != null) {
+            possibilities.addAll(this.functions.get(name));
         }
 
         for (Function poss : possibilities) {
@@ -559,13 +561,18 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 // CASE: casting case
                 if (ctx.type() != null) {
                     Type newType = this.visitType(ctx.type());
-                    if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR
+                            || (ctx.sizeData() != null && ctx.sizeData().expression().size() + ctx.sizeData().Asteriks().size() == 1) ) {
                         this.visit(ctx.sizeData());
-                        ST promoteVector = llvmGroup.getInstanceOf("promoteVector");
+                        ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
                         promoteVector.add("value", getLetterForType(newType));
                         this.addCode(promoteVector.render());
-                    } else if (newType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
-
+                    } else if (newType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX
+                            || (ctx.sizeData() != null && ctx.sizeData().expression().size() + ctx.sizeData().Asteriks().size() == 2) ) {
+                        this.visitSizeData(ctx.sizeData());
+                        ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");
+                        promoteMatrix.add("value", getLetterForType(newType));
+                        this.addCode(promoteMatrix.render());
                     } else {
                         String typeLetter = Type.getCastingFunction(type, newType);
                         ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
@@ -1559,6 +1566,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     public Type visitVectorLiteral(GazpreaParser.VectorLiteralContext ctx) {
         Integer size = ctx.expression().size();
 
+        boolean isMatrix = false;
+
         ST startVector = this.llvmGroup.getInstanceOf("startVector");
         this.addCode(startVector.render());
 
@@ -1574,9 +1583,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         for (int expr = 0; expr < size; ++expr) {
             Type exprType = this.visitExpression(ctx.expression(expr));
-            //if (elementTypeCounts.get(exprType.getType())!= null) {
-                elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
-            //}
+            if (exprType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                isMatrix = true;
+            } else if (exprType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                throw new RuntimeException("Vector literal cannot contain a matrix!\n");
+            }
+            elementTypeCounts.put(exprType.getType(), elementTypeCounts.get(exprType.getType()) + 1);
         }
         ST endVector = this.llvmGroup.getInstanceOf("endVector");
         this.addCode(endVector.render());
@@ -1599,50 +1611,65 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         this.addCode(startVector.render());
 
-        for (int expr = 0; expr < ctx.expression().size(); ++expr) {
-            Type exprType = this.visitExpression(ctx.expression(expr));
-            String typeLetter = Type.getCastingFunction(exprType, type);
-            ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
-            promoteCall.add("typeLetter", typeLetter);
-            this.addCode(promoteCall.render());
+        if (isMatrix) {
+            for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+                this.visitExpression(ctx.expression(expr));
+                ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
+                ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+                if (ctx.expression(expr).literal() != null && ctx.expression(expr).literal().vectorLiteral() != null) {
+                    int vectorSize = ctx.expression(expr).literal().vectorLiteral().expression().size();
+                    pushInteger.add("value", vectorSize);
+                    this.addCode(pushInteger.render());
+                } else {
+                    pushInteger.add("value", -1);
+                    this.addCode(pushInteger.render());
+                }
+                promoteVector.add("value", this.getLetterForType(highestRankType));
+                this.addCode(promoteVector.render());
+
+            }
+
+            ST endMatrix = this.llvmGroup.getInstanceOf("endMatrix");
+            this.addCode(endMatrix.render());
+
+            // push row measurement
+            ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+            pushInteger.add("value", ctx.expression().size());
+            this.addCode(pushInteger.render());
+
+            // push column measurement
+            pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+            pushInteger.add("value", -1);
+            this.addCode(pushInteger.render());
+
+            ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");
+            promoteMatrix.add("value", this.getLetterForType(highestRankType));
+            this.addCode(promoteMatrix.render());
+
+            return new Type(Type.SPECIFIERS.VAR, highestRankType, Type.COLLECTION_TYPES.MATRIX);
+        } else {
+            for (int expr = 0; expr < ctx.expression().size(); ++expr) {
+                Type exprType = this.visitExpression(ctx.expression(expr));
+                String typeLetter = Type.getCastingFunction(exprType, type);
+                ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                promoteCall.add("typeLetter", typeLetter);
+                this.addCode(promoteCall.render());
+            }
+
+            this.addCode(endVector.render());
+
+            ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+            pushInteger.add("value", size);
+            this.addCode(pushInteger.render());
+            ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
+            this.addCode(setSizeData.render());
+
+            // assign the contained type to the vector
+            ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
+            setVectorContainedType.add("value", getLetterForType(highestRankType));
+            this.addCode(setVectorContainedType.render());
+            return new Type(Type.SPECIFIERS.VAR, highestRankType, Type.COLLECTION_TYPES.VECTOR, size);
         }
-
-        this.addCode(endVector.render());
-
-        ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
-        pushInteger.add("value", size);
-        this.addCode(pushInteger.render());
-        ST setSizeData = this.llvmGroup.getInstanceOf("setVectorSize");
-        this.addCode(setSizeData.render());
-
-        // assign the contained type to the vector
-        ST setVectorContainedType = this.llvmGroup.getInstanceOf("setVectorContainedType");
-        int value;
-        switch (highestRankType) {
-            case BOOLEAN:
-                value = 'b';
-                break;
-            case CHARACTER:
-                value = 'c';
-                break;
-            case INTEGER:
-                value = 'i';
-                break;
-            case REAL:
-                value = 'r';
-                break;
-            case IDENTITY:
-            case NULL:
-                value ='n';
-                break;
-            default:
-                throw new RuntimeException("Vector does not support this type");
-        }
-
-        setVectorContainedType.add("value", value);
-        this.addCode(setVectorContainedType.render());
-
-        return new Type(Type.SPECIFIERS.VAR, type.getType(), Type.COLLECTION_TYPES.VECTOR, size);
     }
 
     @Override
@@ -2174,6 +2201,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         }
     }
 
+    private int getLetterForType(Type.TYPES input_type){
+        switch (input_type) {
+            case BOOLEAN: return 'b';
+            case CHARACTER: return 'c';
+            case INTEGER: return 'i';
+            case REAL: return 'r';
+            case IDENTITY:
+            case NULL: return  'n';
+            default:
+                throw new RuntimeException("Vector does not support this type");
+        }
+    }
+
     private void processVectorDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
         // processes:
         // - vectors of all types
@@ -2316,6 +2356,63 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     }
 
     private void processMatrixDeclaration(GazpreaParser.DeclarationContext ctx, Type lhsType) {
+        String variableName = ctx.Identifier().getText();
+
+        lhsType.setCollection_type(Type.COLLECTION_TYPES.MATRIX);
+
+        if (ctx.expression() != null) {
+            Type rhsType = this.visitExpression(ctx.expression());
+
+            if (lhsType.getType() == Type.TYPES.NULL) {
+                lhsType.setType(rhsType.getType());
+            }
+
+            if (rhsType.getType() == Type.TYPES.NULL) {
+                this.visitSizeData(ctx.sizeData());
+                ST pushNullMatrix = this.llvmGroup.getInstanceOf("pushNullMatrix");
+                pushNullMatrix.add("value", getLetterForType(lhsType));
+                this.addCode(pushNullMatrix.render());
+            } else if (rhsType.getType() == Type.TYPES.IDENTITY) {
+                this.visitSizeData(ctx.sizeData());
+                ST pushIdentitylMatrix = this.llvmGroup.getInstanceOf("pushIdentityMatrix");
+                pushIdentitylMatrix.add("value", getLetterForType(lhsType));
+                this.addCode(pushIdentitylMatrix.render());
+            } else {
+                if (ctx.sizeData() != null) {
+                    this.visitSizeData(ctx.sizeData());
+                } else {
+                    ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
+                    pushInteger.add("value", -1);
+                    this.addCode(pushInteger.render());
+                    this.addCode(pushInteger.render());
+                }
+
+                ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");
+                promoteMatrix.add("value", getLetterForType(lhsType));
+                this.addCode(promoteMatrix.render());
+            }
+        } else {
+            this.visitSizeData(ctx.sizeData());
+            ST pushNullMatrix = this.llvmGroup.getInstanceOf("pushNullMatrix");
+            pushNullMatrix.add("value", getLetterForType(lhsType));
+            this.addCode(pushNullMatrix.render());
+        }
+
+        Variable variable = new Variable(variableName, this.mangleVariableName(variableName), lhsType);
+
+        if (this.currentFunction != null) {
+            ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+            varLine.add("name", variable.getMangledName());
+            this.addCode(varLine.render());
+        } else {
+            this.variables.put(variableName, variable);
+        }
+
+        ST line = this.llvmGroup.getInstanceOf("assignByVar");
+        line.add("name", variable.getMangledName());
+        this.addCode(line.render());
+
+        this.scope.initVariable(variableName, variable);
 
     }
 
@@ -2374,6 +2471,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             // process when left hand side gives at least a little information (partial or total statically typed)
             if ((ctx.sizeData() != null && ctx.sizeData().Asteriks().size() + ctx.sizeData().expression().size() > 1)
                     || lhsType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                processMatrixDeclaration(ctx, lhsType);
             } else if (ctx.sizeData() != null
                     || lhsType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                 processVectorDeclaration(ctx, lhsType);
@@ -2584,18 +2682,27 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     // This function pushes the size onto the stack and assigns to the vector on the stack
     public Void visitSizeData(GazpreaParser.SizeDataContext ctx) {
         // Matrix size data
+        ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
+        pushInt.add("value", -1);
+
         if (ctx.expression().size() + ctx.Asteriks().size() > 1) {
+            if (ctx.leftAs != null) {
+                this.addCode(pushInt.render());
+            } else {
+                this.visitExpression(ctx.leftExpr);
+            }
 
-
-
+            if (ctx.rightAs != null) {
+                this.addCode(pushInt.render());
+            } else {
+                this.visitExpression(ctx.rightExpr);
+            }
 
         // Vector size data
         } else {
             if (ctx.expression().size() > 0) {
                 this.visitExpression(ctx.expression(0));
             } else {
-                ST pushInt = this.llvmGroup.getInstanceOf("pushInteger");
-                pushInt.add("value", -1);
                 this.addCode(pushInt.render());
             }
         }

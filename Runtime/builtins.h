@@ -38,9 +38,9 @@ void length() {
 	Vector<Value>* vector = vectorValue->vectorValue();
 	Value* length = new Value(vector->getCount());
 	stack->push(length);
-	length->release();
-	vector->release();
-	vectorValue->release();
+	//length->release();
+	//vector->release();
+	//vectorValue->release();
 }
 
 
@@ -50,9 +50,9 @@ void rows() {
 	Vector<Value>* matrix = matrixValue->matrixValue();
 	Value* length = new Value(matrix->getCount());
 	stack->push(length);
-	length->release();
-	matrix->release();
-	matrixValue->release();
+	//length->release();
+	//matrix->release();
+	//matrixValue->release();
 }
 
 void columns() {
@@ -65,13 +65,13 @@ void columns() {
 		Vector<Value>* row = rowValue->vectorValue();
 		Value* length = new Value(row->getCount());
 		stack->push(length);
-		length->release();
-		row->release();
-		rowValue->release();
+		//length->release();
+		//row->release();
+		//rowValue->release();
 	}
-	length->release();
-	matrix->release();
-	matrixValue->release();
+	//length->release();
+	//matrix->release();
+	//matrixValue->release();
 }
 
 void reverse() {
@@ -91,8 +91,8 @@ void reverse() {
 	ValueType* type = vectorValue->getType();
 	Value* reversedValue = new Value(type, reversedVector);
 	stack->push(reversedValue);
-	type->release();
+	//type->release();
 	
-	vector->release();
-	vectorValue->release();
+	//vector->release();
+	//vectorValue->release();
 }

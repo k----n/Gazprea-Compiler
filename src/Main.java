@@ -17,36 +17,12 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-
-
-
         if (DEBUG) {
             ANTLRInputStream input = new ANTLRInputStream(
-                    "procedure println(integer x) {\n" +
+                    "procedure main() returns integer {\n" +
                             "    var out = std_output();\n" +
-                            "    x -> out;\n" +
-                            "    '\\n' -> out;\n" +
-                            "}\n" +
-                            "\n" +
-                            "procedure println(character x) {\n" +
-                            "    var out = std_output();\n" +
-                            "    x -> out;\n" +
-                            "    '\\n' -> out;\n" +
-                            "}\n" +
-                            "\n" +
-                            "procedure main() returns integer {\n" +
-                            "    tuple(integer, character) s;\n" +
-                            "    tuple(integer, character) t = null;\n" +
-                            "    tuple(integer, character) u = identity;\n" +
-                            "\n" +
-                            "    call println(s.1);\n" +
-                            "    call println(s.2);\n" +
-                            "    call println(t.1);\n" +
-                            "    call println(t.2);\n" +
-                            "    call println(u.1);\n" +
-                            "    call println(u.2);\n" +
-                            "\n" +
-                            "    return 0; \n" +
+                            "    var x = \"Hello, World!\\n\";\n" +
+                            "    length(x) -> out;\n" +
                             "}");
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);

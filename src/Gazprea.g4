@@ -141,7 +141,6 @@ literal
  ;
 
 // important to note empty matrices will look like vectors
-matrixLiteral: '[' vectorLiteral (',' vectorLiteral)* ']';
 vectorLiteral: '[' (expression (',' expression)*)? ']';
 tupleLiteral: '(' expression (',' expression)+ ')';
 
@@ -218,7 +217,7 @@ functionCall: functionName '(' (expression (',' expression)*)? ')';
 //typeData: '(' (type sizeData? Identifier? (',' type sizeData? Identifier?)*)? ')';
 
 sizeData: '[' (expression | Asteriks) ']'
-        | '[' (Asteriks | expression) ',' (Asteriks | expression) ']' // matrix size data
+        | '[' (leftAs=Asteriks | leftExpr=expression) ',' (rightAs=Asteriks | rightExpr=expression) ']' // matrix size data
         ;
 
 functionName

@@ -1,0 +1,9 @@
+procedure main() returns integer {
+    var x = [ [1,2,3], [4,5,6], [null, null], null, identity ];
+    var out = std_output();
+    boolean y[5,5];    
+
+    y -> out;
+
+    return 0;
+}
