@@ -626,6 +626,33 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
             return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
         }
+        else if (ctx.expression() != null && ctx.expression().size() == 3) {
+            Type left = (Type)visit(ctx.expression(0));
+            Type right = (Type)visit(ctx.expression(1));
+            if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                // left is the matrix
+                // right is the row
+                // column is the column
+                // this is the way they appear on the stack
+                if (ctx.expression(2) != null){
+                    Type column = (Type)visit(ctx.expression(2));
+                    ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
+                    this.addCode(operatorCall.render());
+
+                    if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
+                            (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
+                        return new Type(Type.SPECIFIERS.VAR, left.getType());
+
+                    }
+                    else {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                    }
+                }
+            }
+            else {
+                throw new Error("Cannot index:" + left.getCollection_type().toString());
+            }
+        }
         else if (ctx.expression() != null && ctx.expression().size() == 2) {
             // CASE: where there is two expressions in the expression statement
             Type left = (Type)visit(ctx.expression(0));
@@ -655,26 +682,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                     else {
                         return new Type(Type.SPECIFIERS.VAR, left.getType());
-                    }
-                }
-                else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
-                    // left is the matrix
-                    // right is the row
-                    // column is the column
-                    // this is the way they appear on the stack
-                    if (ctx.expression(2) != null){
-                        Type column = (Type)visit(ctx.expression(2));
-                        ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
-                        this.addCode(operatorCall.render());
-
-                        if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
-                                (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
-                            return new Type(Type.SPECIFIERS.VAR, left.getType());
-
-                        }
-                        else {
-                            return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
-                        }
                     }
                 }
                 else {
@@ -1804,7 +1811,34 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             this.addCode(endInterval.render());
 
             return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
-        } else if (ctx.filterexpression() != null && ctx.filterexpression().size() == 2) {
+        } else if (ctx.filterexpression() != null && ctx.filterexpression().size() == 3) {
+            Type left = (Type)visit(ctx.filterexpression(0));
+            Type right = (Type)visit(ctx.filterexpression(1));
+            if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                // left is the matrix
+                // right is the row
+                // column is the column
+                // this is the way they appear on the stack
+                if (ctx.filterexpression(2) != null){
+                    Type column = (Type)visit(ctx.filterexpression(2));
+                    ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
+                    this.addCode(operatorCall.render());
+
+                    if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
+                            (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
+                        return new Type(Type.SPECIFIERS.VAR, left.getType());
+
+                    }
+                    else {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                    }
+                }
+            }
+            else {
+                throw new Error("Cannot index:" + left.getCollection_type().toString());
+            }
+        }
+        else if (ctx.filterexpression() != null && ctx.filterexpression().size() == 2) {
             // CASE: where there is two filterexpressions in the filterexpression statement
             Type left = (Type) visit(ctx.filterexpression(0));
             Type right = (Type) visit(ctx.filterexpression(1));
@@ -1832,24 +1866,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
                     } else {
                         return new Type(Type.SPECIFIERS.VAR, left.getType());
-                    }
-                } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
-                    // left is the matrix
-                    // right is the row
-                    // column is the column
-                    // this is the way they appear on the stack
-                    if (ctx.filterexpression(2) != null) {
-                        Type column = (Type) visit(ctx.filterexpression(2));
-                        ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
-                        this.addCode(operatorCall.render());
-
-                        if ((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
-                                (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)) {
-                            return new Type(Type.SPECIFIERS.VAR, left.getType());
-
-                        } else {
-                            return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
-                        }
                     }
                 } else {
                     throw new Error("Cannot index:" + left.getCollection_type().toString());

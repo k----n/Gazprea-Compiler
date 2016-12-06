@@ -20,9 +20,14 @@ public class Main {
         if (DEBUG) {
             ANTLRInputStream input = new ANTLRInputStream(
                     "procedure main() returns integer {\n" +
-                            "    var out = std_output();\n" +
-                            "    var x = \"Hello, World!\\n\";\n" +
-                            "    length(x) -> out;\n" +
+                            "     var x = [[1, 2, 3, 4]];\n" +
+                            "     var y = [[1], [2], [3], [4]];\n" +
+                            "     var out = std_output();\n" +
+                            "\n" +
+                            "     y[1,1] -> out;\n" +
+                            "\n" +
+                            "     return 0;\n" +
+                            "     \n" +
                             "}");
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);

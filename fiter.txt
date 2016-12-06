@@ -1,0 +1,6 @@
+procedure main() returns integer {
+    var out = std_output();
+    [x in 1..5 & x < 6] -> out;     
+
+     return 0;
+}

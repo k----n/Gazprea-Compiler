@@ -207,7 +207,7 @@ notequalTuple() ::= "call void @_Z5neq_tv()"
 notEqualNull() ::="call void @_Z8neq_nullv()"
 notEqualFilter() ::="call void @_Z10neq_filterv()"
 
-getAddFilter() ::="call define void @_Z7getAddFv()"
+getAddFilter() ::="call void @_Z7getAddFv()"
 
 shrinkIterateVector() ::="call void @_Z19shrinkIterateVectorv()"
 shrinkIterateVectorGen() ::="call void @_Z22shrinkIterateVectorGenv()"
