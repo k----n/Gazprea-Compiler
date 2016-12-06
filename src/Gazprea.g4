@@ -174,7 +174,7 @@ filterexpression
  | filterexpression Dot Identifier // tuple access
  | literal
  | Identifier
- | As '<' (type | tupleTypeDetails) '>' ('(' filterexpression ')' | filterexpression)
+ | As '<' (type sizeData? | tupleTypeDetails) '>' ('(' filterexpression ')' | filterexpression)
  | generator
  | filter
  | functionCall

@@ -90,3 +90,7 @@ void dotProduct() {
           exit(1);
     }
 }
+
+void mmMult(){
+
+}

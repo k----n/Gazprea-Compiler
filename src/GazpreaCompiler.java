@@ -402,7 +402,6 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         if (ctx.expression().size() == 1 && ctx.Dot().size() == 1 && ctx.RealLiteral().size() == 1 && ctx.getChild(0) == ctx.expression()){
             // CASE: expression Dot RealLiteral
             // Interval
-
             String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.","");
             ST right = this.llvmGroup.getInstanceOf("pushInteger");
             right.add("value", rightInt.replaceAll("_", ""));
@@ -975,7 +974,9 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 case "**":
                     // TODO
                     if (right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX && right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
-
+                        operatorCall = this.llvmGroup.getInstanceOf("mmMult");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
                     }
                     else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR && right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                         operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
@@ -1505,6 +1506,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
         this.currentFunction.addLine(swapStack.render());
 
+
         ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
         for (int i = 0; i < size; i++){
             // duplicate vector to iterate through it
@@ -1588,8 +1590,645 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override public Type visitFilterexpression(GazpreaParser.FilterexpressionContext ctx) {
         // this will be a modified version of visit expression, it will be similar but not the same
-        if (true) {
-            throw new Error("Not completed yet");
+        if (ctx.filterexpression().size() == 1 && ctx.Dot().size() == 1 && ctx.RealLiteral().size() == 1 && ctx.getChild(0) == ctx.filterexpression()) {
+            // CASE: filterexpression Dot RealLiteral
+            // Interval
+            String rightInt = ctx.RealLiteral(0).getText().replaceAll("\\.", "");
+            ST right = this.llvmGroup.getInstanceOf("pushInteger");
+            right.add("value", rightInt.replaceAll("_", ""));
+            this.addCode(right.render());
+
+            // assume filterexpression will be pushed to stack
+            Type left = this.visitFilterexpression(ctx.filterexpression(0));
+
+            if (!(left.getType().equals(Type.TYPES.INTEGER))) {
+                throw new Error("Types must be integer in interval");
+            }
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+        } else if (ctx.RealLiteral().size() == 2) {
+            // CASE: RealLiteral RealLiteral
+            // Interval
+
+            String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.", "");
+            String rightInt = ctx.RealLiteral(1).getText().replaceAll("\\.", "");
+
+            // since we can't visit literal, push left and right to stack here
+            ST right = this.llvmGroup.getInstanceOf("pushInteger");
+            right.add("value", rightInt.replaceAll("_", ""));
+            this.addCode(right.render());
+
+            ST left = this.llvmGroup.getInstanceOf("pushInteger");
+            left.add("value", leftInt.replaceAll("_", ""));
+            this.addCode(left.render());
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+        } else if (ctx.filterexpression().size() == 1 && ctx.Dot().size() == 1 && ctx.RealLiteral().size() == 1) {
+            // CASE: RealLiteral Dot filterexpression
+            // Interval
+            // assume filterexpression will be pushed to stack
+
+            Type right = this.visitFilterexpression(ctx.filterexpression(0));
+
+            if (!(right.getType().equals(Type.TYPES.INTEGER))) {
+                throw new Error("Types must be integer in interval");
+            }
+
+            String leftInt = ctx.RealLiteral(0).getText().replaceAll("\\.", "");
+            ST left = this.llvmGroup.getInstanceOf("pushInteger");
+            left.add("value", leftInt.replaceAll("_", ""));
+            this.addCode(left.render());
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+        } else if (ctx.filterexpression().size() == 2 && ctx.Dot().size() == 2) {
+            // CASE: filterexpression Dot Dot filterexpression
+            // Interval
+            // assume filterexpression will be pushed to stack
+
+            Type right = this.visitFilterexpression(ctx.filterexpression(1));
+            Type left = this.visitFilterexpression(ctx.filterexpression(0));
+
+            if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))) {
+                throw new Error("Types must be integer in interval");
+            }
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+        } else if (ctx.Dot() != null && ctx.Dot().size() != 0 || ctx.RealLiteral() != null && ctx.RealLiteral().size() != 0) {
+            // first get the tuple on the stack
+            Type type = this.visitFilterexpression(ctx.filterexpression(0));
+
+            // then get the field respective to the tuple on the stack
+            String field;
+
+            if (ctx.RealLiteral() != null && ctx.RealLiteral().size() > 0) {
+                field = parseTupleAccessREAL(ctx.RealLiteral(0).getText());
+            } else {
+                field = ctx.Identifier().getText();
+            }
+
+            Tuple tupleType = type.getTupleType();
+            Integer fieldNumber = tupleType.getFieldNumber(field);
+
+            ST getTupleField = this.llvmGroup.getInstanceOf("getAt");
+            getTupleField.add("index", fieldNumber - 1);
+            this.addCode(getTupleField.render());
+
+            return tupleType.getTypeOfField(fieldNumber);
+        } else if (ctx.Identifier() != null) {
+            // TODO: This should unwrap the variable and put it on the stack and return the type
+            ST line = this.llvmGroup.getInstanceOf("pushVariable");
+            Variable variable = this.scope.getVariable(ctx.Identifier().getText());
+            line.add("name", variable.getMangledName());
+            this.addCode(line.render());
+
+            return this.scope.getVariable(ctx.Identifier().getText()).getType();
+        } else if (ctx.literal() != null) {
+            return this.visitLiteral(ctx.literal());
+        } else if (ctx.filterexpression() != null && ctx.filterexpression().size() == 1) {
+            // CASE: where there is only one filterexpression in the filterexpression statement
+            if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("-")) {
+                Type type = this.visitFilterexpression(ctx.filterexpression(0));
+                if (type.getType() == Type.TYPES.INTERVAL) {
+                    ST operatorCall = this.llvmGroup.getInstanceOf("negInterval");
+                    this.addCode(operatorCall.render());
+                } else if (type.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    ST operatorCall = this.llvmGroup.getInstanceOf("negVector");
+                    this.addCode(operatorCall.render());
+                } else if (type.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "mv");
+                    this.addCode(negation.render());
+                } else if (type.getType().equals(Type.TYPES.INTEGER)) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "iv");
+                    this.addCode(negation.render());
+                } else {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "rv");
+                    this.addCode(negation.render());
+                }
+                return type;
+            } else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("+")) {
+                Type type = this.visitFilterexpression(ctx.filterexpression(0));
+                return type;
+            } else if (ctx.As() == null && ctx.op != null && ctx.op.getText().equals("not")) {
+                Type type = this.visitFilterexpression(ctx.filterexpression(0));
+                if (type.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    ST negation = this.llvmGroup.getInstanceOf("negVector");
+                    this.addCode(negation.render());
+                } else if (type.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "mv");
+                    this.addCode(negation.render());
+                } else {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "bv");
+                    this.addCode(negation.render());
+                }
+                return type;
+            } else if (ctx.As() == null) {
+                // CASE: parenthesis
+                Type type = this.visitExpression(ctx.expression());
+                return type;
+            } else {
+                // CASE: casting case
+                Type type = this.visitFilterexpression(ctx.filterexpression(0));
+                if (ctx.type() != null) {
+                    Type newType = this.visitType(ctx.type());
+                    if (newType.getCollection_type() == Type.COLLECTION_TYPES.VECTOR
+                            || (ctx.sizeData() != null && ctx.sizeData().expression().size() + ctx.sizeData().Asteriks().size() == 1)) {
+                        this.visit(ctx.sizeData());
+                        ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
+                        promoteVector.add("value", getLetterForType(newType));
+                        this.addCode(promoteVector.render());
+                    } else if (newType.getCollection_type() == Type.COLLECTION_TYPES.MATRIX
+                            || (ctx.sizeData() != null && ctx.sizeData().expression().size() + ctx.sizeData().Asteriks().size() == 2)) {
+                        this.visitSizeData(ctx.sizeData());
+                        ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");
+                        promoteMatrix.add("value", getLetterForType(newType));
+                        this.addCode(promoteMatrix.render());
+                    } else {
+                        String typeLetter = Type.getCastingFunction(type, newType);
+                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                        promoteCall.add("typeLetter", typeLetter);
+                        this.addCode(promoteCall.render());
+                    }
+                    return newType;
+                }
+                // TODO tuple case, NEED TO POP PREVIOUS EXPRESSION OFF STACK
+                else if (ctx.tupleTypeDetails() != null) {
+                    Type newType = this.visitTupleTypeDetails(ctx.tupleTypeDetails());
+
+                    ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                    this.addCode(swapStack.render());
+
+                    ST promoteTuple = llvmGroup.getInstanceOf("promoteTuple");
+                    this.addCode(promoteTuple.render());
+
+                    return newType;
+                } else {
+                    throw new Error("Cannot cast type");
+                }
+            }
+        } else if (ctx.generator() != null) {
+            return this.visitGenerator(ctx.generator());
+        } else if (ctx.filter() != null) {
+            return this.visitFilter(ctx.filter());
+        } else if (ctx.functionCall() != null) {
+            return this.visitFunctionCall(ctx.functionCall());
+        } else if (ctx.filterexpression() != null && ctx.filterexpression().size() == 2 && ctx.op != null && ctx.op.getText().equals("..")) {
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.addCode(startVector.render());
+
+            // assume filterexpression will be pushed to stack
+            Type right = this.visitFilterexpression(ctx.filterexpression(1));
+            Type left = this.visitFilterexpression(ctx.filterexpression(0));
+
+            if (!(left.getType().equals(Type.TYPES.INTEGER)) && !(right.getType().equals(Type.TYPES.INTEGER))) {
+                throw new Error("Types must be ineger in interval");
+            }
+
+            ST endInterval = this.llvmGroup.getInstanceOf("endInterval");
+            this.addCode(endInterval.render());
+
+            return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+        } else if (ctx.filterexpression() != null && ctx.filterexpression().size() == 2) {
+            // CASE: where there is two filterexpressions in the filterexpression statement
+            Type left = (Type) visit(ctx.filterexpression(0));
+            Type right = (Type) visit(ctx.filterexpression(1));
+            String operator = null;
+            String typeLetter = null;
+            if (ctx.op != null) {
+                operator = ctx.op.getText();
+                typeLetter = Type.getResultFunction(left, right);
+                if (!(typeLetter.equals("skip")) && !typeLetter.equals("tuple") && !typeLetter.equals("tv")) {
+                    for (int i = 0; i < 2; i++) {
+                        ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+                        promoteCall.add("typeLetter", typeLetter);
+                        this.addCode(promoteCall.render());
+                        ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+                        this.addCode(swapStack.render());
+                    }
+                }
+            }
+            if (operator == null) {
+                // TODO INDEXING ON MATRIX
+                if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                    ST operatorCall = this.llvmGroup.getInstanceOf("indexVector");
+                    this.addCode(operatorCall.render());
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType());
+                    }
+                } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                    // left is the matrix
+                    // right is the row
+                    // column is the column
+                    // this is the way they appear on the stack
+                    if (ctx.filterexpression(2) != null) {
+                        Type column = (Type) visit(ctx.filterexpression(2));
+                        ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
+                        this.addCode(operatorCall.render());
+
+                        if ((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
+                                (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)) {
+                            return new Type(Type.SPECIFIERS.VAR, left.getType());
+
+                        } else {
+                            return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                        }
+                    }
+                } else {
+                    throw new Error("Cannot index:" + left.getCollection_type().toString());
+                }
+            }
+            ST operatorCall;
+            switch (operator) {
+                // CASE: concat
+                case "||":
+                    // TODO
+                    operatorCall = this.llvmGroup.getInstanceOf("concatVector");
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                // CASE: OR
+                case "or":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalorVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: XOR
+                case "xor":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalxorVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: AND
+                case "and":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalandVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: ==
+                case "==":
+                    // TODO TUPLE
+                    // Interval case
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL) {
+                        operatorCall = this.llvmGroup.getInstanceOf("equalInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Tuple Case
+                    else if (left.getType() == Type.TYPES.TUPLE && right.getType() == Type.TYPES.TUPLE) {
+                        operatorCall = this.llvmGroup.getInstanceOf("equalTuple");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("equalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("equal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("equal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+
+                    // CASE: !=
+                case "!=":
+                    // TODO TUPLE
+                    // Interval case
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL) {
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Tuple Case
+                    else if (left.getType() == Type.TYPES.TUPLE && right.getType() == Type.TYPES.TUPLE) {
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalTuple");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("notequalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+
+                    // CASE: <
+                case "<":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthan");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: <=
+                case "<=":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanequalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("lessthanequal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: >
+                case ">":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthan");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: >=
+                case ">=":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanequalVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("greaterthanequal");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType("bv");
+                    }
+                    // CASE: by
+                case "by":
+                    // TODO make sure proper type is returned
+                    if (left.getType().equals(Type.TYPES.INTERVAL)) {
+                        String offset = ctx.filterexpression(1).getText();
+                        if (Integer.valueOf(offset) <= 0) {
+                            throw new Error("Offset is lower than 1");
+                        }
+                        operatorCall = this.llvmGroup.getInstanceOf("byInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER, Type.COLLECTION_TYPES.VECTOR);
+                    } else {
+                        // vector case
+                        String offset = ctx.filterexpression(1).getText();
+                        if (Integer.valueOf(offset) <= 0) {
+                            throw new Error("Offset is lower than 1");
+                        }
+                        operatorCall = this.llvmGroup.getInstanceOf("byVector");
+                        this.addCode(operatorCall.render());
+                    }
+                    return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                // CASE: +
+                case "+":
+                    // Interval case
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL) {
+                        operatorCall = this.llvmGroup.getInstanceOf("addInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("addVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("addition");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("addition");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    // CASE: -
+                case "-":
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL) {
+                        operatorCall = this.llvmGroup.getInstanceOf("subInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("subVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("subtraction");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("subtraction");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    // CASE: dotproduct
+                case "**":
+                    // TODO
+                    if (right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX && right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("mmMult");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR && right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("dotProduct");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    } else {
+                        throw new Error("Incompatible types");
+                    }
+                    // CASE: *
+                case "*":
+                    // Interval case
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL) {
+                        operatorCall = this.llvmGroup.getInstanceOf("multInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("multVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("multiplication");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("multiplication");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    // CASE: /
+                case "/":
+                    // Interval case
+                    if (right.getType() == Type.TYPES.INTERVAL && left.getType() == Type.TYPES.INTERVAL) {
+                        operatorCall = this.llvmGroup.getInstanceOf("divInterval");
+                        this.addCode(operatorCall.render());
+                        return new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTERVAL);
+                    }
+                    // Vector case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("divVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("division");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("division");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    // CASE: %
+                case "%":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("modVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    } else {
+                        operatorCall = this.llvmGroup.getInstanceOf("modulus");
+                        operatorCall.add("typeLetter", typeLetter);
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter);
+                    }
+                    // CASE: ^
+                case "^":
+                    if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
+                        operatorCall = this.llvmGroup.getInstanceOf("expVector");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    } else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                        operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
+                    }
+                    operatorCall = this.llvmGroup.getInstanceOf("exponentiation");
+                    operatorCall.add("typeLetter", typeLetter);
+                    this.addCode(operatorCall.render());
+                    return Type.getReturnType(typeLetter);
+
+            }
         }
         return null;
     }
