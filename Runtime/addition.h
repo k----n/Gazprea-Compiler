@@ -176,6 +176,72 @@ void add_v() {
 
 }
 
+void add_m() {
+    _unwrap();
+    Value* value2 = stack->pop();
+    _unwrap();
+    Value* value1 = stack->pop();
+
+    if (value1->isMatrix()){
+        if (value2->isInteger() || value2->isReal()){
+            int size = value1->matrixValue()->getCount();
+            Vector<Value>* matrixValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                stack->push(value1->matrixValue()->get(i));
+                stack->push(value2);
+                add_v();
+                matrixValues->append(stack->pop()->copy());
+            }
+            ValueType* newType = new ValueType(MatrixType);
+            Value* newValue = new Value(newType, matrixValues);
+            stack->push(newValue);
+            return;
+        } else if (value2->isMatrix()){
+            int size1 = value1->matrixValue()->getCount();
+            int size2 = value2->matrixValue()->getCount();
+            if (size1 != size2){
+                printf("Two matrix must be the same length\n");
+                exit(1);
+            }
+            Vector<Value>* matrixValues = new Vector<Value>;
+            for (int i = 0; i < size1; i++){
+                stack->push(value1->matrixValue()->get(i));
+                stack->push(value2->matrixValue()->get(i));
+                add_v();
+                matrixValues->append(stack->pop()->copy());
+            }
+            ValueType* newType = new ValueType(MatrixType);
+            Value* newValue = new Value(newType, matrixValues);
+            stack->push(newValue);
+            return;
+        } else {
+            printf("Incompatible Matrix exponentiation types\n");
+            exit(1);
+        }
+    } else if (value2->isMatrix()){
+        if (value1->isInteger() || value1->isReal()){
+            int size = value2->matrixValue()->getCount();
+            Vector<Value>* matrixValues = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                stack->push(value1);
+                stack->push(value2->matrixValue()->get(i));
+                add_v();
+                matrixValues->append(stack->pop()->copy());
+            }
+            ValueType* newType = new ValueType(MatrixType);
+            Value* newValue = new Value(newType, matrixValues);
+            stack->push(newValue);
+            return;
+        } else {
+            printf("Incompatible Matrix exponentiation types\n");
+            exit(1);
+        }
+    } else {
+        printf("Incompatible Matrix exponentiation types\n");
+        exit(1);
+    }
+}
+
 void add_Interval(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();
