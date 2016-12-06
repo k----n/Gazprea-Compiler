@@ -1,0 +1,15 @@
+procedure main() returns integer {
+    // interval loop
+   var out = std_output();
+
+
+
+loop i in 1..3, j in 1..5 { 
+		j -> out;
+                "Hello!\n" -> out; 
+
+} 
+
+
+    return 0;
+}

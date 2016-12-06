@@ -11,5 +11,6 @@ case TupleType: printf("Tuple\n"); break;
 case StandardOut: printf("stdout\n"); break;
 case StandardIn: printf("stdin\n"); break;
 case Lvalue: printf("LValue\n"); break;
+case MatrixType:
 case StartVector: printf("StartVector\n"); break;
 }

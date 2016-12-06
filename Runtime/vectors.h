@@ -139,3 +139,104 @@ void indexVector() {
         exit(1);
     }
 }
+
+void indexMatrix() {
+    // left is the matrix
+    // right is the row
+    // column is the column
+    // this is the way they appear on the stack
+    _unwrap();
+    Value* column = stack -> pop();
+    _unwrap();
+    Value* row = stack -> pop();
+    _unwrap();
+    Value* matrix = stack -> pop();
+
+    // promote the intervals to vectors
+    if (row->isInterval()){
+        stack -> push(row);
+        promoteTo_v();
+        row = stack -> pop();
+    }
+    if (column->isInterval()){
+        stack -> push(column);
+        promoteTo_v();
+        column = stack -> pop();
+    }
+
+    // first we need to get the row(s)
+    if (row->isInteger()){
+        Value* result = matrix->matrixValue()->get(*row->integerValue() - 1);
+        // then we get the columns from the rows
+        if (column->isInteger()){
+            Value* indexed = result->vectorValue()->get(*column->integerValue() - 1);
+            Vector<Value>* newVector = new Vector<Value>;
+            newVector -> append(indexed);
+            ValueType* newType = new ValueType(VectorType);
+            Value* newValue = new Value(newType, newVector);
+            stack -> push(newValue);
+            return;
+        } else if (column->isVector()){
+            int size = column->vectorValue()->getCount();
+            Vector<Value>* newVector = new Vector<Value>;
+            for (int i = 0; i < size; i++){
+                newVector->append(result->vectorValue()->get(i));
+            }
+            ValueType* newType = new ValueType(VectorType);
+            Value* newValue = new Value(newType, newVector);
+            stack -> push(newValue);
+            return;
+        } else {
+            printf("Invalid index type\n");
+            exit(1);
+        }
+    } else if (row->isVector()){
+        Vector<Value>* rows = new Vector<Value>;
+        int size = row->vectorValue()->getCount();
+        for (int i = 0; i < size; i++){
+            rows->append(matrix->matrixValue()->get(i));
+        }
+        int rowCount = rows->getCount();
+        // then we get the columns from the rows
+        if (column->isInteger()){
+            Vector<Value>* newVector = new Vector<Value>;
+            for (int i = 0; i < rowCount; i++){
+                newVector->append(rows->get(i)->vectorValue()->get(*column->integerValue() - 1));
+            }
+            ValueType* newType = new ValueType(VectorType);
+            Value* newValue = new Value(newType, newVector);
+            stack -> push(newValue);
+            return;
+        } else if (column->isVector()){
+            // this result will be a matrix
+            Vector<Value>* newMatrix = new Vector<Value>;
+            int columnSize = column->vectorValue()->getCount();
+            int columnCount = 0;
+            int rowCount = 0;
+            for (int i = 0; i < rowCount; i++){
+                Vector<Value>* newVector = new Vector<Value>;
+                rowCount+=1;
+                for (int j = 0; j < columnSize; j++){
+                    newVector->append(rows->get(i)->vectorValue()->get(j));
+                    columnCount+=1;
+                }
+                ValueType* newType = new ValueType(VectorType);
+                Value* newValue = new Value(newType, newVector);
+                newMatrix->append(newValue);
+            }
+            ValueType* newType = new ValueType(MatrixType);
+            newType->setVectorSize(columnCount);
+            newType->setMatrixSize(rowCount);
+            newType->setContainedType(rows->get(0)->vectorValue()->get(0)->getType()->getType());
+            Value* newValue = new Value(newType, newMatrix);
+            stack -> push(newValue);
+            return;
+        } else {
+            printf("Invalid index type\n");
+            exit(1);
+        }
+    } else {
+        printf("Invalid index type\n");
+        exit(1);
+    }
+}

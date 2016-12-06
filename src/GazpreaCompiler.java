@@ -591,7 +591,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             return this.visitGenerator(ctx.generator());
         }
         else if (ctx.filter() != null) {
-            // TODO
+            return this.visitFilter(ctx.filter());
         }
         else if (ctx.functionCall() != null) {
             return this.visitFunctionCall(ctx.functionCall());
@@ -633,7 +633,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 }
             }
             if (operator == null){
-                // TODO INDEXING OR MATRIX
+                // TODO INDEXING ON MATRIX
                 if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                     ST operatorCall = this.llvmGroup.getInstanceOf("indexVector");
                     this.addCode(operatorCall.render());
@@ -645,12 +645,28 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                 }
                 else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                    // left is the matrix
+                    // right is the row
+                    // column is the column
+                    // this is the way they appear on the stack
+                    if (ctx.expression(2) != null){
+                        Type column = (Type)visit(ctx.expression(2));
+                        ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
+                        this.addCode(operatorCall.render());
 
+                        if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
+                                (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
+                            return new Type(Type.SPECIFIERS.VAR, left.getType());
+
+                        }
+                        else {
+                            return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                        }
+                    }
                 }
                 else {
                     throw new Error("Cannot index:" + left.getCollection_type().toString());
                 }
-                return null;
             }
             ST operatorCall;
             switch(operator) {
@@ -1025,10 +1041,176 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
     @Override public Type visitGenerator(GazpreaParser.GeneratorContext ctx) {
         if (ctx.expression().size() == 3){
-            Type type = this.visitExpression(ctx.expression().get(0)); // push the expression to stack and call function to iterate through it
+            // push a start vector for starting matrix
+            ST startVector = this.llvmGroup.getInstanceOf("startVector");
+            this.currentFunction.addLine(startVector.render());
 
-            // TODO: Matrix generator
-            return new Type(Type.SPECIFIERS.VAR, type.getType(), Type.COLLECTION_TYPES.MATRIX);
+            this.scope.pushScope();
+            // init inner loop variable too
+            String variableName2 = ctx.Identifier().get(1).getText(); // get the first identifier name
+            Variable variable2 = new Variable(variableName2, this.mangleVariableName(variableName2), new Type(Type.SPECIFIERS.VAR, Type.TYPES.INTEGER));
+
+            if (this.currentFunction != null) {
+                ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+                varLine.add("name", variable2.getMangledName());
+                this.addCode(varLine.render());
+            } else {
+                this.variables.put(variableName2, variable2);
+            }
+
+            this.scope.initVariable(variableName2, variable2);
+
+            ST initLine2 = this.llvmGroup.getInstanceOf("varInit_" + variable2.getType().getTypeLLVMString());
+            this.currentFunction.addLine(initLine2.render());
+
+            ST initAssign2 = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign2.add("name", variable2.getMangledName());
+            this.currentFunction.addLine((initAssign2.render()));
+
+            // outer loop
+            // first get the vector we need to iterate through
+            Type type = this.visitExpression(ctx.expression().get(0)); // push the expression to stack and call function to iterate through it
+            // convert to vector
+            ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
+            promoteCall.add("typeLetter", "vv");
+            this.currentFunction.addLine((promoteCall.render()));
+            // vector we need to iterate through is now on the stack
+            String variableName = ctx.Identifier().get(0).getText(); // get the first identifier name
+
+            if (type.getType() == Type.TYPES.INTERVAL){
+                type.setType(Type.TYPES.INTEGER);
+            }
+
+            Variable variable = new Variable(variableName, this.mangleVariableName(variableName), new Type(Type.SPECIFIERS.VAR, type.getType()));
+
+            if (this.currentFunction != null) {
+                ST varLine = this.llvmGroup.getInstanceOf("localVariable");
+                varLine.add("name", variable.getMangledName());
+                this.addCode(varLine.render());
+            } else {
+                this.variables.put(variableName, variable);
+            }
+
+            this.scope.initVariable(variableName, variable);
+
+            ST initLine = this.llvmGroup.getInstanceOf("varInit_" + variable.getType().getTypeLLVMString());
+            this.currentFunction.addLine(initLine.render());
+
+            ST initAssign = this.llvmGroup.getInstanceOf("assignVariable");
+            initAssign.add("name", variable.getMangledName());
+            this.currentFunction.addLine((initAssign.render()));
+
+            ++this.loopIndex;
+
+            int myLoopIndex = this.loopIndex;
+
+            ST loopBegin = this.llvmGroup.getInstanceOf("loopStart");
+            loopBegin.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopBegin.render());
+
+            // where the magic should happen
+            // get vector size
+            // if size > 1, get first element, make new vector one element shorter
+            // need to push to stack (in order of): new vector, i value
+            // else if vector size is one element: push i value, startvector
+            // get new value on stack: new value, startvector
+            // swap on stack: startvector, new value
+            // copy top of stack: startvector, startvector, new value
+            // copied to check conditional, new value should remain on stack
+
+            ST shrink = this.llvmGroup.getInstanceOf("shrinkIterateVectorGen");
+            this.currentFunction.addLine(shrink.render());
+
+            ST assignIterator = this.llvmGroup.getInstanceOf("assignByVar");
+            assignIterator.add("name", variable.getMangledName());
+            this.currentFunction.addLine(assignIterator.render());
+
+            // INNER LOOP GOES HERE
+            this.currentFunction.addLine(startVector.render());
+
+            Type type2 = this.visitExpression(ctx.expression().get(1)); // push the expression to stack and call function to iterate through it
+            // convert to vector
+            this.currentFunction.addLine(promoteCall.render());
+            // vector we need to iterate through is now on the stack
+            if (type2.getType() == Type.TYPES.INTERVAL){
+                type2.setType(Type.TYPES.INTEGER);
+            }
+            this.scope.getVariable(variable2.getName()).setType(type2);
+
+            ++this.loopIndex;
+
+            int myLoopIndex2 = this.loopIndex;
+
+            ST loopBegin2 = this.llvmGroup.getInstanceOf("loopStart");
+            loopBegin2.add("index", myLoopIndex2);
+            this.currentFunction.addLine(loopBegin2.render());
+
+            this.currentFunction.addLine(shrink.render());
+
+            ST assignIterator2 = this.llvmGroup.getInstanceOf("assignByVar");
+            assignIterator2.add("name", variable2.getMangledName());
+            this.currentFunction.addLine(assignIterator2.render());
+
+            Type type3 = this.visitExpression(ctx.expression().get(2));
+
+            ST unwrap = this.llvmGroup.getInstanceOf("unwrap");
+            this.currentFunction.addLine(unwrap.render());
+
+            ST swapStack = this.llvmGroup.getInstanceOf("swapStack");
+            this.currentFunction.addLine(swapStack.render());
+
+            ST copyStack = this.llvmGroup.getInstanceOf("copyStack");
+            this.currentFunction.addLine(copyStack.render());
+
+            ST condition = this.llvmGroup.getInstanceOf("notEqualNull");
+            this.currentFunction.addLine((condition.render()));
+
+            ST loopConditional2 = this.llvmGroup.getInstanceOf("loopConditional");
+            loopConditional2.add("index", myLoopIndex2);
+            this.currentFunction.addLine(loopConditional2.render());
+
+            ST endLoop2 = this.llvmGroup.getInstanceOf("loopEnd");
+            endLoop2.add("index", myLoopIndex2);
+            this.currentFunction.addLine(endLoop2.render());
+
+            ST loopConditionalEnd2 = this.llvmGroup.getInstanceOf("loopConditionalEnd");
+            loopConditionalEnd2.add("index", myLoopIndex2);
+            this.currentFunction.addLine(loopConditionalEnd2.render());
+
+            ST popStack = this.llvmGroup.getInstanceOf("popStack");
+            this.currentFunction.addLine(popStack.render());
+
+            ST endVector = this.llvmGroup.getInstanceOf("endVector");
+            this.currentFunction.addLine(endVector.render());
+
+            // end inner loop
+
+            this.currentFunction.addLine(swapStack.render());
+
+            this.currentFunction.addLine(copyStack.render());
+
+            this.currentFunction.addLine(condition.render());
+
+            ST loopConditional = this.llvmGroup.getInstanceOf("loopConditional");
+            loopConditional.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditional.render());
+
+            ST endLoop = this.llvmGroup.getInstanceOf("loopEnd");
+            endLoop.add("index", myLoopIndex);
+            this.currentFunction.addLine(endLoop.render());
+
+            ST loopConditionalEnd = this.llvmGroup.getInstanceOf("loopConditionalEnd");
+            loopConditionalEnd.add("index", myLoopIndex);
+            this.currentFunction.addLine(loopConditionalEnd.render());
+
+            this.currentFunction.addLine(popStack.render());
+
+            this.scope.popScope();
+
+            ST endMatrix = this.llvmGroup.getInstanceOf("endMatrix");
+            this.currentFunction.addLine(endMatrix.render());
+
+            return new Type(Type.SPECIFIERS.VAR, type3.getType(), Type.COLLECTION_TYPES.MATRIX);
         }
         else if (ctx.expression().size() == 2) {
             // push a start vector for starting vector
@@ -1822,9 +2004,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
         // do declaration here
         String variableName = ctx.Identifier().getText();
 
-        Variable variable = this.scope.getVariable(variableName);
+        Type type = this.visitExpression(ctx.expression()); // push the expression to stack and call function to iterate through it
 
-        this.visitExpression(ctx.expression()); // push the expression to stack and call function to iterate through it
+        this.scope.getVariable(variableName).setType(type);
+
+        Variable variable = this.scope.getVariable(variableName);
 
         // convert to vector
         ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
