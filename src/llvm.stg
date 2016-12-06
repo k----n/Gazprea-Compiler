@@ -114,7 +114,8 @@ promoteVector(value) ::= "call void @_Z13promoteVectorc(i8 <value>)"
 padVector() ::= "call void @_Z21padVectorToStrictSizev()"
 
 promoteMatrix(value) ::= "call void @_Z13promoteMatrixc(i8 <value>)"
-
+pushNullMatrix(value) ::= "call void @_Z14pushNullMatrixc(i8 <value>)"
+pushIdentityMatrix(value) ::= "call void @_Z18pushIdentityMatrixc(i8 <value>)"
 
 pushNull() ::= "call void @_Z8pushNullv()"
 pushIdentity() ::= "call void @_Z12pushIdentityv()"

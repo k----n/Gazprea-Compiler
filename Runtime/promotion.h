@@ -672,8 +672,10 @@ void promoteMatrix(char cType) {
     }
 
     int toSetVectorSize = maxWidth > columnSize ? maxWidth : columnSize;
+
+    Value* row;
     for (int r = 0; r < poppedRows; ++r) {
-        Value* row = poppedMatrix->get(r);
+        row = poppedMatrix->get(r);
         ValueType* rowType = row->getType();
 
         rowType->setVectorSize(toSetVectorSize);
@@ -684,10 +686,17 @@ void promoteMatrix(char cType) {
         toPush->append(row);
     }
 
-    int toSetMatrixType = poppedRows > rowSize ? poppedRows : rowSize;
+    int toSetMatrixSize = poppedRows > rowSize ? poppedRows : rowSize;
+
+    for (int g = toPush->getCount(); g < toSetMatrixSize; ++g) {
+        pushInteger(toSetVectorSize);
+        pushNullVector(cType);
+        row = stack->pop();
+        toPush->append(row);
+    }
 
     toPushValueType->setVectorSize(toSetVectorSize);
-    toPushValueType->setMatrixSize(toSetMatrixType);
+    toPushValueType->setMatrixSize(toSetMatrixSize);
     toPushValueType->setContainedType(overallType);
 
     stack->push(toPushValue);

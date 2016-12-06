@@ -217,7 +217,7 @@ functionCall: functionName '(' (expression (',' expression)*)? ')';
 //typeData: '(' (type sizeData? Identifier? (',' type sizeData? Identifier?)*)? ')';
 
 sizeData: '[' (expression | Asteriks) ']'
-        | '[' (Asteriks | expression) ',' (Asteriks | expression) ']' // matrix size data
+        | '[' (leftAs=Asteriks | leftExpr=expression) ',' (rightAs=Asteriks | rightExpr=expression) ']' // matrix size data
         ;
 
 functionName

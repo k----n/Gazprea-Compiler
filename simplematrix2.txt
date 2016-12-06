@@ -1,0 +1,16 @@
+procedure main() returns integer {
+    var out = std_output();
+    var matrix x = [[1, 2, 3]];
+    var matrix y[4,4] = [[1,2,3]];
+
+    var z = [[identity, identity, identity], [null, null], [null, 'a']];
+
+    x -> out;
+    '\n' -> out;
+    y -> out;
+    '\n' -> out;
+    z -> out;
+    '\n' -> out;
+
+    return 0;
+}

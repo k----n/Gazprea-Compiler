@@ -17,16 +17,14 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-
-
-
         if (DEBUG) {
             ANTLRInputStream input = new ANTLRInputStream(
                     "procedure main() returns integer {\n" +
-                            "    var x = [ [1,2,3], [4,5,6], [null, null] ];\n" +
+                            "    var x = [ [1,2,3], [4,5,6], [null, null], null, identity ];\n" +
                             "    var out = std_output();\n" +
-                            "    \n" +
-                            "    x -> out;\n" +
+                            "    integer y[5,5];    \n" +
+                            "\n" +
+                            "    y -> out;\n" +
                             "\n" +
                             "    return 0;\n" +
                             "}");
