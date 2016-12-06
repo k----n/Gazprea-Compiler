@@ -745,6 +745,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                     }
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("equal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("equal");
                         operatorCall.add("typeLetter", typeLetter);
@@ -766,6 +772,13 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("notequalTuple");
                         this.addCode(operatorCall.render());
                         return new Type(Type.SPECIFIERS.VAR, Type.TYPES.BOOLEAN);
+                    }
+                    // Matrix case
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("notequal");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
                     }
                     // Vector case
                     else if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){

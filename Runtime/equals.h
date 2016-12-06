@@ -100,6 +100,93 @@ void eq__v() {
     stack -> push(result);
 }
 
+void eq__m() {
+    _unwrap();
+    Value* value2 = stack->pop();
+    _unwrap();
+    Value* value1 = stack->pop();
+
+    Value * r = nullptr;
+
+    bool status = true;
+
+    if (value1->isMatrix()){
+        if (value2->isInteger() || value2->isReal() || value2->isBoolean()){
+            int size = value1->matrixValue()->getCount();
+
+            for (int i = 0; i < size; i++){
+                stack->push(value1->matrixValue()->get(i));
+                stack->push(value2);
+                eq__v();
+                _unwrap();
+                r = stack->pop();
+                if (!(*r->booleanValue())){
+                    status = false;
+                    break;
+                }
+            }
+
+            Value* booleanV = new Value(status);
+
+            stack -> push(booleanV);
+            return;
+        } else if (value2->isMatrix()){
+            int size1 = value1->matrixValue()->getCount();
+            int size2 = value2->matrixValue()->getCount();
+            if (size1 != size2){
+                printf("Two matrix must be the same length\n");
+                exit(1);
+            }
+
+            for (int i = 0; i < size1; i++){
+                stack->push(value1->matrixValue()->get(i));
+                stack->push(value2->matrixValue()->get(i));
+                eq__v();
+                _unwrap();
+                r = stack->pop();
+                if (!(*r->booleanValue())){
+                    status = false;
+                    break;
+                }
+            }
+
+            Value* booleanV = new Value(status);
+
+            stack -> push(booleanV);
+            return;
+        } else {
+            printf("Incompatible Matrix exponentiation types\n");
+            exit(1);
+        }
+    } else if (value2->isMatrix()){
+        if (value1->isInteger() || value1->isReal() || value1->isBoolean()){
+            int size = value2->matrixValue()->getCount();
+
+            for (int i = 0; i < size; i++){
+                stack->push(value1);
+                stack->push(value2->matrixValue()->get(i));
+                eq__v();
+                _unwrap();
+                r = stack->pop();
+                if (!(*r->booleanValue())){
+                    status = false;
+                    break;
+                }
+            }
+            Value* booleanV = new Value(status);
+
+            stack -> push(booleanV);
+            return;
+        } else {
+            printf("Incompatible Matrix exponentiation types\n");
+            exit(1);
+        }
+    } else {
+        printf("Incompatible Matrix exponentiation types\n");
+        exit(1);
+    }
+}
+
 void eq__l(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();

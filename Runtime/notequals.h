@@ -30,6 +30,11 @@ void neq_t(){
     neg_b();
 }
 
+void neq_m(){
+    eq__m();
+    neg_b();
+}
+
 void neq_l(){
     // VALUE POPPED IS LVALUE so must unwrap
     _unwrap();
