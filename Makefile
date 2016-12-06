@@ -20,53 +20,51 @@ SRC=src
 GEN=gen
 BIN=bin
 TMP=tmp
-JAR=vcalc.jar
+#LIB=lib
+JAR=gazprea.jar
+#RUNTIME=runtime
+#RUNTIMEF=lib$(RUNTIME).a
 TESTER=test_script
 TESTFILES=TestFiles
-SUBFILES=$(SRC) README
+#SUBFILES=$(SRC) $(LIB)/*.c $(LIB)/*.h $(TESTFILES) README
+SUBFILES=$(SRC) $(TESTFILES) README
 INTELLIJ=out
-
+#dirty=$(MAKE) -q -C $(LIB) clean
+src_files=$(shell find .$(src)/ -name '*.java')
 all: $(JAR)
 
 run: $(JAR)
 ifeq "$f" ""
-	$(error "Usage: make run m=<mode> f=\"<filename>\"")
-else ifeq "$m" ""
-	$(error "Usage: make run m=<mode> f=\"<filename>\"")
-endif
-ifeq "$m"	"interpret"
-	@java -cp "$(JAR):$(ANTLR4)" Main $m $f 
+ifneq ("$(wildcard Input)","")
+	@java -cp "$(JAR):$(ANTLR4)" Main Input > tmp.ll
 else
-	@java -cp "$(JAR):$(ANTLR4)" Main $m $f > $(TMP).ll
+	$(error "Usage: make run f=\"<filename>\"")
 endif
-
-interpret: $(JAR)
-ifeq "$f" ""	
-	$(error "Usage: make interpret f=\"<filename>\"")
+else
+	@java -cp "$(JAR):$(ANTLR4)" Main $f > tmp.ll
 endif
-	@java -cp "$(JAR):$(ANTLR4)" Main interpret $f 
-
-llvm: $(JAR)
-ifeq "$f" ""
-	$(error "Usage: make llvm f=\"<filename>\"")
-endif
-	@java -cp "$(JAR):$(ANTLR4)" Main llvm $f > tmp.ll
-	@lli tmp.ll
+	@clang++-3.6 -L$(CURDIR) -std=c11 -g -lm -s -o tmp tmp.ll #-l$(RUNTIME)
+	@./tmp > out.tmp
+	@cat out.tmp
 
 test: $(JAR)
 	./$(TESTER) -a -s
 
 test_verbos: $(JAR)
-	./$(TESTER) -a
+	./$(tester) -a
 
-$(TESTFILES):
-	@printf "Copying $(TESTFILES)...\t"
-	@mkdir $(TESTFILES)
-	-@cp -r ../../TestFiles/Current/Input $(TESTFILES)/Input
-	-@cp -r ../../TestFiles/Current/Output $(TESTFILES)/Output
-	@printf "Done\n"
+compile: $(JAR)
+ifeq "$f" ""
+ifneq ("$(wildcard Input)","")
+	@java -cp "$(JAR):$(ANTLR4)" Main Input > tmp.ll
+else
+	$(error "Usage: make run f=\"<filename>\"")
+endif
+else
+	@java -cp "$(JAR):$(ANTLR4)" Main $f > tmp.ll
+endif
+	@clang++-3.6 -L$(CURDIR) -std=c11 -g -lm -s -o $(o) tmp.ll #-l$(RUNTIME)
 	
-
 clean:
 ifneq "$(wildcard $(GEN))" ""
 	@printf "Removing Generated files...\t"
@@ -83,9 +81,9 @@ ifneq "$(wildcard $(JAR))" ""
 	@-rm -rf $(JAR) 
 	@printf "Done\n"
 endif
-ifneq "$(wildcard *submission_*.tar.gz)" ""
+ifneq "$(wildcard submission_*.tar.gz)" ""
 	@printf "Removing submission file...\t"
-	@-rm -rf *submission_*.tar.gz
+	@-rm -rf submission_*.tar.gz
 	@printf "Done\n"
 endif
 ifneq "$(wildcard $(INTELLIJ))" ""
@@ -95,11 +93,12 @@ ifneq "$(wildcard $(INTELLIJ))" ""
 endif
 ifneq "$(wildcard $(TMP)*)" ""
 	@printf "Removing temp file...\t\t"
-	@-rm -rf $(TMP)*
+	@-rm -rf $(TMP)* out.tmp
 	@printf "Done\n"
 endif
+#	@$(MAKE) -s -C $(LIB) clean
 
-submissible: 
+submissible: clean
 ifneq "$(wildcard submission_*.tar.gz)" ""
 	@printf "Removing submission file...\t"
 	@-rm -rf submission_*.tar.gz
@@ -109,40 +108,31 @@ endif
 	@printf "Enter your student CCID (the one you use to logon to beartracks).\n"
 	@printf "Then hit [enter]: "
 	@read -r -p "" NAME; \
-	tar -zcvf submission_$$NAME.tar.gz $(SUBFILES);
+	tar -zcf submission_$$NAME.tar.gz $(SUBFILES);
 	@printf "\nSubmissible ready\n"
 
-submissible_testfiles:
-ifneq "$(wildcard test_files_submission_*.tar.gz)" ""
-	@printf "Removing test files submission file...\t"
-	@-rm -rf test_files_submission_*.tar.gz
-	@printf "Done\n"
-endif
-	@printf "This will create a submissible tar ball for you to submit\n"
-	@printf "Enter your student CCID (the one you use to logon to beartracks).\n"
-	@printf "Then hit [enter]: "
-	@read -r -p "" NAME; \
-	tar -zcvf test_files_submission_$$NAME.tar.gz $(TESTFILES);
-	@printf "\nSubmissible ready\n"
-
-
-$(GEN): $(SRC)/*.g4
-	 @printf "Generating Antlr4 files..."
-	 @java -cp "$(ANTLR4)" org.antlr.v4.Tool $(SRC)/*.g4 -o $(GEN)/ \
-	 -listener -visitor
-	 @mv $(GEN)/src/* $(GEN)/
-	 @rmdir $(GEN)/src/
-	 @touch $(GEN)
-	 @printf "\tDone\n"
-
-$(JAR): $(GEN) $(BIN)
+$(JAR): $(GEN) $(BIN) #$(RUNTIMEF)
 	@printf "Building Jar file..."
 	@jar cfe $(JAR) Main -C $(BIN)/ .
 	@printf "\t\tDone\n"
 
-$(BIN): $(GEN) $(SRC)/*.java
+$(GEN): $(SRC)/*.g4
+	@printf "Generating Antlr4 files..."
+	@java -cp "$(ANTLR4)" org.antlr.v4.Tool $(SRC)/*.g4 -o $(GEN)/ \
+	-listener -visitor
+	@mv $(GEN)/src/* $(GEN)/
+	@rmdir $(GEN)/src/
+	@touch $(GEN)
+	@printf "\tDone\n"
+
+$(BIN): $(GEN) $(src_files)
 	@printf "Building class files..."
-	@mkdir -p $(BIN) 
-	@javac -cp "$(ANTLR4)" -d "$(BIN)" $(GEN)/*.java $(SRC)/*.java
+	@mkdir -p $(BIN)
+	@javac -cp "$(ANTLR4)" -d "$(BIN)" $(src_files)
 	@touch $(BIN)
 	@printf "\t\tDone\n"
+
+#$(RUNTIMEF): $(shell find ./$(LIB)/ -name '*.c')
+#	@printf "Building runtime library...\t"
+#	@$(MAKE) -C $(LIB) -s
+#	@printf "Done\n"

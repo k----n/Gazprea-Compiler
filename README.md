@@ -3,7 +3,8 @@
 ## Running tests
 
  - `cd Gazprea`
- - `make llvm f=./TestFiles/Input/<file>`
+ - `make run f=./TestFiles/Input/<file>`
+ - `make test`
 
 ## Checking generated code
 

@@ -68,3 +68,5 @@ runtime.stg
 *.Rhistory
 
 *.out
+out.tmp
+tmp

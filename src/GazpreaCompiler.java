@@ -618,7 +618,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             if (ctx.op != null){
                 operator = ctx.op.getText();
                 typeLetter = Type.getResultFunction(left, right);
-                if (!(typeLetter.equals("skip")) && !typeLetter.equals("tuple")) {
+                if (!(typeLetter.equals("skip")) && !typeLetter.equals("tuple") && !typeLetter.equals("tv")) {
                     for (int i = 0; i < 2; i++) {
                         ST promoteCall = this.llvmGroup.getInstanceOf("promoteTo");
                         promoteCall.add("typeLetter", typeLetter);

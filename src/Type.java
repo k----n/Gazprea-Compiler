@@ -20,14 +20,14 @@ public class Type {
     // iv = integer, rv = real, bv = boolean -- 'v' is appended because llvm does that
     private static String[/*left*/][/*right*/] RESULT_TABLE =
             {/*  bool       int         char        real            NULL        IDNTY       TUPLE    INTERVAL*/
-    /*bool*/    {"bv",      "void",     "void",     "void",         "bv",       "void",     "void",  "void"    },
-    /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "void",     "void",  "void"    },
+    /*bool*/    {"bv",      "void",     "void",     "void",         "bv",       "bv",       "void",  "void"    },
+    /*int*/     {"void",    "iv",       "void",     "rv",           "iv",       "iv",       "void",  "void"    },
     /*char*/    {"void",    "void",     "void",     "void",         "void",     "void",     "void",  "void"    },
-    /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "void",     "void",  "void"    },
-    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "nv",       "void",     "void",  "void"    },
-    /*IDNTY*/   {"void",    "void",     "void",     "void",         "void",     "dv",       "void",  "void"    },
-    /*TUPLE*/   {"void",    "void",     "void",     "void",         "void",     "void",     "tuple", "void"    },
-    /*INTERVAL*/{"void",    "skip",     "void",     "void",         "void",     "void",     "void",  "lv"      },
+    /*real*/    {"void",    "rv",       "void",     "rv",           "rv",       "rv",       "void",  "void"    },
+    /*NULL*/    {"bv",      "iv",       "void",     "rv",           "nv",       "void",     "tv",    "lv"      },
+    /*IDNTY*/   {"bv",      "iv",       "void",     "rv",           "void",     "dv",       "tv",    "lv"      },
+    /*TUPLE*/   {"void",    "void",     "void",     "void",         "tv",       "tv",       "tuple", "void"    },
+    /*INTERVAL*/{"void",    "skip",     "void",     "void",         "lv",       "lv",       "void",  "lv"      },
             };
 
     private static String[/*from*/][/*to*/] CASTING_TABLE =
@@ -132,6 +132,9 @@ public class Type {
                 break;
             case "cv":
                 retType = TYPES.CHARACTER;
+                break;
+            case "lv":
+                retType = TYPES.INTERVAL;
                 break;
             default: return null;
         }
@@ -248,7 +251,7 @@ public class Type {
         String result = RESULT_TABLE[fromIndex][toIndex];
 
         if (result.equals("void")){
-            throw new Error("Incompatible types");
+            throw new Error("Incompatible types" + String.valueOf(fromIndex) + " " + String.valueOf(toIndex));
         }
 
         return result;

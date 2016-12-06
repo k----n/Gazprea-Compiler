@@ -268,13 +268,30 @@ void promoteTo_l() {
     Value* value = stack->pop();
     ValueType* type = value->getType();
 	Value* newValue = nullptr;
+    Vector<Value>* intervalValues = nullptr;
+    ValueType* type1 = nullptr;
+    Value* node = nullptr;
     switch (type->getType()) {
 	    case IntervalType:
 			newValue = value;
 			newValue->retain();
 			break;
-        case NullType: printf("Cannot promote NullType\n"); exit(1);
-		case IdentityType: printf("Cannot promote IdentityType\n"); exit(1);
+        case NullType:
+            intervalValues = new Vector<Value>;
+            node = new Value(0);
+            intervalValues->append(node);
+            intervalValues->append(node);
+            type1 = new ValueType(IntervalType);
+            newValue = new Value(type1, intervalValues);
+            break;
+		case IdentityType:
+            intervalValues = new Vector<Value>;
+            node = new Value(1);
+            intervalValues->append(node);
+            intervalValues->append(node);
+            type1 = new ValueType(IntervalType);
+            newValue = new Value(type1, intervalValues);
+		    break;
 		case BooleanType: printf("Cannot promote BooleanType\n"); exit(1);
 		case IntegerType: printf("Cannot promote IntegerType\n"); exit(1);
 		case RealType: printf("Cannot promote real\n"); exit(1);
