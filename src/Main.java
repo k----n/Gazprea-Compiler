@@ -3,9 +3,6 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-
 public class Main {
 
     private static Boolean DEBUG = false;
@@ -60,22 +57,22 @@ public class Main {
             compiler.visit(tree);
             //printTokens(tokens, lex);
         } else {
-            String testFilePath = args[1];
-
-            ANTLRFileStream input = new ANTLRFileStream(testFilePath);
-            GazpreaLexer lex = new GazpreaLexer(input);
-            CommonTokenStream tokens = new CommonTokenStream(lex);
-            GazpreaParser parser = new GazpreaParser(tokens);
-            ParseTree tree = parser.compilationUnit();
-
-            switch (args[0]) {
-                case "llvm":
-                    GazpreaCompiler compiler = new GazpreaCompiler();
-                    compiler.visit(tree);
-                    break;
-                default:
-                    break;
-            }
+			StringBuilder b = new StringBuilder();
+			for (String arg : args) {
+				b.append(arg);
+				b.append(" ");
+			}
+			b.deleteCharAt(b.lastIndexOf(" "));
+			String testFilePath = b.toString();
+			
+			ANTLRFileStream input = new ANTLRFileStream(testFilePath);
+			GazpreaLexer lex = new GazpreaLexer(input);
+			CommonTokenStream tokens = new CommonTokenStream(lex);
+			GazpreaParser parser = new GazpreaParser(tokens);
+			ParseTree tree = parser.compilationUnit();
+			
+			GazpreaCompiler compiler = new GazpreaCompiler();
+			compiler.visit(tree);
         }
     }
 }
