@@ -50,7 +50,7 @@ public:
         return this->has_matrix_size;
     }
 	void setMatrixSize(int size) {
-	    if (this->builtinType != VectorType) {
+	    if (this->builtinType != MatrixType) {
             printf("not a vector type");
             exit(1);
         }
@@ -97,7 +97,7 @@ public:
 
 	int getMatrixSize() {
 	// TODO: Judge if matrices are vectors
-	    if (this->builtinType != VectorType) {
+	    if (this->builtinType != MatrixType) {
             printf("not a vector type");
             exit(1);
         }
