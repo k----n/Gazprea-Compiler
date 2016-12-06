@@ -72,6 +72,7 @@ void shrinkIterateVector() {
         // possibly risky, just push back on false and return
         if (value->isStartVector()){
             pushStartVector();
+            pushStartVector();
             return;
         }
 
