@@ -297,7 +297,7 @@ void pushIdentityVector(char cType) {
         case 'c': newValueType->setContainedType(CharacterType); break;
         case 'i': newValueType->setContainedType(IntegerType); break;
         case 'r': newValueType->setContainedType(RealType); break;
-        case 'n': newValueType->setContainedType(NullType); break;
+        case 'n': newValueType->setContainedType(IdentityType); break;
         default: printf("vector cannot contain this type as a char %c\n", cType); exit(1); break;
     }
     Value* newValue = new Value(newValueType, new Vector<Value>);

@@ -1602,9 +1602,8 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
 
         if (isMatrix) {
             for (int expr = 0; expr < ctx.expression().size(); ++expr) {
-                Type exprType = this.visitExpression(ctx.expression(expr));
+                this.visitExpression(ctx.expression(expr));
                 ST promoteVector = this.llvmGroup.getInstanceOf("promoteVector");
-                promoteVector.add("value", this.getLetterForType(highestRankType));
                 ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
                 if (ctx.expression(expr).literal() != null && ctx.expression(expr).literal().vectorLiteral() != null) {
                     int vectorSize = ctx.expression(expr).literal().vectorLiteral().expression().size();
@@ -1614,6 +1613,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     pushInteger.add("value", -1);
                     this.addCode(pushInteger.render());
                 }
+                promoteVector.add("value", this.getLetterForType(highestRankType));
                 this.addCode(promoteVector.render());
 
             }
@@ -1621,14 +1621,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
             ST endMatrix = this.llvmGroup.getInstanceOf("endMatrix");
             this.addCode(endMatrix.render());
 
-            // push column measurement
+            // push row measurement
             ST pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
-            pushInteger.add("value", -1);
+            pushInteger.add("value", ctx.expression().size());
             this.addCode(pushInteger.render());
 
-            // push row measurement
+            // push column measurement
             pushInteger = this.llvmGroup.getInstanceOf("pushInteger");
-            pushInteger.add("value", ctx.expression().size());
+            pushInteger.add("value", -1);
             this.addCode(pushInteger.render());
 
             ST promoteMatrix = this.llvmGroup.getInstanceOf("promoteMatrix");

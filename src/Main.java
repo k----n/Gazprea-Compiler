@@ -22,31 +22,13 @@ public class Main {
 
         if (DEBUG) {
             ANTLRInputStream input = new ANTLRInputStream(
-                    "procedure println(integer x) {\n" +
+                    "procedure main() returns integer {\n" +
+                            "    var x = [ [1,2,3], [4,5,6], [null, null] ];\n" +
                             "    var out = std_output();\n" +
+                            "    \n" +
                             "    x -> out;\n" +
-                            "    '\\n' -> out;\n" +
-                            "}\n" +
                             "\n" +
-                            "procedure println(character x) {\n" +
-                            "    var out = std_output();\n" +
-                            "    x -> out;\n" +
-                            "    '\\n' -> out;\n" +
-                            "}\n" +
-                            "\n" +
-                            "procedure main() returns integer {\n" +
-                            "    tuple(integer, character) s;\n" +
-                            "    tuple(integer, character) t = null;\n" +
-                            "    tuple(integer, character) u = identity;\n" +
-                            "\n" +
-                            "    call println(s.1);\n" +
-                            "    call println(s.2);\n" +
-                            "    call println(t.1);\n" +
-                            "    call println(t.2);\n" +
-                            "    call println(u.1);\n" +
-                            "    call println(u.2);\n" +
-                            "\n" +
-                            "    return 0; \n" +
+                            "    return 0;\n" +
                             "}");
             GazpreaLexer lex = new GazpreaLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lex);

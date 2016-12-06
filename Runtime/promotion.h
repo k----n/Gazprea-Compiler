@@ -616,14 +616,14 @@ void promoteVector(char cType) {
 void promoteMatrix(char cType) {
     _unwrap();
     Value* columnValue = stack->pop();
-    int columnSize = columnValue->integerValue();
+    int columnSize = *(columnValue->integerValue());
     _unwrap();
     Value* rowValue = stack->pop();
-    int rowSize = rowValue->integerValue();
+    int rowSize = *(rowValue->integerValue());
     _unwrap();
     Value* poppedMatrixValue = stack->pop();
     Vector<Value>* poppedMatrix = poppedMatrixValue->matrixValue();
-    int poppedRows = poppedMatrix->vectorValue()->getCount();
+    int poppedRows = poppedMatrix->getCount();
 
     BuiltinType overallType;
     switch(cType) {
@@ -641,7 +641,7 @@ void promoteMatrix(char cType) {
     toPushValueType->setContainedType(overallType);
     Value* toPushValue = new Value(toPushValueType, toPush);
 
-    switch(poppedMatrix->getType()->getType()) {
+    switch(poppedMatrixValue->getType()->getType()) {
         case NullType:
             pushInteger(rowSize);
             pushInteger(columnSize);
@@ -680,6 +680,8 @@ void promoteMatrix(char cType) {
         rowType->setContainedType(overallType);
         stack->push(row);
         padVectorToStrictSize();
+        row = stack->pop();
+        toPush->append(row);
     }
 
     int toSetMatrixType = poppedRows > rowSize ? poppedRows : rowSize;
@@ -688,7 +690,7 @@ void promoteMatrix(char cType) {
     toPushValueType->setMatrixSize(toSetMatrixType);
     toPushValueType->setContainedType(overallType);
 
-    stack->push(toPush);
+    stack->push(toPushValue);
 }
 
 // requires a reference tuple which it will not consume

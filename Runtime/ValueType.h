@@ -37,7 +37,7 @@ public:
         return this->has_vector_size;
     }
 	void setVectorSize(int size) {
-	    if (this->builtinType != VectorType) {
+	    if (this->builtinType != VectorType && this->builtinType != MatrixType) {
             printf("not a vector type");
             exit(1);
         }
@@ -83,7 +83,7 @@ public:
 	}
 
 	int getVectorSize() {
-	    if (this->builtinType != VectorType) {
+	    if (this->builtinType != VectorType && this->builtinType != MatrixType) {
 	        printf("not a vector type");
 	        exit(1);
 	    }
