@@ -1,0 +1,15 @@
+procedure main() returns integer {
+    var out = std_output();
+    var x = "Hello, World!\n";
+    length(x) -> out;
+    '\n' -> out;
+    integer u[30, 15] = identity;
+
+    columns(u) -> out;
+    '\n' -> out;
+
+    rows(u) -> out;
+    '\n' -> out;
+
+    return 0;
+}

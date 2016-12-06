@@ -3,6 +3,11 @@ procedure main() returns integer {
     var matrix x = [[1, 2, 3]];
     var matrix y[4,4] = [[1,2,3]];
 
+    character a[10,10] = identity;
+
+    a -> out;
+    '\n' -> out;
+
     var z = [[identity, identity, identity], [null, null], [null, 'a']];
 
     x -> out;

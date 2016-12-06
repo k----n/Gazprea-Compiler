@@ -420,12 +420,10 @@ void pushIdentityMatrix(char cType) {
     }
 
     for (int r = 0; r < rowSize; ++r) {
-        for (int c = 0; c < columnSize; ++c) {
-            pushInteger(rowSize);
-            pushIdentityVector(cType);
-            Value* rowValue = stack->pop();
-            newNullMatrix->append(rowValue);
-        }
+        pushInteger(columnSize);
+        pushIdentityVector(cType);
+        Value* row = stack->pop();
+        newNullMatrix->append(row);
     }
 
     stack->push(newNullValue);
@@ -454,12 +452,10 @@ void pushNullMatrix(char cType) {
     }
 
     for (int r = 0; r < rowSize; ++r) {
-        for (int c = 0; c < columnSize; ++c) {
-            pushInteger(rowSize);
-            pushNullVector(cType);
-            Value* rowValue = stack->pop();
-            newNullMatrix->append(rowValue);
-        }
+        pushInteger(columnSize);
+        pushNullVector(cType);
+        Value* row = stack->pop();
+        newNullMatrix->append(row);
     }
 
     stack->push(newNullValue);

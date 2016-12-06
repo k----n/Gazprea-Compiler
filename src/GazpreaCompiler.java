@@ -256,12 +256,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
     private Function getReferringFunction(String name, List<Argument> arguments) {
         List<Function> possibilities = new ArrayList<>();
 
-        if (this.functions.get(name) != null) {
-            possibilities.addAll(this.functions.get(name));
-        }
-
         if (this.builtinFunctions.get(name) != null) {
             possibilities.addAll(this.builtinFunctions.get(name));
+
+            return possibilities.get(0);
+        }
+
+        if (this.functions.get(name) != null) {
+            possibilities.addAll(this.functions.get(name));
         }
 
         for (Function poss : possibilities) {
