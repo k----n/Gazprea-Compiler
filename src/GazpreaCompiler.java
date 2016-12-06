@@ -649,21 +649,19 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     // right is the row
                     // column is the column
                     // this is the way they appear on the stack
-                    if (ctx.expression(2) == null){
-                        throw new Error("Two indices must used");
-                    }
-                    Type column = (Type)visit(ctx.expression(2));
+                    if (ctx.expression(2) != null){
+                        Type column = (Type)visit(ctx.expression(2));
+                        ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
+                        this.addCode(operatorCall.render());
 
-                    ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
-                    this.addCode(operatorCall.render());
+                        if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
+                                (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
+                            return new Type(Type.SPECIFIERS.VAR, left.getType());
 
-                    if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
-                            (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
-                        return new Type(Type.SPECIFIERS.VAR, left.getType());
-
-                    }
-                    else {
-                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                        }
+                        else {
+                            return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                        }
                     }
                 }
                 else {

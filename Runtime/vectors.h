@@ -145,8 +145,11 @@ void indexMatrix() {
     // right is the row
     // column is the column
     // this is the way they appear on the stack
+    _unwrap();
     Value* column = stack -> pop();
+    _unwrap();
     Value* row = stack -> pop();
+    _unwrap();
     Value* matrix = stack -> pop();
 
     // promote the intervals to vectors
@@ -171,6 +174,7 @@ void indexMatrix() {
             newVector -> append(indexed);
             ValueType* newType = new ValueType(VectorType);
             Value* newValue = new Value(newType, newVector);
+            stack -> push(newValue);
             return;
         } else if (column->isVector()){
             int size = column->vectorValue()->getCount();
@@ -180,6 +184,7 @@ void indexMatrix() {
             }
             ValueType* newType = new ValueType(VectorType);
             Value* newValue = new Value(newType, newVector);
+            stack -> push(newValue);
             return;
         } else {
             printf("Invalid index type\n");
@@ -200,6 +205,7 @@ void indexMatrix() {
             }
             ValueType* newType = new ValueType(VectorType);
             Value* newValue = new Value(newType, newVector);
+            stack -> push(newValue);
             return;
         } else if (column->isVector()){
             // this result will be a matrix
@@ -223,6 +229,8 @@ void indexMatrix() {
             newType->setMatrixSize(rowCount);
             newType->setContainedType(rows->get(0)->vectorValue()->get(0)->getType()->getType());
             Value* newValue = new Value(newType, newMatrix);
+            stack -> push(newValue);
+            return;
         } else {
             printf("Invalid index type\n");
             exit(1);
