@@ -633,7 +633,7 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 }
             }
             if (operator == null){
-                // TODO INDEXING OR MATRIX
+                // TODO INDEXING ON MATRIX
                 if (left.getCollection_type() == Type.COLLECTION_TYPES.VECTOR) {
                     ST operatorCall = this.llvmGroup.getInstanceOf("indexVector");
                     this.addCode(operatorCall.render());
@@ -645,12 +645,30 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                     }
                 }
                 else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                    // left is the matrix
+                    // right is the row
+                    // column is the column
+                    // this is the way they appear on the stack
+                    if (ctx.expression(2) == null){
+                        throw new Error("Two indices must used");
+                    }
+                    Type column = (Type)visit(ctx.expression(2));
 
+                    ST operatorCall = this.llvmGroup.getInstanceOf("indexMatrix");
+                    this.addCode(operatorCall.render());
+
+                    if((right.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || right.getType() == Type.TYPES.INTERVAL) &&
+                            (column.getCollection_type() == Type.COLLECTION_TYPES.VECTOR || column.getType() == Type.TYPES.INTERVAL)){
+                        return new Type(Type.SPECIFIERS.VAR, left.getType());
+
+                    }
+                    else {
+                        return new Type(Type.SPECIFIERS.VAR, left.getType(), Type.COLLECTION_TYPES.VECTOR);
+                    }
                 }
                 else {
                     throw new Error("Cannot index:" + left.getCollection_type().toString());
                 }
-                return null;
             }
             ST operatorCall;
             switch(operator) {

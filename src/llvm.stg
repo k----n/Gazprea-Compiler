@@ -194,6 +194,8 @@ indexVector() ::= "call void @_Z11indexVectorv()"
 matchVectorSizes() ::= "call void @_Z16matchVectorSizesv()"
 matchVectorTypes() ::= "call void @_Z16matchVectorTypesv()"
 
+indexMatrix() ::= "call void @_Z11indexMatrixv()"
+
 equalTuple() ::= "call void @_Z5eq__tv()"
 notequalTuple() ::= "call void @_Z5neq_tv()"
 
