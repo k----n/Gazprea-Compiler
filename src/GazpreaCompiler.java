@@ -545,8 +545,11 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                 if (type.getCollection_type() == Type.COLLECTION_TYPES.VECTOR){
                     ST negation = this.llvmGroup.getInstanceOf("negVector");
                     this.addCode(negation.render());
-                }
-                else {
+                } else if (type.getCollection_type() == Type.COLLECTION_TYPES.MATRIX) {
+                    ST negation = this.llvmGroup.getInstanceOf("negation");
+                    negation.add("typeLetter", "mv");
+                    this.addCode(negation.render());
+                } else {
                     ST negation = this.llvmGroup.getInstanceOf("negation");
                     negation.add("typeLetter", "bv");
                     this.addCode(negation.render());
@@ -694,6 +697,12 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
                     }
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalor");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
                     else {
                         operatorCall = this.llvmGroup.getInstanceOf("logicalor");
                         operatorCall.add("typeLetter", typeLetter);
@@ -706,7 +715,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("logicalxorVector");
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
-                    } else {
+                    }
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
+                    else {
                         operatorCall = this.llvmGroup.getInstanceOf("logicalxor");
                         operatorCall.add("typeLetter", typeLetter);
                         this.addCode(operatorCall.render());
@@ -718,7 +734,14 @@ class GazpreaCompiler extends GazpreaBaseVisitor<Object> {
                         operatorCall = this.llvmGroup.getInstanceOf("logicalandVector");
                         this.addCode(operatorCall.render());
                         return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.VECTOR);
-                    } else {
+                    }
+                    else if (left.getCollection_type() == Type.COLLECTION_TYPES.MATRIX || right.getCollection_type() == Type.COLLECTION_TYPES.MATRIX){
+                        operatorCall = this.llvmGroup.getInstanceOf("logicaland");
+                        operatorCall.add("typeLetter", "mv");
+                        this.addCode(operatorCall.render());
+                        return Type.getReturnType(typeLetter, Type.COLLECTION_TYPES.MATRIX);
+                    }
+                    else {
                         operatorCall = this.llvmGroup.getInstanceOf("logicaland");
                         operatorCall.add("typeLetter", typeLetter);
                         this.addCode(operatorCall.render());
