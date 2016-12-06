@@ -182,9 +182,9 @@ void exp_v() {
 
 void exp_m() {
     _unwrap();
-    Value* value1 = stack->pop();
-    _unwrap();
     Value* value2 = stack->pop();
+    _unwrap();
+    Value* value1 = stack->pop();
 
     if (value1->isMatrix()){
         if (value2->isInteger() || value2->isReal()){
