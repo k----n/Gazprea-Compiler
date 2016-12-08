@@ -7,7 +7,8 @@ procedure setToZ(var integer x) {
 
 procedure main() returns integer {
     var integer x = 7;
+    var out = std_output();
     call setToZ(x);
-    x -> std_output();
+    x -> out;
     return 0;
 }

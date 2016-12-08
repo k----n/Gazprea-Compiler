@@ -1,0 +1,21 @@
+procedure main() returns integer {
+    var out = std_output();
+
+    integer i = 1;
+    loop while i <= 100 {
+        if (i % 3 == 0 and i % 5 == 0) {
+             "fizzbuzz" -> out;
+        } else if (i % 5 == 0) {
+	     "buzz" -> out;
+	} else if (i % 3 == 0) {
+             "fizz" -> out;
+        } else {
+             i -> out;
+        }
+
+        i = i + 1;
+        '\n' -> out;
+    }
+
+    return 0;
+}

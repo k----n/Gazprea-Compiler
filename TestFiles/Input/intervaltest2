@@ -19,19 +19,19 @@ procedure main() returns integer {
     (intie(lob1, lob2) == lob1) -> out;
 
     if (intie(lob1, lob2) == lob1) {
-       'g' -> std_output();
+       'g' -> out;
        if (intie(lob1, lob3) == soln) {
-       	  'g' -> std_output();
+       	  'g' -> out;
 	  if (intie(lob1, lob4) == 2..3) {
-	     'g' -> std_output();
+	     'g' -> out;
 	  } else {
-	    'b' -> std_output();
+	    'b' -> out;
 	  }
        } else {
-       	 'b' -> std_output();
+       	 'b' -> out;
        }
     } else {
-      'b' -> std_output();
+      'b' -> out;
     }
 
 

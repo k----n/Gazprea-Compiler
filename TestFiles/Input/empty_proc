@@ -10,7 +10,8 @@ procedure h() returns integer {
 }
 
 procedure f() {
-{} {{{5->std_output();}}}
+   var out = std_output();
+{} {{{5->out;}}}
 }
 
 procedure g() {
@@ -18,9 +19,10 @@ procedure g() {
 }
 
 procedure main() returns integer {
+    var out = std_output();
     call e();
     call f();
     call g();
-    h() -> std_output();
+    h() -> out;
     return 0;
 }

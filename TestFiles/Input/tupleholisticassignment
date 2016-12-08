@@ -1,11 +1,13 @@
 procedure main() returns integer {
     tuple(integer, integer, integer) t =  (1,2,3);
     tuple(real, real, real) r = (1.4, 2.4, 3.4);
+    var out = std_output();
+
     r = t;
 
-    r.1 -> std_output();
-    r.2 -> std_output();
-    r.3 -> std_output();
+    r.1 -> out;
+    r.2 -> out;
+    r.3 -> out;
 
     return 0;
 }

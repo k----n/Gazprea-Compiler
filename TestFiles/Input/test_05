@@ -1,5 +1,6 @@
 procedure print(integer x) {
-    x -> std_output();
+    var out = std_output();
+    x -> out;
     return;
 }
 

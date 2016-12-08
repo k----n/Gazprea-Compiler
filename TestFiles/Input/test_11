@@ -11,16 +11,16 @@ procedure main() returns integer {
     const out = std_output();
     real y = f();
     real z = g();
-    //real a = h(4);
+  //  real a = h(4);
     //integer b = i(4);
 
     y -> out;
     '\n' -> out;
     z -> out;
     '\n' -> out;
-    //a -> out;
+//    a -> out;
     '\n' -> out;
-    //b -> out;    
+//    b -> out;    
     return 0;
 }
 

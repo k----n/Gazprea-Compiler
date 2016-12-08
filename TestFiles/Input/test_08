@@ -1,10 +1,11 @@
 procedure main() returns integer {
     var integer x = 7;
+    var out = std_output();
     {
         x = 8;
         integer x = 1;
-        x -> std_output();
+        x -> out;
     }
-    x -> std_output();
+    x -> out;
     return 0;
 }

@@ -1,23 +1,25 @@
 procedure main() returns integer {
     tuple(integer r, integer c, integer f) t = as<(integer, integer, integer)>(1,'a',3.2);
-    t.r -> std_output();
-    t.c -> std_output();
-    t.f -> std_output();
+    var out = std_output();
 
-    '\n' -> std_output();
+    t.r -> out;
+    t.c -> out;
+    t.f -> out;
+
+    '\n' -> out;
 
     t = as<(integer, integer, integer)>(1,'b',3.2);
-    t.r -> std_output();
-    t.c -> std_output();
-    t.f -> std_output();
+    t.r -> out;
+    t.c -> out;
+    t.f -> out;
 
-    '\n' -> std_output();
+    '\n' -> out;
 
     /*
     var u = as<(integer, integer, integer)>(1,'c',3.2);
-    u.r -> std_output();
-    u.c -> std_output();
-    u.f -> std_output();
+    u.r -> out;
+    u.c -> out;
+    u.f -> out;
     */
     return 0;
 }

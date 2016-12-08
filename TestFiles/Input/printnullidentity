@@ -1,5 +1,6 @@
 procedure main() returns integer {
-    null -> std_output();
-    identity -> std_output();
+    var out = std_output();
+    null -> out;
+    identity -> out;
     return 0;
 }

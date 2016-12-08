@@ -3,10 +3,12 @@ procedure main() returns integer {
     tuple(integer, real a) t2 = identity;
     tuple(integer, real a) t3 = (2, 6);
     tuple(integer, integer) t4 = null;
-    t1.1 -> std_output();
-    t2.1 -> std_output();
-    t3.1 -> std_output();
-    t3.a -> std_output();
-    t4.2 -> std_output();
+    var out = std_output();
+
+    t1.1 -> out;
+    t2.1 -> out;
+    t3.1 -> out;
+    t3.a -> out;
+    t4.2 -> out;
     return 0;
 }

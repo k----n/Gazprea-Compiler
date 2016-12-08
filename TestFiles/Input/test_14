@@ -1,6 +1,7 @@
 procedure main() returns integer {
     var i = 0;
+    var out = std_output();
     i = i + 1;
-    i -> std_output();
+    i -> out;
     return 0;
 }

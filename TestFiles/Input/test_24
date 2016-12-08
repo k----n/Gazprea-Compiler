@@ -1,12 +1,12 @@
 // loop tests
 
 procedure main() returns integer{
-
+    var out = std_output();
     var x = 3;
     loop {
 
 	loop {
-	  2 -> std_output();
+	  2 -> out;
 	  if x > 0
 	     x = x - 1;
 	  else
@@ -15,7 +15,7 @@ procedure main() returns integer{
 	  break;
 	
 	    loop {
-	      3 -> std_output();
+	      3 -> out;
 	      break;
 	    }
 	  }

@@ -1,9 +1,11 @@
 procedure main() returns integer {
      integer x = 0;
      tuple(integer, integer) t = (x, 1);
-     t.1 -> std_output();
+     var out = std_output();
+
+     t.1 -> out;
      x = 3;
-     t.1 -> std_output();
+     t.1 -> out;
      
      return 0;
 }

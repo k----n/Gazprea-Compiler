@@ -2,27 +2,29 @@ procedure i(integer x) returns integer {
     return x;
 }
 
-/*
+
 procedure f(tuple(character f, character c, character d) r) returns tuple(character,character,character) {
-    r.1 -> std_output();
+    var out = std_output();
+    r.1 -> out;
     return ('k','j','l');
 }
-*/
+
 
 procedure main() returns integer {
    tuple(character f, character c, character d) n = as<(character, character, character)>(68, 69, 70);
+   var out = std_output();
 
-   n.1 -> std_output();
-   n.2 -> std_output();
-   n.3 -> std_output();
+   n.1 -> out;
+   n.2 -> out;
+   n.3 -> out;
 
-//    n = f(n);
+   n = f(n);
     
     
 
-    integer d = i(3);
-    d -> std_output();
+   integer d = i(3);
+   d -> out;
 
-//    n.1 -> std_output();
-    return 0;
+   n.1 -> out;
+   return 0;
 }

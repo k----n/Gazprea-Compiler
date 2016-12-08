@@ -5,6 +5,10 @@ procedure main() returns integer{
 
 	integer i = 10; 
 	real j = 5.2;
+
+	integer x = 3; 
+	integer y = 0; 
+	real z = 0; 
 	{ 
 	  real j = 3;
 	  integer i = 2;
@@ -17,9 +21,7 @@ procedure main() returns integer{
 	i + j -> out;
 	'\n'->out;
 
-	integer x = 3; 
-	integer y = 0; 
-	real z = 0; 
+
 	 
 	{ 
 	  real x = 7.1; 

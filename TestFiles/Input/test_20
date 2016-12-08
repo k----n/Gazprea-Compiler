@@ -5,23 +5,26 @@ procedure main() returns integer{
 
 	// test case from spec page
 	var x = 2; 
+	var u = null + 1 + null; 
+	var i = 1 + null + null; 
+	var k = (2.0 / 3.0) + null + null; 
+	var z = true and null; 
+
+
+
 	const y = x * 2;
 	
 	y -> out;
 
 	// output int 1
-	var u = null + 1 + null; 
 	u -> out;
 
 	// output int 1
-	var i = 1 + null + null; 
 	i -> out;
 
 	// output real 0.666667
-	var k = (2.0 / 3.0) + null + null; 
 	k -> out;
 
-	var z = true and null; 
 	z -> out;
 
 	return 0;

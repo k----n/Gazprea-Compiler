@@ -1,0 +1,30 @@
+procedure main() returns integer {
+    var out = std_output();
+    var matrix x = [[1, 2, 3]];
+    var matrix y[4,4] = [[1,2,3]];
+
+    character a[10,10] = identity;
+    var z = [[identity, identity, identity], [null, null], [null, 'a']];
+
+    loop i in 1..rows(a), j in 1..columns(a) {
+    a[i,j] -> out;
+}
+    '\n' -> out;
+
+    loop i in 1..rows(x), j in 1..columns(x) {
+    x[i,j] -> out;
+}
+    '\n' -> out;
+
+    loop i in 1..rows(y), j in 1..columns(y) {
+    y[i,j] -> out;
+}
+    '\n' -> out;
+
+    loop i in 1..rows(z), j in 1..columns(z) {
+    z -> out;
+}
+    '\n' -> out;
+
+    return 0;
+}

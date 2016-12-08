@@ -8,11 +8,12 @@ procedure main() returns integer {
     
     var u = 3;
     var l = 2.0;
+    var out = std_output();
 
-    u -> std_output();
-    l -> std_output();
-    x -> std_output();
-    y -> std_output();
+    u -> out;
+    l -> out;
+    x -> out;
+    y -> out;
     
     return 0;
 }

@@ -1,45 +1,47 @@
 procedure main() returns integer {
     var x = 2;
+    var out = std_output();
+
     if (x == 2) {
-       2 -> std_output(); 
-       '\n' -> std_output();   
+       2 -> out; 
+       '\n' -> out;   
     } else {
-      3 -> std_output();
-      '\n' -> std_output();
+      3 -> out;
+      '\n' -> out;
     }
 
     if x == 2 and x < 2 {
-       4 -> std_output();
-       '\n' -> std_output();
+       4 -> out;
+       '\n' -> out;
     }else if x < 2 {
-    	2.1 -> std_output();
-	'\n' -> std_output();
+    	2.1 -> out;
+	'\n' -> out;
     }else if x < 2 {
-    	2.2 -> std_output();
-	'\n' -> std_output();
+    	2.2 -> out;
+	'\n' -> out;
     }else if x == 2 {
     	if ( x < 2 ) {
-        2.123 -> std_output();
-	'\n' -> std_output();
+        2.123 -> out;
+	'\n' -> out;
 	}else
-	3.141 -> std_output();
+	3.141 -> out;
     }else{
-	3.5 -> std_output();
-	'\n' -> std_output();
+	3.5 -> out;
+	'\n' -> out;
     }
-    5 -> std_output();
-    '\n' -> std_output();
-    6 -> std_output();
-    '\n' -> std_output();
+    5 -> out;
+    '\n' -> out;
+    6 -> out;
+    '\n' -> out;
 
     if (x == 2) {
-       7 -> std_output();
-       '\n' -> std_output();   	     
+       7 -> out;
+       '\n' -> out;   	     
     }
 
     if x == 2 and x > 1 and x < 3
-        8 -> std_output();
-    '\n' -> std_output();
+        8 -> out;
+    '\n' -> out;
 
     return 0;
 }

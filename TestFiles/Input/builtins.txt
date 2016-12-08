@@ -1,9 +1,10 @@
 procedure main() returns integer {
     var out = std_output();
     var x = "Hello, World!\n";
+    integer u[30, 15] = identity;
+
     length(x) -> out;
     '\n' -> out;
-    integer u[30, 15] = identity;
 
     columns(u) -> out;
     '\n' -> out;

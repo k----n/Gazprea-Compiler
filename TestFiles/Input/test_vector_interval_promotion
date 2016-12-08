@@ -5,13 +5,15 @@ procedure main() returns integer{
 
     integer vector j = 1..2;
 
+    var out = std_output(); 
+
     var v = j + 1;
 
-    v -> std_output();
+    v -> out;
 
-    i -> std_output();
+    i -> out;
 
-    j -> std_output();
+    j -> out;
 
 return 0;
 }

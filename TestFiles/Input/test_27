@@ -1,5 +1,6 @@
 procedure f() {
-{} {{{5->std_output();}}}
+var out = std_output();
+{} {{{5->out;}}}
 }
 
 procedure main() returns integer{

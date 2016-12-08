@@ -3,6 +3,7 @@ procedure main() returns integer {
     tuple(integer, integer, integer[3]) t = (1, null, [3, 2]);
     tuple(character, character, character[3]) s = as<(character, character, character[3])>((56, 57, [56, 57, 58]));
 
+
     t.1 -> out;
     '\n' -> out;
     t.2 -> out;

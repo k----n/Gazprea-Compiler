@@ -1,46 +1,48 @@
 procedure printint(integer x) {
-    x -> std_output();
+var out = std_output();
+    x -> out;
 }
 
 procedure printtup(tuple(character, integer, real) t) {
-    t.1 -> std_output();
-    t.2 -> std_output();
-    t.3 -> std_output();
+	  var out = std_output();
+    t.1 -> out;
+    t.2 -> out;
+    t.3 -> out;
 }
 
 procedure main() returns integer {
     var tup = ('i', 1, 1.2);
     tuple(character, integer, real) tup2 = ('j', 2, 2.4);
-    
+    var out = std_output();
     var tup3 = tup;
 
-    tup.1 -> std_output();
-    tup.2 -> std_output();
-    tup.3 -> std_output();
+    tup.1 -> out;
+    tup.2 -> out;
+    tup.3 -> out;
 
     tup.1 = 'a';
 
-    '\n' -> std_output();
+    '\n' -> out;
 
-    tup3.1 -> std_output();
-    tup3.2 -> std_output();
-    tup3.3 -> std_output();
+    tup3.1 -> out;
+    tup3.2 -> out;
+    tup3.3 -> out;
     
-    '\n' -> std_output();
+    '\n' -> out;
 
     integer x = 3;
     call printint(tup.2);
     call printint(x);
 
-    '\n' -> std_output();
-    tup.1 -> std_output();
-    '\n' -> std_output();
+    '\n' -> out;
+    tup.1 -> out;
+    '\n' -> out;
 
     call printtup(tup);
     
-    '\n' -> std_output();
-    tup.1 -> std_output();
-    '\n' -> std_output();
+    '\n' -> out;
+    tup.1 -> out;
+    '\n' -> out;
 
     call printtup(tup2);
 

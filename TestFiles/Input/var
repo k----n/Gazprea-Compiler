@@ -4,10 +4,10 @@ procedure changex(var integer x)  {
 
 procedure main() returns integer {
     integer x = 5;
-
+    var out = std_output();
     call changex(x);    
 
-    x -> std_output();
+    x -> out;
 
 
     return 0;

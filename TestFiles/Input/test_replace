@@ -11,10 +11,11 @@ procedure main() returns integer {
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -25,16 +26,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -45,16 +48,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -65,16 +70,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -85,16 +92,19 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -105,16 +115,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -125,16 +137,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -145,16 +159,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -165,16 +181,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -185,16 +203,17 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -205,16 +224,17 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -225,16 +245,17 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }
@@ -245,16 +266,18 @@ procedure main() returns integer {
     
     x,y = (2,4);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 */
 
     integer x = 1;
     integer y = 3;
+    var out = std_output();
+
     x,y = (y,x);
 
-    x -> std_output();
-    y->std_output();
+    x -> out;
+    y->out;
 
     return 0;
 }

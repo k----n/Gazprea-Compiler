@@ -1,5 +1,4 @@
 procedure main() returns integer {
-    'i' -> std_output();
-    call main();
+    integer interval x = 1..2147483647;
     return 0;
 }

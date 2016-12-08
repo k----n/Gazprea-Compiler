@@ -1,27 +1,29 @@
 procedure main() returns integer{
-
-    ([true,true,true] or true) -> std_output();
-    '\n' -> std_output();
-    ([false,false,false] or true) -> std_output();
-    '\n' -> std_output();
-    ([false,false,false] or false) -> std_output();
-    '\n' -> std_output();
-
-    ([false,false,false] or [false,false,false]) -> std_output();
-    '\n' -> std_output();
-    ([true,true,true] or [false,false,false]) -> std_output();
-    '\n' -> std_output();
-    ([true,false,true] or [false,false,false]) -> std_output();
-    '\n' -> std_output();
+    var out = std_output();
 
 
+    ([true,true,true] or true) -> out;
+    '\n' -> out;
+    ([false,false,false] or true) -> out;
+    '\n' -> out;
+    ([false,false,false] or false) -> out;
+    '\n' -> out;
 
-    (true or [true,true,true]) -> std_output();
-    '\n' -> std_output();
-    (true or [false,false,false]) -> std_output();
-    '\n' -> std_output();
-    (false or [false,false,false]) -> std_output();
-    '\n' -> std_output();
+    ([false,false,false] or [false,false,false]) -> out;
+    '\n' -> out;
+    ([true,true,true] or [false,false,false]) -> out;
+    '\n' -> out;
+    ([true,false,true] or [false,false,false]) -> out;
+    '\n' -> out;
+
+
+
+    (true or [true,true,true]) -> out;
+    '\n' -> out;
+    (true or [false,false,false]) -> out;
+    '\n' -> out;
+    (false or [false,false,false]) -> out;
+    '\n' -> out;
 
     return 0;
 }

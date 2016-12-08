@@ -11,13 +11,14 @@ function x(real a) returns character {
 }
 
 procedure main() returns integer{
+    var out = std_output();
     character s;
     s = x(3.3);
-    s->std_output();
+    s->out;
     s = x(3);
-    s->std_output();
+    s->out;
     s = x('a');   
-    s->std_output();
+    s->out;
 
     return 0;
 }

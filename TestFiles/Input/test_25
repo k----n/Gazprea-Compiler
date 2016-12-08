@@ -2,16 +2,17 @@ procedure main() returns integer{
 
 integer x = 1; 
 integer y = 10;
- 
+var out = std_output(); 
+
 /* Since the conditional is tested after the execution '10' is printed */ 
 loop {
-x -> std_output(); 
-'\n' -> std_output();
+x -> out; 
+'\n' -> out;
 x = x + 1;
 
 loop {
-y -> std_output(); 
-'\n' -> std_output();
+y -> out; 
+'\n' -> out;
 y = y + 1;
 
 

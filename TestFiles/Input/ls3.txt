@@ -1,0 +1,16 @@
+procedure main() returns integer {
+    var out = std_output();
+
+    '\a' -> out;
+    '\b' -> out;
+    '\n' -> out;
+    '\r' -> out;
+    '\t' -> out;
+    '\n' -> out;
+    '\\' -> out;
+    '\'' -> out;
+    '\"' -> out;
+    '\0' -> out;
+
+    return 0;
+}

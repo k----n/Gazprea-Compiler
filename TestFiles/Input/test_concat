@@ -1,7 +1,8 @@
 procedure main() returns integer {
-	([1, 2, 3] || [1,2]) -> std_output();
-	([1, 2, 3] || 1) -> std_output();
-	(69 || [1,2]) -> std_output();
+	  var out = std_output();
+	([1, 2, 3] || [1,2]) -> out;
+	([1, 2, 3] || 1) -> out;
+	(69 || [1,2]) -> out;
 
     return 0;
 	

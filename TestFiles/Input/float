@@ -3,10 +3,12 @@ procedure main() returns integer {
 
     real x = y;
 
+    var out = std_output();
+
     x = 1.0 + y;
 
-    x -> std_output();
-    y -> std_output();
+    x -> out;
+    y -> out;
 
     return 0;
 }

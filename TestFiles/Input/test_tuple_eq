@@ -1,18 +1,19 @@
 procedure main() returns integer{
+    var out = std_output();
 
-    (1,2,3) == (1,1,1) -> std_output();
-    '\n' -> std_output();
-    (1,2,3) == (1,2,3) -> std_output();
-    '\n' -> std_output();
+    (1,2,3) == (1,1,1) -> out;
+    '\n' -> out;
+    (1,2,3) == (1,2,3) -> out;
+    '\n' -> out;
 
-    (1.2,2.2,3.2) == (1,1,1) -> std_output();
-    '\n' -> std_output();
-    (1.69,2.69,3.69) == (1.69,2.69,3.69) -> std_output();
-    '\n' -> std_output();
+    (1.2,2.2,3.2) == (1,1,1) -> out;
+    '\n' -> out;
+    (1.69,2.69,3.69) == (1.69,2.69,3.69) -> out;
+    '\n' -> out;
 
 
-    (1.69,2.69,3.69) == (1,2.69,3) -> std_output();
-    '\n' -> std_output();
+    (1.69,2.69,3.69) == (1,2.69,3) -> out;
+    '\n' -> out;
 
     return 0;
 }

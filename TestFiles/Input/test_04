@@ -1,11 +1,13 @@
 procedure main() returns integer {
     integer x;
-    'a' -> std_output();
-    '\n' -> std_output();
     integer y = null;
     integer z = identity;
-    x -> std_output();
-    y -> std_output();
-    z -> std_output();
+    var out = std_output();    
+
+    'a' -> out;
+    '\n' -> out;
+    x -> out;
+    y -> out;
+    z -> out;
     return 0;
 }

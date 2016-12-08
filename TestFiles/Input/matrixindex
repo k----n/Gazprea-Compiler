@@ -3,7 +3,10 @@ procedure main() returns integer {
    var out = std_output();
    var x = [i in 1..2, j in 1..3 | i * j];
 
-    x[1,1]  -> out;
+   loop i in 1..rows(x), j in 1..columns(x) 
+    {
+       x[i,j]  -> out;
+       }
 
     return 0;
 }

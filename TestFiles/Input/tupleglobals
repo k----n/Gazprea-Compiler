@@ -2,9 +2,11 @@ const tuple(integer, integer, integer) t1 = (1,2,3);
 const i1 = 3 + 3;
 
 procedure main() returns integer {
-    i1 -> std_output();
-    t1.1 -> std_output();
-    t1.2 -> std_output();
+    var out = std_output();
+
+    i1 -> out;
+    t1.1 -> out;
+    t1.2 -> out;
 
     return 0;
 }

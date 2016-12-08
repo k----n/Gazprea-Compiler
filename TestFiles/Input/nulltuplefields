@@ -1,9 +1,10 @@
 procedure main() returns integer {
      tuple(integer, character, real) t = (null, null, identity);
+     var out = std_output();
 
-     t.1 -> std_output();
-     t.2 -> std_output();
-     t.3 -> std_output();
+     t.1 -> out;
+     t.2 -> out;
+     t.3 -> out;
      
      return 0;
 }

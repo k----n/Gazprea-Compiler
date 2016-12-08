@@ -1,13 +1,13 @@
 procedure main() returns integer{
+    var out = std_output();
+    (-[1,2,3]) -> out;
+    '\n' -> out;
 
-    (-[1,2,3]) -> std_output();
-    '\n' -> std_output();
+    (-[1.2,1.2,1.2]) -> out;
+    '\n' -> out;
 
-    (-[1.2,1.2,1.2]) -> std_output();
-    '\n' -> std_output();
-
-    (not [true, true, true]) -> std_output();
-    '\n' -> std_output();
+    (not [true, true, true]) -> out;
+    '\n' -> out;
 
 return 0;
 }

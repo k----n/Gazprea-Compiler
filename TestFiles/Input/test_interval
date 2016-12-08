@@ -13,11 +13,13 @@ procedure main() returns integer {
 
     integer interval n = -i;
 
-    i == v -> std_output();
+    var out = std_output();
 
-    i != v -> std_output();
+    i == v -> out;
 
-    i == i -> std_output();
+    i != v -> out;
+
+    i == i -> out;
 
     return 0;
 }

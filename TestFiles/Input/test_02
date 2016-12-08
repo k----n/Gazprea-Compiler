@@ -1,5 +1,6 @@
 procedure main() returns integer {
-    5 -> std_output();
+    var out = std_output();
+    5 -> out;
 
     return 0;
 }

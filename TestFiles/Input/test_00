@@ -2,14 +2,15 @@ procedure test1() {
     var out = std_output();
 
     var a = [0, 1, 2, 3];
+    var b = length(a);
+    var c = reverse(a);
+
     a -> out;
     '\n' -> out;
 
-    var b = length(a);
     b -> out;
     '\n' -> out;
 
-    var c = reverse(a);
     c -> out;
     '\n' -> out;
     '\n' -> out;
@@ -22,14 +23,17 @@ procedure test2() {
         [0, 1, 2],
         [3, 4, 5]
     ];
+
+    var b = rows(a);
+
+    var c = columns(a);
+
     a -> out;
     '\n' -> out;
 
-    var b = rows(a);
     b -> out;
     '\n' -> out;
 
-    var c = columns(a);
     c -> out;
     '\n' -> out;
 
